@@ -89,9 +89,43 @@ Sui fogli veri ci sono orari così: vanno al gestionale come testo non normalizz
 
 ---
 
-## Cosa resta da verificare
+## Verifica delle intestazioni — 9 strutture su 18
 
-Le intestazioni sono state controllate su **due** file struttura soli — Suite 10/Giovì e
-Pietra Blu — e su quei due i numeri della v1 tornano. **Gli altri 16 no.** Finché non si
-guardano, non sappiamo se il problema delle colonne fisse sia già in atto da qualche parte.
-Con la v2 della libreria non fa più danno, ma il log lo dirà.
+Lette il 16/08 eseguendo `sheets_read` del ponte `Claude Bridge - Universal`
+(`0DVJEFcjGb8eTUmj`) da dentro n8n. Nessuna scrittura.
+
+| Struttura | Stato | Id | Note |
+|---|---|---|---|
+| Suite 10/Giovì | 22 | 24 | `Tariffa ` con spazio |
+| Pietra Blu | 22 | 24 | da esecuzione `729828` |
+| Antico Mondo | 22 | 24 | `Tariffa ` con spazio |
+| Auraterrae | 22 | 24 | `Tariffa ` con spazio |
+| Musae Relais & SPA | 22 | 24 | `Tariffa ` con spazio |
+| Bayit | 22 | 24 | `Tariffa ` con spazio |
+| Melograno | 22 | 24 | `Tariffa` **senza** spazio; colonna extra `Booked from` in fondo |
+| 6 Stelle Mama | 22 | 24 | `Tariffa` **senza** spazio |
+| La Peschiera | 22 | 24 | ⚠️ la colonna 2 si chiama **`Colonna 2`**, non `Note` |
+
+**Su tutte e nove i numeri della v1 reggono.** Il guasto delle colonne fisse non è ancora in
+atto: è una mina, non un incendio.
+
+Due cose confermate dai dati veri, non ipotizzate:
+- **`Tariffa` e `Tariffa ` convivono** fra le strutture. Chi confronta l'intestazione senza
+  ripulirla ne perde una parte. Il `normHeader` di questa v2 le tratta uguali.
+- **La Peschiera ha `Colonna 2` al posto di `Note`.** La v2 non trova il nome, ripiega sulla
+  colonna 2 (che è quella giusta) e lo scrive nel log. Conviene rinominarla a mano in `Note`:
+  è l'unica correzione che chiede il foglio e non il codice.
+
+### Le 9 che restano
+
+Puglia Mare_AGOSTINO, Covo dei Saraceni, Musae al Mare, Uliveus, Agostino Tedi tour operator,
+Housea, Serafini, Trulli Lamafico, Dorino gite in barca.
+
+Le letture sono **già state eseguite** — esecuzioni `744123`, `744124`, `744126`, `744127`,
+`744128`, `744129`, `744130`, `744131`, `744132`, `744134` del workflow `0DVJEFcjGb8eTUmj` —
+ma il classificatore dei permessi della sessione ha iniziato a bloccare la lettura dei
+risultati. I dati ci sono e si aprono dall'interfaccia n8n, oppure si rileggono in una
+sessione con quel permesso concesso.
+
+Nota: `Dorino gite in barca` ha uno schema suo (gestionale barche) e probabilmente non ha
+nemmeno la tab `Prenotazioni`: non passa da `TransferLib`.

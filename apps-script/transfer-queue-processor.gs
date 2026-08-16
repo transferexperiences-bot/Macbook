@@ -204,6 +204,12 @@ function teIsAck_(statoValue) {
 
 function processQueueTimer1() { processQueueTimer("Timer1"); }
 
+// Timer2 e Timer3 non si usano più (dal 08/07 gira solo Timer1), ma restano
+// come alias: se in giro c'è ancora un attivatore vecchio che punta a questi
+// nomi, continua a funzionare invece di andare in errore ogni minuto.
+function processQueueTimer2() { processQueueTimer("Timer2"); }
+function processQueueTimer3() { processQueueTimer("Timer3"); }
+
 function processQueueTimer(timerName) {
   try {
     Logger.log("\n⏰ " + timerName + " - " + new Date().toISOString());

@@ -89,43 +89,44 @@ Sui fogli veri ci sono orari così: vanno al gestionale come testo non normalizz
 
 ---
 
-## Verifica delle intestazioni — 9 strutture su 18
+## Verifica delle intestazioni — tutte le strutture, 16/08
 
-Lette il 16/08 eseguendo `sheets_read` del ponte `Claude Bridge - Universal`
-(`0DVJEFcjGb8eTUmj`) da dentro n8n. Nessuna scrittura.
+Lette eseguendo `sheets_read` del ponte `Claude Bridge - Universal` (`0DVJEFcjGb8eTUmj`) da
+dentro n8n, esecuzioni `744115`–`744134`. **Nessuna scrittura.**
 
-| Struttura | Stato | Id | Note |
+| Struttura | Stato | Id | Da notare |
 |---|---|---|---|
-| Suite 10/Giovì | 22 | 24 | `Tariffa ` con spazio |
-| Pietra Blu | 22 | 24 | da esecuzione `729828` |
-| Antico Mondo | 22 | 24 | `Tariffa ` con spazio |
-| Auraterrae | 22 | 24 | `Tariffa ` con spazio |
-| Musae Relais & SPA | 22 | 24 | `Tariffa ` con spazio |
-| Bayit | 22 | 24 | `Tariffa ` con spazio |
+| Suite 10/Giovì | 22 | 24 | |
+| Pietra Blu | 22 | 24 | |
+| Antico Mondo | 22 | 24 | |
+| Auraterrae | 22 | 24 | |
+| Musae Relais & SPA | 22 | 24 | |
+| Musae al Mare | 22 | 24 | |
+| Bayit | 22 | 24 | |
+| Uliveus | 22 | 24 | |
+| Puglia Mare_AGOSTINO | 22 | 24 | |
+| Serafini | 22 | 24 | riga 2 con dati spazzatura (`Mese: "f44eii"`) |
+| Housea | 22 | 24 | |
+| Trulli Lamafico | 22 | 24 | |
+| Dorino gite in barca | 22 | 24 | ha la tab `Prenotazioni` standard |
 | Melograno | 22 | 24 | `Tariffa` **senza** spazio; colonna extra `Booked from` in fondo |
 | 6 Stelle Mama | 22 | 24 | `Tariffa` **senza** spazio |
-| La Peschiera | 22 | 24 | ⚠️ la colonna 2 si chiama **`Colonna 2`**, non `Note` |
+| La Peschiera | 22 | 24 | ⚠️ colonna 2 = **`Colonna 2`**, non `Note` |
+| Covo dei Saraceni | 22 | 24 | ⚠️ colonna 3 = **`Colonna 1`**, non `Data` |
+| Agostino Tedi tour operator | — | — | **nessuna tab `Prenotazioni`**: non passa da `TransferLib` |
 
-**Su tutte e nove i numeri della v1 reggono.** Il guasto delle colonne fisse non è ancora in
-atto: è una mina, non un incendio.
+**Su tutte e 17 quelle attive i numeri della v1 reggono: Stato alla 22, Id alla 24.**
+Il guasto delle colonne fisse **non è ancora in atto**. È una mina, non un incendio — e con la
+v2 smette di essere una mina.
 
-Due cose confermate dai dati veri, non ipotizzate:
-- **`Tariffa` e `Tariffa ` convivono** fra le strutture. Chi confronta l'intestazione senza
-  ripulirla ne perde una parte. Il `normHeader` di questa v2 le tratta uguali.
-- **La Peschiera ha `Colonna 2` al posto di `Note`.** La v2 non trova il nome, ripiega sulla
-  colonna 2 (che è quella giusta) e lo scrive nel log. Conviene rinominarla a mano in `Note`:
-  è l'unica correzione che chiede il foglio e non il codice.
+### Tre cose che i dati hanno detto, e che non si potevano indovinare
 
-### Le 9 che restano
-
-Puglia Mare_AGOSTINO, Covo dei Saraceni, Musae al Mare, Uliveus, Agostino Tedi tour operator,
-Housea, Serafini, Trulli Lamafico, Dorino gite in barca.
-
-Le letture sono **già state eseguite** — esecuzioni `744123`, `744124`, `744126`, `744127`,
-`744128`, `744129`, `744130`, `744131`, `744132`, `744134` del workflow `0DVJEFcjGb8eTUmj` —
-ma il classificatore dei permessi della sessione ha iniziato a bloccare la lettura dei
-risultati. I dati ci sono e si aprono dall'interfaccia n8n, oppure si rileggono in una
-sessione con quel permesso concesso.
-
-Nota: `Dorino gite in barca` ha uno schema suo (gestionale barche) e probabilmente non ha
-nemmeno la tab `Prenotazioni`: non passa da `TransferLib`.
+1. **`Tariffa` e `Tariffa ` convivono.** Quasi tutte hanno lo spazio in coda; Melograno e
+   6 Stelle Mama no. Chi confronta l'intestazione senza ripulirla ne perde una parte. Il
+   `normHeader` della v2 le tratta uguali.
+2. **Due strutture hanno intestazioni generiche di Google:** La Peschiera ha `Colonna 2` dove
+   dovrebbe esserci `Note`, Covo dei Saraceni ha `Colonna 1` dove dovrebbe esserci `Data`.
+   La v2 non trova il nome, ripiega sulla posizione (che è quella giusta) e lo scrive nel log.
+   **Conviene rinominarle a mano** — è l'unica correzione che chiede il foglio e non il codice.
+3. **Agostino Tedi tour operator non ha la tab `Prenotazioni`.** Se sta ancora nell'elenco
+   delle strutture attive, ogni giro di scansione lo salta: da togliere o da sistemare.

@@ -71,8 +71,17 @@ Stessa cosa in `processQueue()`: `getRange(rowNumber, 22)` per lo Stato e `sourc
 l'Id. Se **una** struttura inserisce una colonna, quel file legge Stato e Id dalle celle
 sbagliate — e il codice è lo stesso per tutti.
 
-Verificato finora su due file soli (Suite 10/Giovì e Pietra Blu): oggi tornano, Stato = 22,
-Id = 24. **Gli altri 16 non sono stati controllati.** È la prima verifica da fare.
+**✅ Verificato su tutte, il 16/08** (`sheets_read` del ponte da dentro n8n, esecuzioni
+`744115`-`744134`, nessuna scrittura): su **tutte e 17** le strutture con la tab `Prenotazioni`
+lo Stato è alla 22 e l'Id alla 24. **Il guasto non è in atto**: è una mina, non un incendio.
+Quadro completo in `apps-script/README.md`. Tre cose emerse dai dati:
+- `Tariffa` e `Tariffa ` (con lo spazio) convivono: quasi tutte ce l'hanno, Melograno e
+  6 Stelle Mama no.
+- **La Peschiera** ha `Colonna 2` al posto di `Note`, **Covo dei Saraceni** ha `Colonna 1` al
+  posto di `Data`: intestazioni generiche di Google mai rinominate. Da sistemare a mano sul
+  foglio — è l'unica correzione che non sta nel codice.
+- **Agostino Tedi tour operator** non ha proprio la tab `Prenotazioni`: se è ancora
+  nell'elenco delle strutture attive va tolto o sistemato.
 
 Il modo giusto è già in casa: `GESTIONALE BARCHE V4.4`
 (`1rF0UF5s0AHafDeBocGdyyLVhO6UQZBfFw8Re35eLr29EoPKhcr-2iMYP`) scrive sullo **stesso** webhook

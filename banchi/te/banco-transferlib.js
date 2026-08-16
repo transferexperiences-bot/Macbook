@@ -70,6 +70,29 @@ console.log('== Banco: TransferLib v2 ==\n');
   prova('Id rinominato — lo dice', ['id'], warnings);
 }
 {
+  // Casi VERI, letti il 16/08: due strutture hanno intestazioni generiche di Google.
+  // La v2 non trova il nome, ripiega sulla posizione giusta e lo segnala.
+  const peschiera = H_SUITE10.slice();
+  peschiera[1] = 'Colonna 2';            // La Peschiera: manca "Note"
+  const rP = buildColMap(peschiera);
+  prova('La Peschiera — stato resta 22', 22, rP.col.stato);
+  prova('La Peschiera — id resta 24', 24, rP.col.id);
+
+  const covo = H_SUITE10.slice();
+  covo[2] = 'Colonna 1';                 // Covo dei Saraceni: manca "Data"
+  const rC = buildColMap(covo);
+  prova('Covo dei Saraceni — stato resta 22', 22, rC.col.stato);
+  prova('Covo dei Saraceni — id resta 24', 24, rC.col.id);
+
+  // Melograno e 6 Stelle Mama: "Tariffa" senza spazio in coda.
+  const melograno = H_SUITE10.slice();
+  melograno[15] = 'Tariffa';
+  melograno.push('Booked from');
+  const rM = buildColMap(melograno);
+  prova('Melograno — stato 22 con colonna extra in fondo', 22, rM.col.stato);
+  prova('Melograno — nessun avviso', [], rM.warnings);
+}
+{
   const { col } = buildColMap(['ID ', ' STATO', 'ora']);
   prova('intestazioni sporche — id = 1', 1, col.id);
   prova('intestazioni sporche — stato = 2', 2, col.stato);

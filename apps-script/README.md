@@ -8,9 +8,34 @@ a mano da Agostino.
 Prove offline (nessun foglio vivo toccato):
 
 ```
-node banchi/te/banco-queue.js        # 32 prove — transfer-queue-processor.gs
-node banchi/te/banco-transferlib.js  # 37 prove — TransferLib.gs
+node banchi/te/banco-queue.js        # 56 prove — transfer-queue-processor.gs
+node banchi/te/banco-transferlib.js  # 60 prove — TransferLib.gs
 ```
+
+## Come vengono riconosciute le colonne
+
+Le intestazioni sono tolleranti, ma **non tirano a indovinare**. Tre passaggi:
+
+1. **Per nome**, con confronto esatto dopo aver ridotto l'intestazione alla forma
+   nuda — via maiuscole, accenti, spazi e punteggiatura. Quindi `Tariffa ` = `Tariffa`,
+   `cell.` = `Cell`, `Modalità` = `Modalita`, `TRS> DA` = `TRS DA`, `n. pratica` = `N. Pratica`.
+   Ogni campo ha una lista di nomi accettati (`Time`/`Ora`/`Orario`, `cell.`/`Telefono`,
+   `Stato`/`Status`, `n. pratica`/`mail`…). Si risolvono prima i campi più importanti, e
+   **una colonna già presa non si può rubare**.
+2. **Per posizione**, il numero della versione vecchia, ma solo se quella colonna è
+   ancora libera. Va nel log, così si vede.
+3. **Non risolta** → il campo resta vuoto e viene segnalato.
+
+**Non esiste nessun passaggio «somiglia a».** Cercando per pezzi, `Tariffa` beccherebbe
+anche `Tariffa a noi`: manderemmo il costo nostro al posto del prezzo al cliente, e su una
+riga vera vuol dire fatturare storto. Il banco ha tre prove apposta su questo.
+
+`Stato` e `Id` sono trattati a parte: se non si individuano, **non si manda niente** e la
+riga di coda va in ERROR con scritto il perché. Sono le due colonne che, sbagliate, fanno
+partire il transfer di un altro cliente.
+
+Per vedere come si risolve ogni struttura, senza scrivere niente:
+**`diagnosticaIntestazioni()`** nel Queue Processor.
 
 ---
 

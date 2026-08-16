@@ -82,7 +82,73 @@ prova('ack: cella vuota non vale', false, teIsAck_(''));
   h[21] = '';
   const { col, warnings } = teBuildColMap_(h);
   prova('Stato senza intestazione — ripiega su 22', 22, col.stato);
-  prova('Stato senza intestazione — lo dice', ['stato'], warnings);
+  prova('Stato senza intestazione — lo dice', 1,
+    warnings.filter((w) => w.startsWith('stato ')).length);
+}
+
+// --- I SOLDI: "Tariffa" non deve MAI rubare la colonna di "Tariffa a noi" ---
+{
+  const { col, warnings } = teBuildColMap_(H_SUITE10);
+  prova('tariffa a noi = 15', 15, col.tariffa_a_noi);
+  prova('tariffa = 16 (non ruba la 15)', 16, col.tariffa);
+  prova('fee = 17', 17, col.fee);
+  prova('nessun avviso sui soldi', [], warnings);
+}
+{
+  // Se "Tariffa a noi" sparisce, "Tariffa" NON deve prendersela lo stesso.
+  const h = H_SUITE10.slice();
+  h[14] = 'Colonna 15';
+  const { col } = teBuildColMap_(h);
+  prova('senza "Tariffa a noi" — tariffa resta la 16', 16, col.tariffa);
+  prova('senza "Tariffa a noi" — ripiega sulla 15, non ruba', 15, col.tariffa_a_noi);
+}
+{
+  // E al contrario: se sparisce "Tariffa", "Tariffa a noi" resta al suo posto.
+  const h = H_SUITE10.slice();
+  h[15] = 'Colonna 16';
+  const { col } = teBuildColMap_(h);
+  prova('senza "Tariffa" — tariffa a noi resta la 15', 15, col.tariffa_a_noi);
+  prova('senza "Tariffa" — tariffa ripiega sulla 16', 16, col.tariffa);
+}
+
+// --- FLESSIBILITÀ: grafie diverse dello stesso nome ---
+{
+  const h = H_SUITE10.slice();
+  h[3] = 'Orario'; h[10] = 'Telefono'; h[7] = 'Cliente';
+  h[17] = 'Modalita'; h[21] = 'Status'; h[19] = 'email';
+  const { col, warnings } = teBuildColMap_(h);
+  prova('alias — Orario', 4, col.ora);
+  prova('alias — Telefono', 11, col.cell);
+  prova('alias — Cliente', 8, col.nome);
+  prova('alias — Modalita senza accento', 18, col.modalita);
+  prova('alias — Status', 22, col.stato);
+  prova('alias — email vale n. pratica', 20, col.n_pratica);
+  prova('alias — nessun avviso', [], warnings);
+}
+{
+  // Punteggiatura e spazi scritti a caso.
+  const h = H_SUITE10.slice();
+  h[4] = 'TRS  >  DA'; h[5] = 'trs<per'; h[10] = 'Cell'; h[19] = 'N. Pratica';
+  const { col, warnings } = teBuildColMap_(h);
+  prova('punteggiatura — TRS> DA', 5, col.trs_da);
+  prova('punteggiatura — TRS <PER', 6, col.trs_per);
+  prova('punteggiatura — Cell', 11, col.cell);
+  prova('punteggiatura — N. Pratica', 20, col.n_pratica);
+  prova('punteggiatura — nessun avviso', [], warnings);
+}
+{
+  // Stato o Id irriconoscibili: il chiamante deve poterlo vedere.
+  const h = new Array(30).fill('Colonna x');
+  const { col } = teBuildColMap_(h);
+  prova('tutto generico — stato ripiega sulla 22', 22, col.stato);
+  prova('tutto generico — id ripiega sulla 24', 24, col.id);
+}
+{
+  // Foglio cortissimo: niente posizione libera per Id -> null, e il codice
+  // di processQueue si ferma invece di indovinare.
+  const { col } = teBuildColMap_(['Stato']);
+  prova('foglio di una colonna — stato = 1', 1, col.stato);
+  prova('foglio di una colonna — id ripiega sulla 24', 24, col.id);
 }
 
 // --- (3) la riga si conferma per Id ---

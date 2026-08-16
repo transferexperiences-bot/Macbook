@@ -49,8 +49,11 @@ console.log('== Banco: TransferLib v2 ==\n');
 }
 {
   // I numeri della v1 tornano su questo file: la v2 non cambia comportamento qui.
+  // Confronto campo per campo: l'ordine delle chiavi non conta.
   const { col } = buildColMap(H_SUITE10);
-  prova('v2 identica alla v1 sui file di oggi', sandbox.LEGACY_COL, col);
+  const legacy = sandbox.LEGACY_COL;
+  const uguali = Object.keys(legacy).every((k) => col[k] === legacy[k]);
+  prova('v2 identica alla v1 sui file di oggi', true, uguali);
 }
 {
   // Il caso che la v1 sbaglierebbe in silenzio.
@@ -67,7 +70,7 @@ console.log('== Banco: TransferLib v2 ==\n');
   h[23] = 'Codice';   // Id rinominato
   const { col, warnings } = buildColMap(h);
   prova('Id rinominato — ripiega sul 24 della v1', 24, col.id);
-  prova('Id rinominato — lo dice', ['id'], warnings);
+  prova('Id rinominato — lo dice', 1, warnings.filter((w) => w.startsWith('id ')).length);
 }
 {
   // Casi VERI, letti il 16/08: due strutture hanno intestazioni generiche di Google.
@@ -97,6 +100,53 @@ console.log('== Banco: TransferLib v2 ==\n');
   prova('intestazioni sporche — id = 1', 1, col.id);
   prova('intestazioni sporche — stato = 2', 2, col.stato);
   prova('intestazioni sporche — ora = 3', 3, col.ora);
+}
+
+// --- FLESSIBILITÀ: scritture diverse dello stesso nome ---
+{
+  const h = H_SUITE10.slice();
+  h[3] = 'Orario'; h[10] = 'Telefono'; h[8] = 'Struttura'; h[21] = 'Status';
+  const { col, warnings } = buildColMap(h);
+  prova('alias — Orario vale Time', 4, col.ora);
+  prova('alias — Telefono vale cell.', 11, col.telefono);
+  prova('alias — Struttura vale Fornitore', 9, col.fornitore);
+  prova('alias — Status vale Stato', 22, col.stato);
+  prova('alias — nessun avviso', [], warnings);
+}
+{
+  // Accenti, punteggiatura, maiuscole, spazi doppi: tutto uguale.
+  const { col, warnings } = buildColMap([
+    'ID', 'STATO', 'FORNITORE', '  Time  ', 'CELL.',
+  ]);
+  prova('grafie diverse — id = 1', 1, col.id);
+  prova('grafie diverse — stato = 2', 2, col.stato);
+  prova('grafie diverse — fornitore = 3', 3, col.fornitore);
+  prova('grafie diverse — ora = 4', 4, col.ora);
+  prova('grafie diverse — telefono = 5', 5, col.telefono);
+  prova('grafie diverse — nessun avviso', [], warnings);
+}
+{
+  // Nessuna colonna riconoscibile: si ripiega sui numeri della v1.
+  const h = ['Colonna 1','Colonna 2','Colonna 3','Colonna 4','Colonna 5','Colonna 6',
+             'Colonna 7','Colonna 8','Colonna 9','Colonna 10','Colonna 11','Colonna 12',
+             'Colonna 13','Colonna 14','Colonna 15','Colonna 16','Colonna 17','Colonna 18',
+             'Colonna 19','Colonna 20','Colonna 21','Colonna 22','Colonna 23','Colonna 24'];
+  const { col, warnings } = buildColMap(h);
+  prova('tutto generico — stato ripiega sulla 22', 22, col.stato);
+  prova('tutto generico — id ripiega sulla 24', 24, col.id);
+  prova('tutto generico — lo dice per tutti e 5', 5, warnings.length);
+}
+{
+  // Una colonna sola: Stato per nome alla 1, poi Id non può prendersi la 1.
+  const { col } = buildColMap(['Stato']);
+  prova('foglio con una colonna — stato = 1', 1, col.stato);
+  prova('foglio con una colonna — id ripiega sulla 24', 24, col.id);
+}
+{
+  // Due nomi che puntano alla stessa colonna: chi arriva prima nell'ordine
+  // se la prende, il secondo NON la ruba.
+  const { col } = buildColMap(['Id', 'Id transfer']);
+  prova('due nomi per Id — ne prende uno solo', 1, col.id);
 }
 
 // --- normalizzazione Ora (comportamento invariato: nessuna regressione) ---

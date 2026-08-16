@@ -45,33 +45,57 @@ var TE_MAX_ATTEMPTS    = 6;
 var TE_TIME_BUDGET_MS  = 270000;
 var TE_VERIFY_POLL_MS  = 1000;
 
-/** Nomi accettati per ogni campo. Il primo è quello canonico. */
+/**
+ * Nomi accettati per ogni campo. Il primo è quello canonico.
+ *
+ * REGOLA: qui dentro si mettono solo nomi INTERI e non ambigui. Il confronto
+ * è esatto (dopo normalizzazione), MAI "contiene". Se cercassimo per pezzi,
+ * "Tariffa" beccherebbe "Tariffa a noi" e finiremmo a mandare il costo nostro
+ * al posto del prezzo al cliente. Su una riga vera vuol dire fatturare storto.
+ *
+ * Per questo i campi dei soldi e l'Id hanno pochi alias, scelti stretti; i
+ * campi innocui (nome, note, volo) ne hanno di più.
+ */
 var TE_HEADER_ALIASES = {
   mese:              ["Mese"],
-  note:              ["Note"],
-  data:              ["Data"],
-  ora:               ["Time", "Ora"],
-  trs_da:            ["TRS> DA"],
-  trs_per:           ["TRS <PER"],
-  pax:               ["PAX"],
-  nome:              ["Nome"],
-  fornitore:         ["Fornitore"],
-  volo:              ["Volo"],
-  cell:              ["cell.", "cell", "Cellulare"],
-  autista:           ["Autista"],
-  veicolo:           ["Veicolo"],
-  h_extra_ritardi:   ["h extra/ritardi"],
-  tariffa_a_noi:     ["Tariffa a noi"],
-  tariffa:           ["Tariffa"],
-  fee:               ["Fee"],
-  modalita:          ["Modalità"],
-  tipologia_incasso: ["Tipologia incasso"],
-  n_pratica:         ["n. pratica", "mail"],
+  note:              ["Note", "Nota", "Annotazioni"],
+  data:              ["Data", "Data servizio", "Giorno"],
+  ora:               ["Time", "Ora", "Orario", "Ora pickup"],
+  trs_da:            ["TRS> DA", "TRS DA", "Da", "Partenza", "Pickup"],
+  trs_per:           ["TRS <PER", "TRS PER", "Per", "Destinazione", "Arrivo"],
+  pax:               ["PAX", "N. PAX", "Passeggeri", "Persone"],
+  nome:              ["Nome", "Nome cliente", "Cliente", "Ospite"],
+  fornitore:         ["Fornitore", "Struttura"],
+  volo:              ["Volo", "Flight", "N. volo"],
+  cell:              ["cell.", "cell", "Cellulare", "Telefono", "Tel."],
+  autista:           ["Autista", "Driver"],
+  veicolo:           ["Veicolo", "Mezzo"],
+  h_extra_ritardi:   ["h extra/ritardi", "h extra", "Extra/ritardi"],
+  tariffa_a_noi:     ["Tariffa a noi", "Costo a noi"],
+  tariffa:           ["Tariffa", "Prezzo"],
+  fee:               ["Fee", "Commissione"],
+  modalita:          ["Modalità", "Modalita"],
+  tipologia_incasso: ["Tipologia incasso", "Tipologia d'incasso"],
+  n_pratica:         ["n. pratica", "mail", "email", "Pratica"],
   addebitato:        ["Addebitato"],
-  stato:             ["Stato"],
-  eseguito:          ["Eseguito"],
-  id:                ["Id"]
+  stato:             ["Stato", "Status"],
+  eseguito:          ["Eseguito", "Svolto"],
+  id:                ["Id", "Id transfer"]
 };
+
+/**
+ * Ordine di risoluzione: prima i nomi più specifici, così una colonna presa
+ * non può più essere rubata. "Tariffa a noi" si prende la sua prima che
+ * "Tariffa" vada a cercare; Id e Stato per primi perché sono i due che, se
+ * sbagliati, fanno danno vero.
+ */
+var TE_RESOLVE_ORDER = [
+  "id", "stato", "eseguito", "addebitato",
+  "tariffa_a_noi", "tipologia_incasso", "h_extra_ritardi", "n_pratica",
+  "trs_da", "trs_per", "tariffa", "fee", "modalita",
+  "mese", "note", "data", "ora", "pax", "nome", "fornitore", "volo",
+  "cell", "autista", "veicolo"
+];
 
 /** Numeri di colonna della v2: usati solo come rete se il nome non si trova. */
 var TE_LEGACY_COL = {
@@ -87,40 +111,76 @@ var TE_LEGACY_COL = {
 // (banco: banchi/te/banco-queue.js)
 // ==========================================================================
 
-/** Intestazioni sporche: "Tariffa " con lo spazio in coda esiste davvero. */
+/**
+ * Riduce un'intestazione alla sua forma nuda: via maiuscole, accenti, spazi e
+ * punteggiatura. Serve perché sui fogli veri gli stessi nomi sono scritti in
+ * modi diversi:
+ *   "Tariffa " (con lo spazio in coda) = "Tariffa"
+ *   "cell." = "cell" = "Cell"
+ *   "Modalità" = "Modalita"
+ *   "TRS> DA" = "TRS DA" = "trs>da"
+ *   "n. pratica" = "N Pratica"
+ * Restano invece ben distinti "tariffa" e "tariffaanoi": sono cose diverse.
+ */
 function teNormHeader_(h) {
-  return (h === null || h === undefined ? "" : h)
-    .toString().trim().toLowerCase().replace(/\s+/g, " ");
+  var s = (h === null || h === undefined ? "" : h).toString().toLowerCase();
+  s = s.replace(/[àáâãä]/g, "a").replace(/[èéêë]/g, "e").replace(/[ìíîï]/g, "i")
+       .replace(/[òóôõö]/g, "o").replace(/[ùúûü]/g, "u")
+       .replace(/[ç]/g, "c").replace(/[ñ]/g, "n");
+  return s.replace(/[^a-z0-9]+/g, "");
 }
 
 /**
  * Dalla riga di intestazione ricava il numero di colonna (1-based) di ogni campo.
- * Se un campo non si trova, ripiega sul numero della v2 e lo segnala.
+ *
+ * Tre passaggi:
+ *   1. per NOME, nell'ordine di specificità, e una colonna presa non si tocca più;
+ *   2. chi non si è trovato ripiega sul numero della v2, ma solo se quella
+ *      colonna è ancora libera (altrimenti scriverebbe sopra a un altro campo);
+ *   3. chi resta fuori vale null: il chiamante decide se è grave.
+ *
+ * Non esiste nessun passaggio "somiglia a": preferisco un campo vuoto e un
+ * avviso a un campo pieno col valore sbagliato.
  */
 function teBuildColMap_(headerRow) {
-  var col = {};
-  var warnings = [];
   var norm = [];
-  var i;
+  var i, k, key;
   for (i = 0; i < (headerRow || []).length; i++) norm.push(teNormHeader_(headerRow[i]));
 
-  for (var key in TE_HEADER_ALIASES) {
-    if (!TE_HEADER_ALIASES.hasOwnProperty(key)) continue;
-    var aliases = TE_HEADER_ALIASES[key];
+  var col = {};
+  var warnings = [];
+  var claimed = {};   // numero di colonna -> campo che se l'è presa
+
+  // 1) per nome
+  for (k = 0; k < TE_RESOLVE_ORDER.length; k++) {
+    key = TE_RESOLVE_ORDER[k];
+    var aliases = TE_HEADER_ALIASES[key] || [];
     var found = 0;
     for (var a = 0; a < aliases.length && !found; a++) {
       var target = teNormHeader_(aliases[a]);
+      if (!target) continue;
       for (i = 0; i < norm.length; i++) {
-        if (norm[i] === target) { found = i + 1; break; }
+        if (norm[i] === target && !claimed[i + 1]) { found = i + 1; break; }
       }
     }
-    if (found) {
-      col[key] = found;
+    if (found) { col[key] = found; claimed[found] = key; }
+  }
+
+  // 2) rete: il numero della v2, se libero
+  for (k = 0; k < TE_RESOLVE_ORDER.length; k++) {
+    key = TE_RESOLVE_ORDER[k];
+    if (col[key]) continue;
+    var legacy = TE_LEGACY_COL[key];
+    if (legacy && !claimed[legacy]) {
+      col[key] = legacy;
+      claimed[legacy] = key;
+      warnings.push(key + " → colonna " + legacy + " (per posizione)");
     } else {
-      col[key] = TE_LEGACY_COL[key];
-      warnings.push(key);
+      col[key] = null;
+      warnings.push(key + " → NON RISOLTA");
     }
   }
+
   return { col: col, warnings: warnings };
 }
 
@@ -290,6 +350,17 @@ function processQueue() {
         var headerRow = sourceSheet.getRange(1, 1, 1, lastCol).getValues()[0];
         var mapped = teBuildColMap_(headerRow);
         var col = mapped.col;
+
+        // Senza Stato o senza Id non si tira a indovinare: sono le due colonne
+        // che, sbagliate, mandano il transfer di un altro o marcano la riga
+        // sbagliata. Meglio fermarsi e dirlo.
+        if (!col.stato || !col.id) {
+          teMarkQueue_(queueSheet, rowIndex, "ERROR", attempts,
+            "Su " + fileName + " non riesco a individuare le colonne " +
+            (!col.stato ? "Stato " : "") + (!col.id ? "Id" : "").trim() +
+            " — non mando niente. Controlla le intestazioni della riga 1.");
+          continue;
+        }
 
         // (3) la riga si conferma per Id
         var idValues = sourceSheet.getRange(2, col.id, lastRow - 1, 1).getValues()
@@ -474,6 +545,41 @@ function sistemaCodaVecchia() {
 
 /** Vecchio nome, lasciato per non rompere niente. */
 function sbloccaErroriVecchi() { sistemaCodaVecchia(); }
+
+/**
+ * Mostra, per ogni struttura che compare in Queue, come si risolve ogni colonna.
+ * Da lanciare a mano quando si sospetta un'intestazione storta, o dopo che
+ * qualcuno ha messo mano a un foglio. Non scrive niente.
+ */
+function diagnosticaIntestazioni() {
+  var queueSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Queue");
+  if (!queueSheet) return;
+  var data = queueSheet.getDataRange().getValues();
+
+  var visti = {};
+  for (var i = 1; i < data.length; i++) {
+    var id = data[i][1], nome = data[i][0];
+    if (!id || visti[id]) continue;
+    visti[id] = true;
+
+    try {
+      var sheet = SpreadsheetApp.openById(id).getSheetByName("Prenotazioni");
+      if (!sheet) { Logger.log("— " + nome + ": nessuna tab Prenotazioni"); continue; }
+      var lastCol = Math.max(24, sheet.getLastColumn());
+      var header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+      var m = teBuildColMap_(header);
+      if (m.warnings.length) {
+        Logger.log("⚠️ " + nome + " — Stato=" + m.col.stato + " Id=" + m.col.id +
+          " | da guardare: " + m.warnings.join("; "));
+      } else {
+        Logger.log("✅ " + nome + " — tutto per nome. Stato=" + m.col.stato +
+          " Id=" + m.col.id);
+      }
+    } catch (e) {
+      Logger.log("❌ " + nome + ": " + e);
+    }
+  }
+}
 
 function debugQueue() {
   var queueSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Queue");

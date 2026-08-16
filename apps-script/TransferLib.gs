@@ -34,14 +34,21 @@ const FIRST_DATA_ROW = 2;
 /** Stati che fanno scattare la sincronizzazione con Strutture/Queue. */
 const VALID_STATES = ["Pronto", "Modificato", "Cancellato"];
 
-/** Nomi accettati per colonna. Il primo è quello canonico. */
+/**
+ * Nomi accettati per colonna. Il primo è quello canonico.
+ * Confronto ESATTO dopo normalizzazione, mai "contiene": cercare per pezzi
+ * farebbe beccare a "Tariffa" anche "Tariffa a noi", e sui soldi non si scherza.
+ */
 const COL_ALIASES = {
-  ora:       ["Time", "Ora"],
-  telefono:  ["cell.", "cell", "Cellulare"],
-  fornitore: ["Fornitore"],
-  stato:     ["Stato"],
-  id:        ["Id"]
+  ora:       ["Time", "Ora", "Orario", "Ora pickup"],
+  telefono:  ["cell.", "cell", "Cellulare", "Telefono", "Tel."],
+  fornitore: ["Fornitore", "Struttura"],
+  stato:     ["Stato", "Status"],
+  id:        ["Id", "Id transfer"]
 };
+
+/** Prima i due che, se sbagliati, fanno danno vero. */
+const RESOLVE_ORDER = ["id", "stato", "fornitore", "ora", "telefono"];
 
 /** Numeri della v1: rete di sicurezza se il nome non si trova. */
 const LEGACY_COL = { ora: 4, telefono: 11, fornitore: 9, stato: 22, id: 24 };
@@ -51,37 +58,80 @@ const LEGACY_COL = { ora: 4, telefono: 11, fornitore: 9, stato: 22, id: 24 };
 // RISOLUZIONE COLONNE
 // ==========================================================================
 
-/** "Tariffa " con lo spazio in coda esiste davvero sui fogli veri. */
+/**
+ * Riduce un'intestazione alla forma nuda: via maiuscole, accenti, spazi e
+ * punteggiatura. Sui fogli veri lo stesso nome è scritto in modi diversi:
+ *   "Tariffa " (spazio in coda) = "Tariffa" | "cell." = "cell" = "Cell"
+ *   "Modalità" = "Modalita" | "TRS> DA" = "TRS DA" | "n. pratica" = "N Pratica"
+ * Restano distinti "tariffa" e "tariffaanoi", che sono cose diverse.
+ */
 function normHeader(h) {
-  return (h === null || h === undefined ? "" : h)
-    .toString().trim().toLowerCase().replace(/\s+/g, " ");
+  let s = (h === null || h === undefined ? "" : h).toString().toLowerCase();
+  s = s.replace(/[àáâãä]/g, "a").replace(/[èéêë]/g, "e").replace(/[ìíîï]/g, "i")
+       .replace(/[òóôõö]/g, "o").replace(/[ùúûü]/g, "u")
+       .replace(/[ç]/g, "c").replace(/[ñ]/g, "n");
+  return s.replace(/[^a-z0-9]+/g, "");
 }
 
 /**
  * Dalla riga di intestazione ricava i numeri di colonna (1-based).
+ *
+ * 1) per NOME, dai più importanti in giù; una colonna presa non si tocca più
+ * 2) chi non si trova ripiega sul numero della v1, ma solo se è ancora libero
+ * 3) chi resta fuori vale null — meglio vuoto e segnalato che pieno e sbagliato
+ *
+ * Nessun passaggio "somiglia a": le somiglianze, sui fogli, fanno danni.
+ *
  * @return {{col: Object, warnings: Array<string>}}
  */
 function buildColMap(headerRow) {
   const norm = (headerRow || []).map(normHeader);
   const col = {};
   const warnings = [];
+  const claimed = {};
 
-  Object.keys(COL_ALIASES).forEach(function (key) {
+  RESOLVE_ORDER.forEach(function (key) {
     let found = 0;
-    COL_ALIASES[key].some(function (alias) {
-      const i = norm.indexOf(normHeader(alias));
-      if (i >= 0) { found = i + 1; return true; }
+    (COL_ALIASES[key] || []).some(function (alias) {
+      const target = normHeader(alias);
+      if (!target) return false;
+      for (let i = 0; i < norm.length; i++) {
+        if (norm[i] === target && !claimed[i + 1]) { found = i + 1; return true; }
+      }
       return false;
     });
-    if (found) {
-      col[key] = found;
+    if (found) { col[key] = found; claimed[found] = key; }
+  });
+
+  RESOLVE_ORDER.forEach(function (key) {
+    if (col[key]) return;
+    const legacy = LEGACY_COL[key];
+    if (legacy && !claimed[legacy]) {
+      col[key] = legacy;
+      claimed[legacy] = key;
+      warnings.push(key + " → colonna " + legacy + " (per posizione)");
     } else {
-      col[key] = LEGACY_COL[key];
-      warnings.push(key);
+      col[key] = null;
+      warnings.push(key + " → NON RISOLTA");
     }
   });
 
   return { col: col, warnings: warnings };
+}
+
+/**
+ * Mostra come si risolvono le colonne di un file struttura. Non scrive niente.
+ * Utile dopo che qualcuno ha messo mano alle intestazioni.
+ */
+function diagnosticaIntestazioni(spreadsheetId, fileName) {
+  const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(SHEET_NAME);
+  if (!sheet) return { error: "tab Prenotazioni mancante", fileName: fileName };
+  const lastCol = Math.max(24, sheet.getLastColumn());
+  const m = buildColMap(sheet.getRange(1, 1, 1, lastCol).getValues()[0]);
+  Logger.log((m.warnings.length ? "⚠️ " : "✅ ") + (fileName || spreadsheetId) +
+    " — Stato=" + m.col.stato + " Id=" + m.col.id +
+    (m.warnings.length ? " | da guardare: " + m.warnings.join("; ") : " | tutto per nome"));
+  return m;
 }
 
 
@@ -111,8 +161,14 @@ function processFile(spreadsheetId, fileName) {
     const mapped = buildColMap(headerRow);
     const col = mapped.col;
     if (mapped.warnings.length) {
-      Logger.log("⚠️ " + fileName + ": colonne non trovate per nome, uso i numeri vecchi: " +
-        mapped.warnings.join(", "));
+      Logger.log("⚠️ " + fileName + ": " + mapped.warnings.join("; "));
+    }
+
+    // Senza Stato o senza Id non si tocca niente: sono le due colonne che, se
+    // sbagliate, fanno marcare o accodare la riga di un altro cliente.
+    if (!col.stato || !col.id) {
+      Logger.log("❌ " + fileName + ": colonne Stato/Id non individuabili, salto il file");
+      return { skipped: "colonne Stato/Id non individuabili", fileName: fileName };
     }
 
     const oraRange   = sheet.getRange(FIRST_DATA_ROW, col.ora,       numRows, 1);

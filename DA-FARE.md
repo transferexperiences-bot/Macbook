@@ -15,20 +15,79 @@ su Telegram, non transfer duplicati.
 **Nota a margine, dalla stessa prova:** in `742784` la riga 4375 è passata da `Time: ""` a
 `17:15`, ma `Code in JavaScript2` ha calcolato `changes: []` e `hasChanges: false`. Il rilevatore
 di modifiche non vede il campo orario → *vedi punto 8*.
-**Causa (confermata sul nodo):** `Pending Transfer1` è un Google Sheets `update` con
-`matchingColumns: ["Id"]` sul foglio della struttura. Su una riga nuova l'Id non c'è ancora:
-nessuna corrispondenza, nessuna scrittura, la riga resta senza marcatura e al rinvio riparte
-tutto. Stesso difetto su `Pending Boat1`, che infatti nelle due esecuzioni ha restituito `{}`.
-**Correzione:** puntare la riga **per numero** (`rowIndex` da `Code - Build ID + Telegram1`,
-verificato = numero di riga vero, intestazione compresa; prova: `rowIndex 243` = `targetRow 243`
-di `Smart Write Struttura`, esecuzioni `729824`/`729828`). Solo Id, mai confronti sul contenuto
-(regola di Agostino: «una struttura può inserire transfer identici, comanda l'Id»).
-**Stato: pronta e provata, non pubblicata.** Codice e banco in `banchi/te/`
-(`node banchi/te/banco-pending.js`, 19 prove verdi, dati veri di `742784`/`729828`). Tre nodi al
-posto di `Pending Transfer1`: legge le intestazioni, trova le colonne `Stato` e `Id`, scrive con
-`values:batchUpdate` sulla riga giusta. **Serve il via di Agostino: zona rossa** (foglio struttura
-+ come funziona un salvataggio).
+### ⛔ CAUSA VERA — trovata negli Apps Script, non in n8n
+
+Due ipotesi precedenti sono **sbagliate** e vanno abbandonate:
+- ~~«sulla riga nuova l'Id non c'è ancora, quindi l'update per Id non trova»~~ — falso: l'Id
+  era sulla riga, arrivava nel corpo della chiamata.
+- ~~«puntare la riga per numero»~~ — **da non fare mai** (regola di Agostino: se l'ordine
+  cambia è la fine; sempre e solo Id univoco).
+
+**Chi manda:** `processQueue()` nel progetto Apps Script *Transfer Queue Processor v2*
+(`1JPUJQRac9_W78r5L3nDILLcvxVfU05dMAEn1qh0CHci_SbNjMoczzrUs`), legato al file centrale
+`Strutture` (`1wWn3ZGZR1biuHVevIer5QP3GKZvuDkBf9poUGsZmkyg`, tab `Foglio1` e `Queue`),
+timer ogni minuto.
+
+```js
+const MAX_VERIFY_MS   = 6000;   // aspetta l'ack solo 6 secondi
+const RESEND_AFTER_MS = 90000;  // poi rimanda dopo 90 secondi
+const MAX_ATTEMPTS    = 6;
+```
+
+Dopo il POST, se la risposta è 2xx, rilegge la cella `Stato` della riga struttura una volta al
+secondo per **6 secondi**, cercando `": Pending"`. Se non lo vede: segna `SENT` e **rimanda**.
+
+**Ma n8n quel `": Pending"` lo scrive al secondo ~13.** Nell'esecuzione `742784`:
+`Pending Transfer1` parte **5,19 s** dopo l'arrivo della chiamata e dura **8,18 s** → atterra a
+**~13,4 s**. La finestra si era chiusa a 6 s. La scrittura c'era, Apps Script aveva già smesso
+di guardare. Riscontro sui tempi: 16:47:20 → 16:50:20, esattamente due giri da 90 s.
+
+**È una regressione.** Nello stesso file c'è `processQueue_BACKUP()`, marcata
+«backup pre-refactor 2026-06-08», che usava `MAX_WAIT_SECONDS = 30`. Il refactor dell'8 giugno
+ha portato l'attesa da 30 s a 6 s: da lì i doppioni sono diventati la norma, non l'eccezione.
+
+**Correzione (due strade, meglio tutte e due):**
+1. **n8n:** far scrivere `Pending Transfer1` **per primo**, subito dopo
+   `Code - Build ID + Telegram1`, invece che dopo Telegram e gestionale. Passa da ~13 s a ~1 s.
+2. **Apps Script:** riportare `MAX_VERIFY_MS` a 30000 come prima del refactor.
+
+La 1 sta in n8n e non tocca gli script delle strutture. La 2 è una riga sola ma è codice che
+gira su tutte le strutture. Entrambe **zona rossa**: serve il via.
+
+**Da NON fare:** il banco `banchi/te/` scriveva per numero di riga. Regola violata, buttato.
+Resta solo come banco (rigioca dati veri di `742784`/`729828`), non come correzione.
+
 **Backup:** `backups/n8n/TW_pre_dedup_20260814.json`.
+
+## 1-bis. Colonne fisse per numero su tutte le strutture (fragilità di sistema)
+`TransferLib` (`1vo74eNOp7bRgiU-ioVRTRCfb2k9rmDVlV5lmW_DoFKTTKZM_or7K0o96`) è **una sola
+libreria condivisa da tutti e 18 i file struttura**, e indirizza le colonne per numero fisso:
+
+```js
+const SCHEMA = { ORA_COL: 4, TELEFONO_COL: 11, FORNITORE_COL: 9, STATO_COL: 22, ID_COL: 24 };
+```
+
+Stessa cosa in `processQueue()`: `getRange(rowNumber, 22)` per lo Stato e `sourceRow[23]` per
+l'Id. Se **una** struttura inserisce una colonna, quel file legge Stato e Id dalle celle
+sbagliate — e il codice è lo stesso per tutti.
+
+Verificato finora su due file soli (Suite 10/Giovì e Pietra Blu): oggi tornano, Stato = 22,
+Id = 24. **Gli altri 16 non sono stati controllati.** È la prima verifica da fare.
+
+Il modo giusto è già in casa: `GESTIONALE BARCHE V4.4`
+(`1rF0UF5s0AHafDeBocGdyyLVhO6UQZBfFw8Re35eLr29EoPKhcr-2iMYP`) scrive sullo **stesso** webhook
+ma risolve le colonne **per nome** con un `colMap`.
+
+## 1-ter. Righe di coda ferme dall'8 giugno
+In `Get Fornitore Sheet ID1` (esecuzione `742784`) più strutture — Melograno, Covo dei Saraceni,
+Suite 10/Giovì — sono `Status: ERROR`, `Processing: 6`,
+`Error: "Exception: Cannot convert '' to int."`, `LastUpdate: 08/06/2026`. È la data del
+refactor: la colonna E della Queue è passata da booleano `Processing` a contatore `attempts`, e
+le righe vecchie ci sono rimaste dentro. Da ripulire.
+
+Inoltre `Match Fornitore Queue` nella stessa esecuzione ha agganciato la riga di coda **415**
+(`Status: DONE`, `TransferId: TR-20260502-…`, `RowNumber: 19`): un transfer del 2 maggio, non
+quello di Zacche. Da aprire a parte.
 
 ## 2. Codice del rientro — `f3Y46avI5O8dEnYn` ⛔ BLOCCATO: **non** accessibile via MCP
 **Correzione alla riga di ieri:** `Tool - Rientro` risulta `availableInMCP: false`. Non è

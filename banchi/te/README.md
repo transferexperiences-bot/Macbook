@@ -1,48 +1,24 @@
-# Banco offline — punto 1 (doppioni dalle strutture)
+# Banco offline — punto 1
 
-Il container di lavoro è usa e getta: i banchi stanno qui, non solo nello scratchpad.
+⚠️ **La correzione che questo banco provava è stata abbandonata.** Scriveva sul foglio
+struttura puntando la riga **per numero**: regola violata (sempre e solo Id univoco — se
+l'ordine delle righe cambia si scrive nella riga di un altro cliente). Non va pubblicata.
+
+Il banco resta perché rigioca **dati veri di esecuzione** ed è utile come impalcatura:
 
 ```
 node banchi/te/banco-pending.js
 ```
 
-Rigioca dati veri di esecuzione, non inventati:
-
 - `Code - Build ID + Telegram1` dell'esecuzione **742784** (16/08, Suite 10/Giovì, riga 134);
-- intestazioni del foglio struttura ricavate da `Smart Write Struttura`, esecuzione **729828**
-  (26 colonne A:Z → `Stato` = **V**, `Id` = **X**).
+- intestazioni del foglio struttura da `Smart Write Struttura`, esecuzione **729828**.
 
-## Cosa cambia nel workflow `Transfer webhook` (`MJHTq5MksSeUhKgX`)
+## La causa vera del doppione (vedi DA-FARE punto 1)
 
-Oggi `Pending Transfer1` è un Google Sheets `update` con `matchingColumns: ["Id"]` sul foglio
-**della struttura**. Su una riga nuova l'Id non c'è ancora: nessuna corrispondenza, nessuna
-scrittura, la riga resta senza marcatura e Apps Script rimanda tutto da capo.
+Non è in n8n. È in `processQueue()` dell'Apps Script *Transfer Queue Processor v2*: dopo il POST
+aspetta l'ack `": Pending"` sulla riga struttura per soli `MAX_VERIFY_MS = 6000` ms, mentre n8n
+quel valore lo scrive al secondo ~13 (`Pending Transfer1` parte a 5,19 s e dura 8,18 s).
+Scaduta la finestra segna `SENT` e dopo `RESEND_AFTER_MS = 90000` rimanda.
 
-Al suo posto, tre nodi che scrivono **per numero di riga**:
-
-| Nodo | Tipo | Cosa fa |
-|---|---|---|
-| `Pending - Intestazioni struttura` | HTTP GET | `…/values/{sheetName}!1:1`, credenziale `googleSheetsOAuth2Api` |
-| `Pending - Prepara scrittura` | Code | `pending-prepara.js`: trova le colonne `Stato` e `Id`, costruisce i range su `rowIndex` |
-| `Pending - Scrivi riga` | HTTP POST | `…/values:batchUpdate`, `valueInputOption: USER_ENTERED` |
-
-`rowIndex` arriva da Apps Script (`body.riga`) ed è il numero di riga vero, intestazione
-compresa: stesso numero che usa `Smart Write Struttura` (prova: `rowIndex 243` = `targetRow 243`,
-esecuzioni `729824`/`729828`).
-
-## Perché non basta cambiare `matchingColumns`
-
-`appendOrUpdate` su una chiave inesistente **appende**. Restare su `update` per Id lascia il
-guasto. L'unica strada che scrive sempre e non duplica mai è il numero di riga.
-
-## Quando il banco dice «salta»
-
-Se le intestazioni non si leggono, se manca la colonna `Stato` o `Id`, se la riga è 1 o non è
-un numero, se l'Id è vuoto: **non si scrive**, e il motivo resta nel campo `reason`. Meglio non
-marcare che marcare la riga sbagliata — la scheda Telegram è già partita comunque.
-
-## Da fare prima di pubblicare
-
-Zona rossa (scrittura su foglio struttura + come funziona un salvataggio): serve il via di
-Agostino. Dopo `update_workflow` serve `publish_workflow`, poi rilettura del nodo dal server e
-diff con quanto provato qui.
+Regressione dell'8 giugno 2026: la versione precedente, ancora nel file come
+`processQueue_BACKUP()`, aspettava `MAX_WAIT_SECONDS = 30`.

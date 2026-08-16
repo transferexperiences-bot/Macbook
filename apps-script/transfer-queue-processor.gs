@@ -262,7 +262,16 @@ function processQueue() {
       var hintRow       = row[7];
       var rowIndex      = i + 1;
 
-      if (status === "DONE" || status === "ERROR") continue;
+      if (status === "DONE" || status === "ERROR" || status === "IGNORATO") continue;
+
+      // Righe senza TransferId: residui del refactor 08/06, nate senza Id.
+      // Non sono transfer persi e non c'è niente da mandare. Si archiviano come
+      // IGNORATO — non ERROR, che vorrebbe dire "guasto da guardare".
+      if (!transferId) {
+        teMarkQueue_(queueSheet, rowIndex, "IGNORATO", "",
+          "Riga di coda senza TransferId (residuo del refactor 08/06) — niente da mandare");
+        continue;
+      }
 
       var attempts = parseInt(row[4], 10);
       if (isNaN(attempts)) attempts = 0;   // righe vecchie: colonna E era un booleano
@@ -427,24 +436,44 @@ function removeAllTimerTriggers() {
 }
 
 /**
- * Righe rimaste in ERROR dal refactor 2026-06-08, quando la colonna E è
- * passata da booleano Processing a contatore Attempts.
- * Le rimette in PENDING con il contatore azzerato. Da lanciare a mano, una volta.
+ * Manutenzione della coda, da lanciare a mano. Fa due cose distinte:
+ *
+ *  a) Righe SENZA TransferId -> IGNORATO.
+ *     Sono residui del refactor 2026-06-08: nate senza Id e senza RowNumber,
+ *     è da lì che veniva "Exception: Cannot convert '' to int.". Non sono
+ *     transfer persi, non c'è niente da mandare. IGNORATO le toglie di mezzo
+ *     senza cancellare niente e senza farle sembrare un guasto aperto.
+ *
+ *  b) Righe in ERROR CON un TransferId -> PENDING, contatore azzerato.
+ *     Quelle sì che vale la pena riprovare.
+ *
+ * Si può rilanciare quante volte si vuole: è idempotente.
  */
-function sbloccaErroriVecchi() {
+function sistemaCodaVecchia() {
   var queueSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Queue");
   if (!queueSheet) return;
   var data = queueSheet.getDataRange().getValues();
-  var n = 0;
+  var ignorate = 0, riaperte = 0;
+
   for (var i = 1; i < data.length; i++) {
-    var err = (data[i][5] || "").toString();
-    if (data[i][2] === "ERROR" && err.indexOf("Cannot convert") !== -1) {
+    var status = data[i][2];
+    var transferId = (data[i][6] || "").toString().trim();
+    if (status === "DONE" || status === "IGNORATO") continue;
+
+    if (!transferId) {
+      teMarkQueue_(queueSheet, i + 1, "IGNORATO", "",
+        "Riga di coda senza TransferId (residuo del refactor 08/06) — niente da mandare");
+      ignorate++;
+    } else if (status === "ERROR") {
       teMarkQueue_(queueSheet, i + 1, "PENDING", 0, "");
-      n++;
+      riaperte++;
     }
   }
-  Logger.log("✅ " + n + " righe sbloccate");
+  Logger.log("✅ " + ignorate + " righe senza Id archiviate, " + riaperte + " riaperte");
 }
+
+/** Vecchio nome, lasciato per non rompere niente. */
+function sbloccaErroriVecchi() { sistemaCodaVecchia(); }
 
 function debugQueue() {
   var queueSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Queue");

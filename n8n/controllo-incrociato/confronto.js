@@ -204,42 +204,48 @@ function teRapporto_(esito, oggi) {
   if (esito.tutto_a_posto) {
     return '✅ Strutture e gestionale coincidono — ' + esito.guardate + ' servizi da svolgere controllati.';
   }
-  var r = ['🔎 *CONTROLLO STRUTTURE ↔ GESTIONALE*',
-    '_' + esito.guardate + ' servizi da svolgere, dal ' + oggi + ' in poi._', ''];
+  var r = ['🔎 CONTROLLO STRUTTURE ↔ GESTIONALE',
+    esito.guardate + ' servizi da svolgere, dal ' + oggi + ' in poi.', ''];
 
   if (esito.doppioni.length) {
-    r.push('🔴 *DOPPIONI SUL GESTIONALE* (' + esito.doppioni.length + ')');
+    r.push('🔴 DOPPIONI SUL GESTIONALE (' + esito.doppioni.length + ')');
     esito.doppioni.forEach(function (d) {
       r.push('• ' + (d.Nome || '—') + ' · ' + d.Data + ' — ' + d.quante + ' righe con lo stesso Id');
-      r.push('  `' + d.Id + '`');
+      r.push('  ' + d.Id);
     });
     r.push('');
   }
 
   if (esito.discordanti.length) {
-    r.push('🔴 *DATI DIVERSI* (' + esito.discordanti.length + ') — comanda la struttura');
+    r.push('🔴 DATI DIVERSI (' + esito.discordanti.length + ') — comanda la struttura');
     esito.discordanti.forEach(function (d) {
       r.push('• ' + (d.Nome || '—') + ' · ' + (d.Fornitore || '—') + ' · ' + d.Da + ' → ' + d.Per);
       d.differenze.forEach(function (x) {
         r.push('   ' + (x.avviso ? '⚠️' : '❗️') + ' ' + x.campo +
-          ': struttura *' + (x.strutture || '—') + '* · gestionale *' + (x.gestionale || '—') + '*');
+          ': struttura «' + (x.strutture || '—') + '» · gestionale «' + (x.gestionale || '—') + '»');
       });
-      r.push('  `' + d.Id + '`');
+      r.push('  ' + d.Id);
     });
     r.push('');
   }
 
   if (esito.mancanti.length) {
-    r.push('🟠 *NON TROVATI SUL GESTIONALE* (' + esito.mancanti.length + ')');
-    r.push('_Può essere normale: transfer mai confermato o annullato._');
+    r.push('🟠 NON TROVATI SUL GESTIONALE (' + esito.mancanti.length + ')');
+    r.push('Può essere normale: transfer mai confermato o annullato.');
     esito.mancanti.forEach(function (m) {
       r.push('• ' + m.Data + ' ' + m.Ora + ' · ' + (m.Nome || '—') + ' · ' + m.Da + ' → ' + m.Per +
         ' · ' + (m.Fornitore || '—') + ' (' + (m.Stato || '—') + ')');
-      r.push('  `' + m.Id + '`');
+      r.push('  ' + m.Id);
     });
   }
 
   return r.join('\n');
+}
+
+/** Telegram si ferma a 4096 caratteri: meglio un rapporto tagliato che nessuno. */
+function teTaglia_(testo, max) {
+  if (testo.length <= max) return testo;
+  return testo.slice(0, max) + '\n\n… elenco tagliato: apri il gestionale per il resto.';
 }
 
 // ===== corpo del nodo n8n =====
@@ -258,6 +264,6 @@ return [{
     oggi: oggi,
     ...esito,
     daAvvisare: !esito.tutto_a_posto,
-    rapporto: teRapporto_(esito, oggi)
+    rapporto: teTaglia_(teRapporto_(esito, oggi), 3900)
   }
 }];

@@ -9,6 +9,16 @@
 | ✅ | Modifiche dalle strutture non rilevate | `Transfer webhook` `59641bd5` | banco su dati veri di `742784` |
 | ✅ | Le tre regole del rientro, dal testo al codice | `Tool - Rientro` `cef25980` + `Prenotazioni` `f76ac9b7` | banco su `741981` e `742264` |
 | ✅ | Buffer messaggi su Orca | `Orca` `4422b7b6` | banco sui 7 messaggi delle 19:10 |
+| ✅ | Controllo incrociato Strutture ↔ Gestionale, ogni ora 08-21 | `OIW5kMQKtYvprbdv` `73c9dffd` | esec. `751571`: rapporto consegnato, `message_id` 5390 |
+
+**Il guasto che l'ha fatto nascere.** MULLINS KRISTINA, Id `TR-20260817-c5e86a34-…`: sul foglio
+Auraterrae (riga 4413) **17/08 ore 17:30**, sul gestionale **18/08 ore 01:00**. n8n l'aveva
+scritta giusta — esecuzione `747608`, il nodo `gestionale` ha mandato `Data: 17/08/2026`,
+`Time: 17:30` — quindi **qualcosa l'ha spostata dopo la scrittura**. Chi, non è ancora accertato.
+Il transfer sembrava sparito e invece era parcheggiato all'una di notte del giorno dopo.
+
+⚠️ **Trappola: n8n scrive gli orari in UTC**, due ore indietro rispetto all'ora italiana d'estate.
+Una scheda Telegram delle 09:54 è l'esecuzione delle 07:54. Ci ho perso tempo: da ricordare.
 
 Restano aperti: **5** (finestra del buffer più lunga per gli inoltrati), **6** (guardia sui
 trigger Telegram muti), **7** (analisi), **3** (riparazione dati sul gestionale, zona rossa),

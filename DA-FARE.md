@@ -1,5 +1,21 @@
 # Da fare — aggiornato 17/08/2026, mattina
 
+## ✅ PUBBLICATA — guardia sulla scrittura del gestionale (17/08, 09:50)
+
+`Transfer webhook` `MJHTq5MksSeUhKgX`, versione `baac388d`, attiva e allineata.
+Sette nodi **aggiunti**, zero collegamenti esistenti toccati, zero nodi preesistenti
+modificati (verificato col backup: le cinque differenze erano solo i token che avevo
+redatto io). **Entrambi i trigger intatti**, stesso `webhookId` e stesso path di prima —
+il guasto del 16/08 non si è ripetuto.
+
+Il giro: `gestionale` → attendi 3 s → rileggi per Id → se c'è si ferma; se manca riscrive e
+riverifica, fino a 4 tentativi; se ne trova più d'una non tocca niente e avvisa su Telegram.
+Codice e banco: `n8n/transfer-webhook/verifica-gestionale.js`, `banchi/te/banco-verifica.js`.
+
+**Da guardare alla prima conferma o assegnazione:** l'esecuzione deve passare per
+`Rileggi gestionale per Id` e fermarsi lì. Se compare `Riscrivi gestionale`, la guardia ha
+appena salvato una riga che si sarebbe persa.
+
 ## ✅ CHIUSO — i doppioni dalle strutture (era il punto 1)
 
 Installato e verificato il 17/08. Il progetto Apps Script *Transfer Queue Processor*

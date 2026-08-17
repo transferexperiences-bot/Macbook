@@ -24,12 +24,13 @@ controllato scaricando i sorgenti, non a parole. Codice e banchi in `apps-script
 non venivano mai normalizzati) e l'attivatore programmato su `installAllTimerTriggers`, che a
 ogni giro cancellava e ricreava il timer del lavoratore.
 
-**Resta da fare, roba di minuti:**
-- lanciare **`sistemaCodaVecchia`** dal Queue Processor: al 17/08 08:06 le sei righe rotte
-  dall'8 giugno erano ancora `ERROR` con data `16/08 21:25`. Sono ferme, non fanno danno, ma
-  vanno archiviate;
+**✅ Coda ripulita.** `sistemaCodaVecchia` lanciata il 17/08 alle 10:10: le righe rotte dall'8
+giugno sono `IGNORATO` con la loro spiegazione, non più `ERROR`. Verificato leggendo la Queue.
+
+**Resta solo, e senza fretta:**
 - rinominare `Colonna 2` → `Note` su **La Peschiera** e `Colonna 1` → `Data` su
-  **Covo dei Saraceni** (vedi punto 1-bis);
+  **Covo dei Saraceni** (vedi punto 1-bis). Il codice funziona lo stesso, ripiega sulla
+  posizione giusta e lo scrive nel log;
 - `diagnosticaIntestazioni()` quando si vuole il quadro delle 18 strutture.
 
 **Idea aperta (Agostino, 17/08):** un progetto unico che chiami tutte le strutture, invece di

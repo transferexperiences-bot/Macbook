@@ -107,6 +107,43 @@ const CONFR = {
   prova('mancante senza origine — nessuna scheda', 0, tePreparaRichieste_(c, STRUTT, [], 12).quante);
 }
 
+// =====================================================================
+// LE RIGHE DI PROVA — il buco trovato il 17/08 sera
+// =====================================================================
+// Melograno tiene sul foglio struttura righe «prova 1» / «prova 2»: una è
+// arrivata su Telegram come scheda ➕ MANCANTE (message_id 5423, risposta ❌).
+// Il filtro esisteva in prepara-mancanti.js e qui no.
+{
+  const PROVA = [{ Id: 'TR-PROVA', Data: '20/08/2026', Time: '10:00',
+    'TRS> DA': 'prova 2', 'TRS <PER': '', PAX: '', Nome: '',
+    Fornitore: 'Il Melograno', 'Tariffa a noi': '0' }];
+  const c = { discordanti: [], doppioni: [], mancanti: [{ Id: 'TR-PROVA' }] };
+  const r = tePreparaRichieste_(c, PROVA, [], 12);
+  prova('riga di prova — nessuna scheda', 0, r.quante);
+  prova('riga di prova — la conta come finta', 1, r.finte);
+}
+{
+  // Un solo indizio non basta: «Prova d'Orlando» è un posto vero.
+  const VERO = [{ Id: 'TR-VERO', Data: '20/08/2026', Time: '10:00',
+    'TRS> DA': 'Prova d\'Orlando', 'TRS <PER': 'Bari aeroporto', PAX: '2',
+    Nome: 'ROSSI MARIO', Fornitore: 'Il Melograno', 'Tariffa a noi': '60' }];
+  const c = { discordanti: [], doppioni: [], mancanti: [{ Id: 'TR-VERO' }] };
+  const r = tePreparaRichieste_(c, VERO, [], 12);
+  prova('un solo indizio — la scheda parte lo stesso', 1, r.quante);
+  prova('un solo indizio — non è finta', 0, r.finte);
+}
+{
+  // Se la riga sul gestionale c'è già, qualcuno l'ha confermata: si corregge
+  // anche se sulla struttura sembra una prova.
+  const PROVA = [{ Id: ID, Data: '17/08/2026', Time: '17:30', 'TRS> DA': 'prova',
+    'TRS <PER': '', PAX: '', Nome: '', Fornitore: 'X', 'Tariffa a noi': '0' }];
+  prova('correzione su riga che sembra prova — si chiede lo stesso', 1,
+    tePreparaRichieste_(CONFR, PROVA, [], 12).quante);
+  const d = { discordanti: [], doppioni: [{ Id: ID, quante: 2, Nome: 'X' }], mancanti: [] };
+  prova('doppione su riga che sembra prova — si chiede lo stesso', 1,
+    tePreparaRichieste_(d, PROVA, [], 12).quante);
+}
+
 // --- Il freno: non si sveglia nessuno con quaranta messaggi ---
 {
   const tanti = { discordanti: [], doppioni: [], mancanti: [] };

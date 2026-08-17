@@ -31,6 +31,11 @@
 // l'impronta cambia e la scheda riparte: un ❌ vale per quel problema lì, non
 // per sempre su quel transfer.
 //
+// LE RIGHE DI PROVA NON DIVENTANO SCHEDE. Sui fogli struttura restano
+// prenotazioni finte («prova 1», «prova 2», senza nome, tariffa 0): il 17/08
+// una è arrivata su Telegram come ➕ MANCANTE. Il filtro vale solo per i
+// mancanti: se la riga sul gestionale esiste già, qualcuno l'ha confermata.
+//
 // LA TARIFFA NON ENTRA MAI in una correzione: sul gestionale è una formula.
 // Se l'unica differenza è la tariffa non si chiede niente — resta nel rapporto.
 //
@@ -51,6 +56,29 @@ var TE_SCRIVIBILI = {
 };
 
 function teS_(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
+function teNorm_(v) {
+  return teS_(v).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/**
+ * Riga di prova sul foglio struttura? (stessa regola di `prepara-mancanti.js`)
+ *
+ * Sui fogli struttura restano prenotazioni finte — «prova 1», «prova 2»,
+ * tariffa 0, senza nome. Il 17/08 una di queste è arrivata su Telegram come
+ * scheda ➕ MANCANTE: il filtro c'era in `prepara-mancanti.js` e qui no.
+ * Servono DUE indizi, non uno: «Prova d'Orlando» potrebbe essere un posto vero.
+ */
+function teEunaProva_(r) {
+  if (!r) return false;
+  var indizi = 0;
+  var testo = teNorm_(r['TRS> DA']) + ' ' + teNorm_(r['TRS <PER']) + ' ' + teNorm_(r.Nome);
+  if (/\b(prova|test)\b/.test(testo)) indizi++;
+  if (!teS_(r.Nome)) indizi++;
+  var t = teS_(r['Tariffa a noi']) || teS_(r.Tariffa);
+  if (t === '0' || t === '0,00' || t === '') indizi++;
+  if (!teS_(r['TRS <PER'])) indizi++;      // un transfer senza destinazione non esiste
+  return indizi >= 2;
+}
 
 /** Impronta corta e stabile del problema: se cambia, si richiede. */
 function teImpronta_(testo) {
@@ -84,9 +112,13 @@ function tePreparaRichieste_(confronto, strutture, risposte, max) {
     if (k) giaChiesto[k] = teS_(r.risposta) || 'in attesa';
   });
 
-  var schede = [], saltate = 0;
+  var schede = [], saltate = 0, finte = 0;
 
   function aggiungi(tipo, id, impronta, testo, azione) {
+    // Le prove si scartano solo fra i MANCANTI: lì si chiede di creare una riga
+    // che non esiste. Se invece la riga sul gestionale c'è già (correzione o
+    // doppione) qualcuno l'ha confermata, e va sistemata comunque.
+    if (tipo === 'M' && teEunaProva_(perId[id])) { finte++; return; }
     var chiave = tipo + '|' + id + '|' + impronta;
     if (giaChiesto[chiave]) { saltate++; return; }
     schede.push({
@@ -172,6 +204,7 @@ function tePreparaRichieste_(confronto, strutture, risposte, max) {
     schede: troppe ? [] : schede,
     quante: schede.length,
     saltate: saltate,
+    finte: finte,
     troppe: troppe
   };
 }

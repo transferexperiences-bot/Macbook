@@ -144,20 +144,9 @@ function teRapportoCorrezioni_(esito) {
 var esitoConfronto = $('Confronta').first().json;
 var esito = tePreparaCorrezioni_(esitoConfronto.discordanti, TE_MAX_CORREZIONI);
 
-// Una riga in uscita per ogni riga da scrivere: il nodo Sheets che segue
-// aggiorna per Id, una alla volta. Se non c'è niente da scrivere non esce
-// nessun item e il nodo Sheets non parte: è il comportamento giusto.
-return esito.righe.map(function (x) {
-  return {
-    json: {
-      ...x.riga,
-      _nome: x.Nome,
-      _campi: x.campi,
-      _dettaglio: x.dettaglio,
-      _rapporto: teRapportoCorrezioni_(esito),
-      _quante: esito.quante,
-      _saltate: esito.saltate,
-      _troppe: esito.troppe
-    }
-  };
-});
+// Una riga in uscita per ogni riga da scrivere, e NIENT'ALTRO dentro: il nodo
+// Sheets che segue mappa le chiavi sulle colonne del foglio, quindi ogni campo
+// in più qui sarebbe una colonna toccata per sbaglio.
+// Se non c'è niente da scrivere non esce nessun item e il nodo Sheets non
+// parte: è il comportamento giusto, non serve nessun controllo prima.
+return esito.righe.map(function (x) { return { json: x.riga }; });

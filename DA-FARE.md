@@ -205,7 +205,31 @@ se un bot non riceve niente da troppo tempo.
     la rotellina dei bottoni Telegram non si spegne mai. Correzione: `resource: callback`,
     `operation: answerQuery`.
 
-## 8. Modifiche dalle strutture non rilevate — `Transfer webhook` `MJHTq5MksSeUhKgX`
+## 8. Modifiche dalle strutture non rilevate — ✅ diagnosticato, correzione pronta
+**Causa trovata (17/08).** In `Code in JavaScript2` la prima riga di controllo era:
+```js
+if (tipologia !== 'MODIFICA' || !oldData) { /* niente confronto */ }
+```
+e `tipologia` nasce dalla **colonna Stato scritta dalla struttura** (`Pronto` → NUOVO,
+`Modificato` → MODIFICA). Quindi bastava che una struttura modificasse una riga lasciando
+`Pronto` e il confronto veniva saltato del tutto: usciva «🟢 NUOVO TRANSFER» senza un accenno
+a cosa fosse cambiato. È di nuovo la regola di `CLAUDE.md`: una cosa che conta decisa da quello
+che qualcuno ha scritto invece che dal dato.
+
+**Correzione:** comanda il dato. Se la riga esiste sul gestionale si confronta sempre; le
+cancellazioni restano fuori. Codice in `n8n/transfer-webhook/code-in-javascript2.js`, banco in
+`banchi/te/banco-modifiche.js` (26 prove, dati veri di `742784`).
+
+**Trappola trovata dal banco:** il nodo Sheets può restituire un item **vuoto** `{}` quando non
+trova la riga, e `{}` è truthy. Togliendo il test su `tipologia` senza accorgersene, un transfer
+davvero nuovo sarebbe risultato «modificato in tutto». Ora una riga vale come vecchia solo se
+porta davvero un Id.
+
+**Da pubblicare:** zona gialla (cambia la scheda su Telegram, verso Agostino, non verso clienti).
+Serve il via, e **verificare il trigger subito dopo la pubblicazione** — il 16/08 ripubblicare
+aveva staccato un webhook.
+
+### Prova originale
 **Prova:** esecuzione `742784` del 16/08. `Get original transfer1` legge la riga 4375 con
 `Time: ""`, la struttura manda `ora: "17:15"`, la riga viene riscritta con 17:15 — ma
 `Code in JavaScript2` produce `changes: []`, `hasChanges: false`, `isNewTransfer: false`. La

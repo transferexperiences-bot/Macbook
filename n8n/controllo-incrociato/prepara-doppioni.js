@@ -15,6 +15,15 @@
 //
 // Non tocca nient'altro: né Allert, né le date, né i soldi.
 //
+// DUE RETI, perché dal 17/08 questo gira da solo ogni ora.
+//
+//   1. Se il gestionale torna corto (sotto TE_MIN_GESTIONALE righe) non si
+//      scrive niente: una lettura andata storta non deve far riscrivere note
+//      su righe vere.
+//   2. Più di TE_MAX_NOTE doppioni in un colpo e ci si ferma. Il gestionale ne
+//      ha una manciata: un numero alto vuol dire che la lettura è sballata,
+//      non che sono comparsi cinquanta doppioni in un'ora.
+//
 // UN LIMITE ONESTO.
 //
 // La scrittura aggancia per `Id`, e due righe doppie hanno lo stesso Id: il
@@ -26,6 +35,8 @@
 // Banco: banchi/te/banco-mancanti-doppioni.js.
 
 var TE_MARCHIO = '⚠️ DOPPIONE';
+var TE_MAX_NOTE = 20;
+var TE_MIN_GESTIONALE = 500;
 
 function teS_(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 function teId_(v) { return teS_(v).replace(/<[^>]*>/g, '').trim(); }
@@ -37,6 +48,11 @@ function teId_(v) { return teS_(v).replace(/<[^>]*>/g, '').trim(); }
  * @param {Array<Object>} gestionale righe del gestionale
  */
 function tePreparaDoppioni_(gestionale) {
+  var quante = (gestionale || []).length;
+  if (quante < TE_MIN_GESTIONALE) {
+    return { righe: [], quante: 0, gia: [], letturaCorta: true, righeGestionale: quante };
+  }
+
   var perId = {};
   (gestionale || []).forEach(function (g) {
     var id = teId_(g && g.Id);
@@ -71,7 +87,11 @@ function tePreparaDoppioni_(gestionale) {
     });
   });
 
-  return { righe: righe, quante: righe.length, gia: gia };
+  if (righe.length > TE_MAX_NOTE) {
+    return { righe: [], quante: righe.length, gia: gia, troppi: true, letturaCorta: false, righeGestionale: quante };
+  }
+
+  return { righe: righe, quante: righe.length, gia: gia, troppi: false, letturaCorta: false, righeGestionale: quante };
 }
 
 // ===== corpo del nodo n8n =====

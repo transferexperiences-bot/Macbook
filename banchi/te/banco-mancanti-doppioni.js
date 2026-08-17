@@ -124,11 +124,14 @@ const MANC = STR.map((s) => ({ Id: s.Id, Data: s.Data, Nome: s.Nome, Fornitore: 
 // =====================================================================
 // DOPPIONI
 // =====================================================================
+// Il gestionale vero ha piu' di mille righe: il banco ne mette abbastanza da
+// superare la rete della lettura corta, e ci infila le due doppie.
+const riempi = (n) => Array.from({ length: n }, (_, i) => ({ Id: 'TR/RIEMPI' + i, Note: '' }));
 const GES = [
   { Id: 'TR/A', Nome: 'Gloria', Data: 'lun 21 settembre 2026', Note: 'porta il seggiolino' },
   { Id: 'TR/A', Nome: 'Gloria', Data: 'lun 21 settembre 2026', Note: 'porta il seggiolino' },
   { Id: 'TR/B', Nome: 'Solo', Data: 'mar 1 settembre 2026', Note: 'niente' },
-];
+].concat(riempi(600));
 {
   const r = D.tePreparaDoppioni_(GES);
   prova('un solo Id doppio trovato', 1, r.quante);
@@ -143,20 +146,42 @@ const GES = [
   const gia = [
     { Id: 'TR/A', Nome: 'Gloria', Note: '⚠️ DOPPIONE (2 righe con questo stesso Id sul gestionale: controlla e tieni quella giusta) · porta il seggiolino' },
     { Id: 'TR/A', Nome: 'Gloria', Note: 'porta il seggiolino' },
-  ];
+  ].concat(riempi(600));
   const r = D.tePreparaDoppioni_(gia);
   prova('già segnalato — non si riscrive', 0, r.quante);
   prova('già segnalato — lo dice', 1, r.gia.length);
 }
 {
-  const r = D.tePreparaDoppioni_([{ Id: 'TR/X', Note: 'a' }]);
+  const r = D.tePreparaDoppioni_(riempi(600));
   prova('nessun doppione — niente da scrivere', 0, r.quante);
 }
 {
   // Tre copie: la nota lo dice.
-  const tre = [{ Id: 'T', Note: 'x' }, { Id: 'T', Note: 'x' }, { Id: 'T', Note: 'x' }];
+  const tre = [{ Id: 'T', Note: 'x' }, { Id: 'T', Note: 'x' }, { Id: 'T', Note: 'x' }].concat(riempi(600));
   const r = D.tePreparaDoppioni_(tre);
   prova('tre copie — la nota dice tre', true, r.righe[0].riga.Note.includes('(3 righe'));
+}
+
+// --- Le reti nuove sui doppioni ---
+{
+  const r = D.tePreparaDoppioni_(GES.slice(0, 100));
+  prova('doppioni, gestionale corto — non scrive niente', 0, r.righe.length);
+  prova('doppioni, gestionale corto — lo dichiara', true, r.letturaCorta);
+}
+{
+  // 21 coppie doppie: troppe, ci si ferma.
+  const tante = [];
+  for (let i = 0; i < 21; i++) { tante.push({ Id: 'D' + i, Note: '' }); tante.push({ Id: 'D' + i, Note: '' }); }
+  const r = D.tePreparaDoppioni_(tante.concat(riempi(600)));
+  prova('21 doppioni — non scrive niente', 0, r.righe.length);
+  prova('21 doppioni — si ferma', true, r.troppi);
+  prova('21 doppioni — dice quanti ne aveva visti', 21, r.quante);
+}
+{
+  const venti = [];
+  for (let i = 0; i < 20; i++) { venti.push({ Id: 'D' + i, Note: '' }); venti.push({ Id: 'D' + i, Note: '' }); }
+  const r = D.tePreparaDoppioni_(venti.concat(riempi(600)));
+  prova('20 doppioni — al limite, scrive', 20, r.righe.length);
 }
 
 console.log(`\n${ko === 0 ? 'Tutte le prove passano.' : ko + ' prove FALLITE.'}`);

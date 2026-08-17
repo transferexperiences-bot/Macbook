@@ -1,4 +1,25 @@
-# Da fare — aggiornato 17/08/2026, 10:25
+# Da fare — aggiornato 17/08/2026, 13:20
+
+## Cosa è stato chiuso oggi (17/08)
+
+| | Cosa | Dove | Prova |
+|---|---|---|---|
+| ✅ | Doppioni dalle strutture (4 guasti) | Apps Script `Strutture` + `TransferLib` | invii `744830`, `747324`: nessun rinvio |
+| ✅ | Guardia sulla scrittura del gestionale | `Transfer webhook` | esec. `749101`: esito `ok`, nessuna riscrittura |
+| ✅ | Modifiche dalle strutture non rilevate | `Transfer webhook` `59641bd5` | banco su dati veri di `742784` |
+| ✅ | Le tre regole del rientro, dal testo al codice | `Tool - Rientro` `cef25980` + `Prenotazioni` `f76ac9b7` | banco su `741981` e `742264` |
+| ✅ | Buffer messaggi su Orca | `Orca` `4422b7b6` | banco sui 7 messaggi delle 19:10 |
+
+Restano aperti: **5** (finestra del buffer più lunga per gli inoltrati), **6** (guardia sui
+trigger Telegram muti), **7** (analisi), **3** (riparazione dati sul gestionale, zona rossa),
+più i due rinomini di colonna su La Peschiera e Covo dei Saraceni.
+
+**Da chiarire, non risolto:** fra le 08:02 e le 11:12 di oggi Prenotazioni non ha avuto
+**nessuna** esecuzione, e Orca nessuna dalle 06:41. Sospetto: `TMP prova Prenotazioni`
+(`k9sSAiWfJLGRbkma`), attivo dal 12/08 con 2 trigger, che se porta la stessa credenziale
+`Agente transfer` ruba il webhook (Telegram ne accetta uno solo per token). Non verificabile:
+ha `availableInMCP: false`. Da questa sessione `api.telegram.org` è bloccato dal proxy, quindi
+`getWebhookInfo` non si può interrogare.
 
 ## ✅ PUBBLICATA E VISTA GIRARE — guardia sulla scrittura del gestionale (17/08)
 
@@ -188,14 +209,37 @@ Non basta: vanno messe nel codice.
    **autista e veicolo vuoti**. *Orario ancora da chiedere ad Agostino.*
    Ordine obbligatorio: prima il ripristino, poi il rientro.
 
-## 4. Buffer messaggi su Orca — `UAz4R93BWh9VuLiR`
-Orca **non ha nessun buffer**: N messaggi = N risposte. Prova: 16/08 14:38:33, quattro
-esecuzioni in 0,6 secondi (`742008`-`742011`). **Confermato anche sul disegno:** nei 113 nodi di
-Orca non c'è **nessun** nodo `dataTable` e **nessun** nodo `wait` — non c'è proprio la coda.
-Portare il disegno già collaudato su Prenotazioni (coda su data table, parla l'ultimo, gli
-allegati vanno sempre avanti, i bottoni restano fuori), con una coda propria.
+## 4. Buffer messaggi su Orca — ✅ PUBBLICATO (17/08, 13:15)
+**Versione attiva `4422b7b6`**, `versionId == activeVersionId`, 120 nodi, trigger Telegram con
+`webhookId` **invariato** (`b8e5f2a1-…-orca0001abcd`). Sette nodi **aggiunti**, nessun nodo
+preesistente modificato, nessun altro collegamento toccato (confronto prima/dopo).
+
+**Il guasto.** Orca non aveva nessun buffer: zero nodi `wait`, zero `dataTable` fra il trigger e
+l'agente. N messaggi = N esecuzioni = N risposte, ognuna cieca sulle altre.
+Prove: 16/08 14:38:33 quattro esecuzioni in 0,6 s (`742008`-`742011`); 16/08 17:10:21-22 **cinque
+esecuzioni nello stesso secondo** (`743895`-`743899`); 16/08 19:10 **sette messaggi di fila** di
+Agostino e sette risposte separate, ognuna che chiedeva il contesto delle altre («A cosa ti
+riferisci con "sisi"?», «non ho contesto su questo "aperitivo"», «"1h e 30" durata di cosa?»).
+
+**La correzione.** Copiato senza cambiarne la logica il buffer già in produzione su Prenotazioni
+dal 15/08: `Da bufferizzare?` → `Metti in coda` → `Aspetta 8 s` → `Rileggi coda` →
+`Sono l'ultimo?` → (agente + `Righe da ripulire` → `Svuota coda`). I click sui bottoni non
+passano dal buffer e restano immediati.
+**Coda propria:** tabella dati `Buffer Orca` (`XzcR2xkW96NvCA7B`). Deve restare separata da
+`Buffer Prenotazioni` (`Pi1gSvGHG5mttYWE`): la chat di Agostino ha lo **stesso id** sui due bot,
+una coda condivisa mescolerebbe i messaggi.
+
+Codice: `n8n/orca/buffer-sono-lultimo.js`, `n8n/orca/buffer-righe-da-ripulire.js`.
+Banco: `banchi/te/banco-buffer-orca.js` — 32 prove, i sette messaggi veri delle 19:10 diventano
+**una risposta sola** con il discorso unito in ordine.
+
+**Da guardare al primo giro vero:** mandare due o tre messaggi di fila. Deve arrivare **una**
+risposta. Se ne arrivano due, guardare `_buffer_uniti` nell'uscita di `Buffer - Sono l'ultimo?`.
 
 ## 5. Finestra del buffer più lunga per i messaggi inoltrati (tutti e due i bot)
+**Ora ha senso su tutti e due:** dal 17/08 il buffer c'è anche su Orca, con la stessa finestra
+di 8 secondi. Il caso dei sette messaggi delle 19:10 lo prende (erano ravvicinati); resta da
+prendere quello degli inoltri a mano, che distano 20-30 s.
 Con 8 secondi il caso vero non viene mai preso: inoltrando a mano i messaggi distano 20-30
 secondi (prove del 16/08: coppie a 27 s). Telegram dice se un messaggio è inoltrato: per quelli
 finestra ~45 s, per quelli scritti a mano resta 8-10 s.

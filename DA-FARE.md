@@ -1,20 +1,29 @@
-# Da fare — aggiornato 17/08/2026, mattina
+# Da fare — aggiornato 17/08/2026, 10:25
 
-## ✅ PUBBLICATA — guardia sulla scrittura del gestionale (17/08, 09:50)
+## ✅ PUBBLICATA E VISTA GIRARE — guardia sulla scrittura del gestionale (17/08)
 
-`Transfer webhook` `MJHTq5MksSeUhKgX`, versione `baac388d`, attiva e allineata.
-Sette nodi **aggiunti**, zero collegamenti esistenti toccati, zero nodi preesistenti
-modificati (verificato col backup: le cinque differenze erano solo i token che avevo
-redatto io). **Entrambi i trigger intatti**, stesso `webhookId` e stesso path di prima —
-il guasto del 16/08 non si è ripetuto.
+`Transfer webhook` `MJHTq5MksSeUhKgX`. Sette nodi **aggiunti**, zero collegamenti esistenti
+toccati, zero nodi preesistenti modificati (verificato col backup: le cinque differenze erano
+solo i token che avevo redatto io). **Entrambi i trigger intatti**, stesso `webhookId` e stesso
+path di prima — il guasto del 16/08 non si è ripetuto.
 
 Il giro: `gestionale` → attendi 3 s → rileggi per Id → se c'è si ferma; se manca riscrive e
 riverifica, fino a 4 tentativi; se ne trova più d'una non tocca niente e avvisa su Telegram.
 Codice e banco: `n8n/transfer-webhook/verifica-gestionale.js`, `banchi/te/banco-verifica.js`.
 
-**Da guardare alla prima conferma o assegnazione:** l'esecuzione deve passare per
-`Rileggi gestionale per Id` e fermarsi lì. Se compare `Riscrivi gestionale`, la guardia ha
-appena salvato una riga che si sarebbe persa.
+**Prova sul campo — esecuzione `749101`, 17/08 10:18.** Catena completa nel runData:
+`gestionale` (1032 ms) → `Attendi verifica gestionale` (3004 ms) → `Rileggi gestionale per Id`
+(riga 946 trovata, 732 ms) → `Esito verifica gestionale` →
+`{esito: "ok", trovate: 1, motivo: "riga presente sul gestionale"}` → `Riga da riscrivere?` ramo
+falso → `Serve gridare?` ramo falso → fine. **Nessuna riscrittura, nessun allarme.** Costo: circa
+3,7 s in più per conferma.
+
+⚠️ **Trappola nuova, da ricordare.** Prima di questa prova avevo guardato le esecuzioni `748054`
+(08:59) e `748840` (10:03) e i nodi della guardia non c'erano: sembrava non partisse. Erano
+esecuzioni **precedenti alla versione attiva** — la guardia è nata alle 09:57 e la versione
+pubblicata buona (`baac388d`) è delle 10:09:55. Regola: dopo una pubblicazione si guardano solo
+le esecuzioni con `startedAt` successivo al `createdAt` della versione attiva
+(`get_workflow_history`), altrimenti si diagnostica un guasto che non esiste.
 
 ## ✅ CHIUSO — i doppioni dalle strutture (era il punto 1)
 
@@ -221,7 +230,17 @@ se un bot non riceve niente da troppo tempo.
     la rotellina dei bottoni Telegram non si spegne mai. Correzione: `resource: callback`,
     `operation: answerQuery`.
 
-## 8. Modifiche dalle strutture non rilevate — ✅ diagnosticato, correzione pronta
+## 8. Modifiche dalle strutture non rilevate — ✅ PUBBLICATA (17/08, 10:22)
+**Versione attiva `59641bd5`**, `versionId == activeVersionId`. Riletto il nodo dal server e
+diffato con il file provato sul banco: identici (solo un a-capo finale in più). Confrontato
+l'intero workflow prima/dopo: **nessun altro nodo e nessun collegamento toccati**, 79 nodi,
+2 trigger. Le tre segnalazioni di validazione sono tutte `preExisting`.
+
+**Da guardare alla prima modifica che arriva da una struttura:** se la struttura lascia Stato
+`Pronto` ma cambia un campo, la scheda deve uscire «🟡 MODIFICA TRANSFER» con l'elenco dei
+cambi. Se esce «🟢 NUOVO TRANSFER» su un transfer che esiste già sul gestionale, la correzione
+non ha preso.
+
 **Causa trovata (17/08).** In `Code in JavaScript2` la prima riga di controllo era:
 ```js
 if (tipologia !== 'MODIFICA' || !oldData) { /* niente confronto */ }
@@ -241,8 +260,8 @@ trova la riga, e `{}` è truthy. Togliendo il test su `tipologia` senza accorger
 davvero nuovo sarebbe risultato «modificato in tutto». Ora una riga vale come vecchia solo se
 porta davvero un Id.
 
-**Da pubblicare:** zona gialla (cambia la scheda su Telegram, verso Agostino, non verso clienti).
-Serve il via, e **verificare il trigger subito dopo la pubblicazione** — il 16/08 ripubblicare
+**Pubblicata** su via di Agostino. Zona gialla: cambia la scheda su Telegram, verso Agostino,
+non verso clienti. Trigger verificati dopo la pubblicazione (2, intatti) — il 16/08 ripubblicare
 aveva staccato un webhook.
 
 ### Prova originale

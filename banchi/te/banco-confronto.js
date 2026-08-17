@@ -13,9 +13,10 @@ new Function('exports', PURE + `
 exports.teConfronta_ = teConfronta_;
 exports.teRapporto_  = teRapporto_;
 exports.teData_      = teData_;
+exports.teAncoraDaFare_ = teAncoraDaFare_;
 exports.teOra_       = teOra_;
 `)(puro);
-const { teConfronta_, teRapporto_, teData_, teOra_ } = puro;
+const { teConfronta_, teRapporto_, teData_, teOra_, teAncoraDaFare_ } = puro;
 
 let ko = 0;
 function prova(nome, atteso, effettivo) {
@@ -29,7 +30,7 @@ function prova(nome, atteso, effettivo) {
 console.log('== Banco: controllo incrociato Strutture ↔ Gestionale ==\n');
 
 // --- lettura delle date nei due dialetti ---
-prova('data struttura 17/08/2026', '17/08/2026', teData_('17/08/2026'));
+prova('data struttura 17/08/2026', '17/08/2026', teData_('17/08/2026', '08:00'));
 prova('data gestionale a parole', '18/08/2026', teData_('mar 18 agosto 2026'));
 prova('data gestionale con giorno abbreviato', '01/09/2026', teData_('mar 1 settembre 2026'));
 prova('data ISO', '17/08/2026', teData_('2026-08-17'));
@@ -55,7 +56,7 @@ const GES = {
   Tariffa: '35,00€',
 };
 {
-  const r = teConfronta_([STR], [GES], '17/08/2026');
+  const r = teConfronta_([STR], [GES], '17/08/2026', '08:00');
   prova('MULLINS — una discordanza trovata', 1, r.discordanti.length);
   prova('MULLINS — è grave (non solo tariffa)', true, r.discordanti[0].grave);
   const campi = r.discordanti[0].differenze.map((d) => d.campo).sort();
@@ -67,7 +68,7 @@ const GES = {
   prova('MULLINS — niente doppioni', 0, r.doppioni.length);
   prova('MULLINS — non dice che è tutto a posto', false, r.tutto_a_posto);
 
-  const m = teRapporto_(r, '17/08/2026');
+  const m = teRapporto_(r, '17/08/2026', '08:00');
   prova('rapporto — nomina il cliente', true, m.includes('MULLINS KRISTINA'));
   prova('rapporto — porta l\'Id per ritrovarla', true, m.includes(ID));
   prova('rapporto — mostra struttura contro gestionale', true,
@@ -77,37 +78,37 @@ const GES = {
 // --- Riga identica: silenzio ---
 {
   const gOk = { ...GES, Data: '17/08/2026', Time: '17:30' };
-  const r = teConfronta_([STR], [gOk], '17/08/2026');
+  const r = teConfronta_([STR], [gOk], '17/08/2026', '08:00');
   prova('riga identica — nessuna discordanza', 0, r.discordanti.length);
   prova('riga identica — tutto a posto', true, r.tutto_a_posto);
   prova('riga identica — messaggio di quiete', true,
-    teRapporto_(r, '17/08/2026').startsWith('✅'));
+    teRapporto_(r, '17/08/2026', '08:00').startsWith('✅'));
   prova('riga identica — l\'ha comunque guardata', 1, r.guardate);
 }
 {
   // Date scritte nei due dialetti ma stesso giorno: NON è una discordanza.
   const gOk = { ...GES, Data: 'lun 17 agosto 2026', Time: '17:30' };
-  const r = teConfronta_([STR], [gOk], '17/08/2026');
+  const r = teConfronta_([STR], [gOk], '17/08/2026', '08:00');
   prova('date in dialetti diversi, stesso giorno — silenzio', 0, r.discordanti.length);
 }
 {
   // Ora con virgola sulla struttura: stessa ora.
   const r = teConfronta_([{ ...STR, Time: '17,30' }],
-    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026');
+    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026', '08:00');
   prova('ora con virgola contro 17:30 — silenzio', 0, r.discordanti.length);
 }
 
 // --- Mancante e doppione ---
 {
-  const r = teConfronta_([STR], [], '17/08/2026');
+  const r = teConfronta_([STR], [], '17/08/2026', '08:00');
   prova('assente dal gestionale — finisce nei mancanti', 1, r.mancanti.length);
   prova('assente — porta l\'Id', ID, r.mancanti[0].Id);
   prova('assente — non è una discordanza', 0, r.discordanti.length);
   prova('rapporto — avvisa che può essere legittimo', true,
-    teRapporto_(r, '17/08/2026').includes('mai confermato'));
+    teRapporto_(r, '17/08/2026', '08:00').includes('mai confermato'));
 }
 {
-  const r = teConfronta_([STR], [GES, { ...GES }], '17/08/2026');
+  const r = teConfronta_([STR], [GES, { ...GES }], '17/08/2026', '08:00');
   prova('due righe stesso Id — doppione', 1, r.doppioni.length);
   prova('doppione — dice quante', 2, r.doppioni[0].quante);
   prova('doppione — non lo conta anche come discordanza', 0, r.discordanti.length);
@@ -115,32 +116,32 @@ const GES = {
 
 // --- Quello che NON deve svegliare nessuno ---
 {
-  const r = teConfronta_([{ ...STR, Eseguito: 'Svolto' }], [], '17/08/2026');
+  const r = teConfronta_([{ ...STR, Eseguito: 'Svolto' }], [], '17/08/2026', '08:00');
   prova('già svolto — non si controlla', 0, r.mancanti.length + r.guardate);
 }
 {
-  const r = teConfronta_([{ ...STR, Stato: 'Cancellato' }], [], '17/08/2026');
+  const r = teConfronta_([{ ...STR, Stato: 'Cancellato' }], [], '17/08/2026', '08:00');
   prova('cancellato — non si controlla', 0, r.mancanti.length + r.guardate);
 }
 {
-  const r = teConfronta_([{ ...STR, Data: '11/07/2026' }], [], '17/08/2026');
+  const r = teConfronta_([{ ...STR, Data: '11/07/2026' }], [], '17/08/2026', '08:00');
   prova('transfer di luglio — il passato non si tocca', 0, r.guardate);
 }
 {
-  const r = teConfronta_([{ ...STR, Id: '' }], [], '17/08/2026');
+  const r = teConfronta_([{ ...STR, Id: '' }], [], '17/08/2026', '08:00');
   prova('riga senza Id — mai partita, non è un guasto', 0, r.guardate);
 }
 {
   // Riga sul gestionale che non viene dalle strutture (inserita da Orca):
   // non deve risultare un errore.
-  const r = teConfronta_([], [{ Id: 'TR/17082026/ABC', Data: '17/08/2026' }], '17/08/2026');
+  const r = teConfronta_([], [{ Id: 'TR/17082026/ABC', Data: '17/08/2026' }], '17/08/2026', '08:00');
   prova('riga solo sul gestionale — non si segnala', true, r.tutto_a_posto);
 }
 {
   // Campo vuoto da una parte: non si grida, si tace.
   const r = teConfronta_(
     [{ ...STR, Nome: '' }],
-    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026');
+    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026', '08:00');
   prova('nome vuoto sulla struttura — non è una discordanza', 0, r.discordanti.length);
 }
 {
@@ -148,26 +149,67 @@ const GES = {
   // gestionale possono calcolare un valore diverso dalla tariffa a noi).
   const r = teConfronta_(
     [{ ...STR, 'Tariffa a noi': '40' }],
-    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026');
+    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026', '08:00');
   prova('solo tariffa diversa — segnalata', 1, r.discordanti.length);
   prova('solo tariffa diversa — non grave', false, r.discordanti[0].grave);
 }
 {
   // Tariffa scritta 35 contro "35,00€": stesso valore.
-  const r = teConfronta_([STR], [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026');
+  const r = teConfronta_([STR], [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026', '08:00');
   prova('35 contro 35,00€ — stesso valore', 0, r.discordanti.length);
 }
 {
   // Pax "3" contro 3 numerico.
-  const r = teConfronta_([STR], [{ ...GES, Data: '17/08/2026', Time: '17:30', Pax: 3 }], '17/08/2026');
+  const r = teConfronta_([STR], [{ ...GES, Data: '17/08/2026', Time: '17:30', Pax: 3 }], '17/08/2026', '08:00');
   prova('pax testo contro numero — silenzio', 0, r.discordanti.length);
 }
 {
   // Accenti e maiuscole nei luoghi.
   const r = teConfronta_(
     [{ ...STR, 'TRS <PER': 'POLIGNANO A MARE' }],
-    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026');
+    [{ ...GES, Data: '17/08/2026', Time: '17:30' }], '17/08/2026', '08:00');
   prova('maiuscole nei luoghi — silenzio', 0, r.discordanti.length);
+}
+
+// =====================================================================
+// L'ORA: i servizi già passati non si guardano (regola di Agostino, 17/08)
+// =====================================================================
+prova('domani — da fare', true,  teAncoraDaFare_('18/08/2026', '09:00', '17/08/2026', '18:00'));
+prova('ieri — passato', false, teAncoraDaFare_('16/08/2026', '23:00', '17/08/2026', '08:00'));
+prova('oggi alle 11, ora sono le 18 — passato', false,
+  teAncoraDaFare_('17/08/2026', '11:00', '17/08/2026', '18:00'));
+prova('oggi alle 19, ora sono le 18 — da fare', true,
+  teAncoraDaFare_('17/08/2026', '19:00', '17/08/2026', '18:00'));
+prova('oggi alla stessa ora esatta — considerato passato', false,
+  teAncoraDaFare_('17/08/2026', '18:00', '17/08/2026', '18:00'));
+prova('oggi senza ora — si tiene tutto il giorno', true,
+  teAncoraDaFare_('17/08/2026', '', '17/08/2026', '18:00'));
+prova('oggi con ora illeggibile — si tiene', true,
+  teAncoraDaFare_('17/08/2026', 'da concordare', '17/08/2026', '18:00'));
+prova('oggi a mezzanotte e mezza, sono le 00:10 — da fare', true,
+  teAncoraDaFare_('17/08/2026', '00:30', '17/08/2026', '00:10'));
+prova('senza data — non è un servizio da fare', false,
+  teAncoraDaFare_('', '10:00', '17/08/2026', '08:00'));
+{
+  // Il caso vero: alle 18 non deve più vedere il transfer delle 11.
+  const s = { ...STR, Data: '17/08/2026', Time: '11:00' };
+  prova('alle 18 il transfer delle 11 sparisce dal controllo', 0,
+    teConfronta_([s], [], '17/08/2026', '18:00').guardate);
+  prova('alle 10 lo stesso transfer c\'è ancora', 1,
+    teConfronta_([s], [], '17/08/2026', '10:00').guardate);
+  prova('alle 18 non finisce fra i mancanti', 0,
+    teConfronta_([s], [], '17/08/2026', '18:00').mancanti.length);
+  prova('alle 10 finisce fra i mancanti', 1,
+    teConfronta_([s], [], '17/08/2026', '10:00').mancanti.length);
+}
+{
+  // Una discordanza su un servizio già passato non si segnala più.
+  const s = { ...STR, Data: '17/08/2026', Time: '09:00' };
+  const g = { ...GES, Data: '17/08/2026', Time: '10:00' };
+  prova('discordanza su servizio passato — silenzio', 0,
+    teConfronta_([s], [g], '17/08/2026', '18:00').discordanti.length);
+  prova('la stessa alle 08 — si segnala', 1,
+    teConfronta_([s], [g], '17/08/2026', '08:00').discordanti.length);
 }
 
 console.log(`\n${ko === 0 ? 'Tutte le prove passano.' : ko + ' prove FALLITE.'}`);

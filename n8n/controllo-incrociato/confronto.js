@@ -30,8 +30,11 @@
 //                   può essere legittimo (transfer mai confermato, o annullato),
 //                   perciò è arancione e non rosso.
 //
-// Guarda solo i servizi **ancora da svolgere, da oggi in poi**: il passato non
-// si tocca e non serve svegliare nessuno per un transfer di luglio.
+// Guarda solo i servizi **ancora da svolgere e non ancora passati**: conta la
+// data E l'ora, confrontate con adesso (regola di Agostino, 17/08). Un transfer
+// delle 11:00 alle sei di sera non serve piu' a nessuno, e segnalarlo o —
+// peggio — inserirlo sul gestionale e' solo rumore su un servizio finito.
+// Le righe senza ora si tengono per tutto il loro giorno: in dubbio si tiene.
 //
 // NON SCRIVE NIENTE. Legge e racconta. La correzione resta a mano: toccare il
 // gestionale è zona rossa.
@@ -103,12 +106,24 @@ function teNum_(v) {
   return isNaN(n) ? null : n;
 }
 
-/** Un giorno in formato gg/mm/aaaa è oggi o dopo? */
-function teDaOggiInPoi_(dataStr, oggiStr) {
-  if (!dataStr || !oggiStr) return false;  // senza data non è un servizio di oggi
-  var a = dataStr.split('/'), b = oggiStr.split('/');
-  if (a.length !== 3 || b.length !== 3) return false;
-  return (a[2] + a[1] + a[0]) >= (b[2] + b[1] + b[0]);
+/** gg/mm/aaaa -> aaaammgg, per confrontare due giorni come stringhe. */
+function teGiorno_(dataStr) {
+  var a = (dataStr || '').split('/');
+  return a.length === 3 ? (a[2] + a[1] + a[0]) : '';
+}
+
+/**
+ * Il servizio deve ancora avvenire?
+ * Si guarda data E ora contro adesso. Senza ora si dà per buono tutto il
+ * giorno (23:59): meglio segnalare un servizio già passato che perderne uno.
+ */
+function teAncoraDaFare_(dataStr, oraStr, oggiStr, adessoStr) {
+  var g = teGiorno_(dataStr), o = teGiorno_(oggiStr);
+  if (!g || !o) return false;              // senza data non è un servizio da fare
+  if (g > o) return true;                  // giorni futuri: sempre
+  if (g < o) return false;                 // giorni passati: mai
+  var ora = teOra_(oraStr) || '23:59';     // oggi: decide l'ora
+  return ora > (adessoStr || '00:00');
 }
 
 /**
@@ -117,8 +132,9 @@ function teDaOggiInPoi_(dataStr, oggiStr) {
  * @param {Array<Object>} strutture  righe di Strutture › Foglio1
  * @param {Array<Object>} gestionale righe del gestionale
  * @param {string} oggi              gg/mm/aaaa
+ * @param {string} adesso            hh:mm dell'ora italiana
  */
-function teConfronta_(strutture, gestionale, oggi) {
+function teConfronta_(strutture, gestionale, oggi, adesso) {
   var perId = {};
   var senzaData = 0;
   (gestionale || []).forEach(function (g) {
@@ -139,7 +155,7 @@ function teConfronta_(strutture, gestionale, oggi) {
     if (teNorm_(s.Stato) === 'cancellato') return;         // cancellato: non deve esserci
     var dataStr = teData_(s.Data);
     if (!dataStr) { senzaData++; return; }                 // data illeggibile: si conta, non si grida
-    if (!teDaOggiInPoi_(dataStr, oggi)) return;            // il passato non si tocca
+    if (!teAncoraDaFare_(dataStr, s.Time, oggi, adesso)) return;   // già passato: non si tocca
     guardate++;
 
     var righe = perId[id] || [];
@@ -202,10 +218,10 @@ function teConfronta_(strutture, gestionale, oggi) {
 /** Il messaggio. Deve bastare a correggere a mano, senza aprire n8n. */
 function teRapporto_(esito, oggi) {
   if (esito.tutto_a_posto) {
-    return '✅ Strutture e gestionale coincidono — ' + esito.guardate + ' servizi da svolgere controllati.';
+    return '✅ Strutture e gestionale coincidono — ' + esito.guardate + ' servizi ancora da svolgere controllati.';
   }
   var r = ['🔎 CONTROLLO STRUTTURE ↔ GESTIONALE',
-    esito.guardate + ' servizi da svolgere, dal ' + oggi + ' in poi.', ''];
+    esito.guardate + ' servizi ancora da svolgere (dal ' + oggi + ' in poi, ora passata esclusa).', ''];
 
   if (esito.doppioni.length) {
     r.push('🔴 DOPPIONI SUL GESTIONALE (' + esito.doppioni.length + ')');
@@ -256,12 +272,14 @@ var gestionale = $('Leggi Gestionale').all().map(function (i) { return i.json; }
 
 var adesso = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Rome' }));
 var oggi = teDue_(adesso.getDate()) + '/' + teDue_(adesso.getMonth() + 1) + '/' + adesso.getFullYear();
+var oraAdesso = teDue_(adesso.getHours()) + ':' + teDue_(adesso.getMinutes());
 
-var esito = teConfronta_(strutture, gestionale, oggi);
+var esito = teConfronta_(strutture, gestionale, oggi, oraAdesso);
 
 return [{
   json: {
     oggi: oggi,
+    oraAdesso: oraAdesso,
     ...esito,
     daAvvisare: !esito.tutto_a_posto,
     rapporto: teTaglia_(teRapporto_(esito, oggi), 3900)

@@ -23,7 +23,7 @@
 //     nota della riga lo dice.
 //   • Niente Autista e Veicolo: non si ereditano mai.
 //
-// DUE RETI DI SICUREZZA.
+// QUATTRO RETI DI SICUREZZA.
 //
 //   1. `Allert` = «Non Inviare». Una riga appena comparsa non deve far
 //      partire niente verso clienti, autisti o fornitori finché Agostino non
@@ -31,10 +31,24 @@
 //   2. Le righe di prova non entrano. Sui fogli struttura restano prenotazioni
 //      finte («prova 1», «prova 2», tariffa 0, senza nome): inserirle
 //      significherebbe sporcare il gestionale con servizi che non esistono.
+//   3. Se il gestionale torna corto non si inserisce NIENTE. Dal 17/08 questo
+//      ramo gira da solo ogni ora: se una lettura di Google restituisse una
+//      manciata di righe invece di tutte, ogni transfer sembrerebbe mancante e
+//      ne entrerebbero a valanga. Sotto TE_MIN_GESTIONALE righe ci si ferma e
+//      basta: al giro dopo la lettura sarà di nuovo buona.
+//   4. Il freno a mano sotto: più di TE_MAX_INSERIMENTI righe e non si scrive.
+//
+// RIPETERLO NON FA DANNO. La scrittura è un appendOrUpdate sulla chiave Id:
+// appena la riga è entrata, quell'Id esiste, e al giro dopo non risulta più
+// mancante. Nessun doppione anche se gira mille volte.
 //
 // Banco: banchi/te/banco-mancanti-doppioni.js.
 
 var TE_MAX_INSERIMENTI = 15;
+
+// Il gestionale ha più di mille righe. Se ne tornano meno di così, la lettura
+// è andata storta: non è che mancano davvero.
+var TE_MIN_GESTIONALE = 500;
 
 function teS_(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
 function teNorm_(v) {
@@ -64,9 +78,18 @@ function teEunaProva_(r) {
  * @param {Array<Object>} mancanti  come li produce il nodo Confronta
  * @param {Array<Object>} strutture righe complete di Strutture › Foglio1
  * @param {number} max
+ * @param {number} righeGestionale quante righe ha restituito la lettura
  */
-function tePreparaMancanti_(mancanti, strutture, max) {
+function tePreparaMancanti_(mancanti, strutture, max, righeGestionale) {
   var maxI = max || TE_MAX_INSERIMENTI;
+
+  // (3) lettura corta: ci si ferma prima di guardare qualunque cosa
+  if (typeof righeGestionale === 'number' && righeGestionale < TE_MIN_GESTIONALE) {
+    return {
+      righe: [], quante: 0, scartate: [], senzaOrigine: [], troppe: false,
+      letturaCorta: true, righeGestionale: righeGestionale
+    };
+  }
 
   var perId = {};
   (strutture || []).forEach(function (s) {
@@ -121,15 +144,18 @@ function tePreparaMancanti_(mancanti, strutture, max) {
     quante: righe.length,
     scartate: scartate,
     senzaOrigine: senzaOrigine,
-    troppe: troppe
+    troppe: troppe,
+    letturaCorta: false,
+    righeGestionale: righeGestionale
   };
 }
 
 // ===== corpo del nodo n8n =====
 var confronto = $('Confronta').first().json;
 var strutture = $('Leggi Strutture').all().map(function (i) { return i.json; });
+var quanteGestionale = $('Leggi Gestionale').all().length;
 
-var esito = tePreparaMancanti_(confronto.mancanti, strutture, TE_MAX_INSERIMENTI);
+var esito = tePreparaMancanti_(confronto.mancanti, strutture, TE_MAX_INSERIMENTI, quanteGestionale);
 
 // Una riga in uscita per ogni riga da aggiungere, e nient'altro dentro.
 return esito.righe.map(function (x) { return { json: x.riga }; });

@@ -46,7 +46,7 @@ const MANC = STR.map((s) => ({ Id: s.Id, Data: s.Data, Nome: s.Nome, Fornitore: 
 // MANCANTI
 // =====================================================================
 {
-  const r = M.tePreparaMancanti_(MANC, STR, 15);
+  const r = M.tePreparaMancanti_(MANC, STR, 15, 1078);
   prova('le due righe di prova non entrano', 2, r.scartate.length);
   prova('entrano solo le vere', 3, r.quante);
   const ids = r.righe.map((x) => x.riga.Id);
@@ -79,7 +79,7 @@ const MANC = STR.map((s) => ({ Id: s.Id, Data: s.Data, Nome: s.Nome, Fornitore: 
 }
 {
   // Riga senza origine sul foglio struttura: non si inventa.
-  const r = M.tePreparaMancanti_([{ Id: 'TR/SCONOSCIUTO', Data: '20/08/2026' }], STR, 15);
+  const r = M.tePreparaMancanti_([{ Id: 'TR/SCONOSCIUTO', Data: '20/08/2026' }], STR, 15, 1078);
   prova('Id non ritrovato — non si inserisce', 0, r.quante);
   prova('Id non ritrovato — lo dice', 1, r.senzaOrigine.length);
 }
@@ -95,9 +95,30 @@ const MANC = STR.map((s) => ({ Id: s.Id, Data: s.Data, Nome: s.Nome, Fornitore: 
   for (let i = 0; i < 16; i++) tante.push({ Id: 'T' + i, Data: '20/08/2026' });
   const str = tante.map((t) => ({ Id: t.Id, Data: '20/08/2026', Time: '10:00', 'TRS> DA': 'A',
     'TRS <PER': 'B', Nome: 'X', Fornitore: 'F', 'Tariffa a noi': '50' }));
-  const r = M.tePreparaMancanti_(tante, str, 15);
+  const r = M.tePreparaMancanti_(tante, str, 15, 1078);
   prova('16 righe — si ferma', true, r.troppe);
   prova('16 righe — non inserisce niente', 0, r.righe.length);
+}
+
+// --- La rete nuova: se il gestionale torna corto non si inserisce niente ---
+{
+  const r = M.tePreparaMancanti_(MANC, STR, 15, 12);
+  prova('gestionale letto corto — non inserisce niente', 0, r.quante);
+  prova('gestionale letto corto — lo dichiara', true, r.letturaCorta);
+  prova('gestionale letto corto — dice quante righe ha visto', 12, r.righeGestionale);
+}
+{
+  const r = M.tePreparaMancanti_(MANC, STR, 15, 499);
+  prova('499 righe — ancora troppo poche, si ferma', true, r.letturaCorta);
+}
+{
+  const r = M.tePreparaMancanti_(MANC, STR, 15, 500);
+  prova('500 righe — al limite, si procede', false, r.letturaCorta);
+  prova('500 righe — inserisce le tre vere', 3, r.quante);
+}
+{
+  const r = M.tePreparaMancanti_(MANC, STR, 15);
+  prova('conteggio non passato — non blocca (uso a mano)', 3, r.quante);
 }
 
 // =====================================================================

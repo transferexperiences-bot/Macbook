@@ -1,4 +1,46 @@
-# Da fare — aggiornato 16/08/2026, notte
+# Da fare — aggiornato 17/08/2026, mattina
+
+## ✅ CHIUSO — i doppioni dalle strutture (era il punto 1)
+
+Installato e verificato il 17/08. Il progetto Apps Script *Transfer Queue Processor*
+(`1JPUJQRac9_W78r5L3nDILLcvxVfU05dMAEn1qh0CHci_SbNjMoczzrUs`) e `TransferLib`
+(`1vo74eNOp7bRgiU-ioVRTRCfb2k9rmDVlV5lmW_DoFKTTKZM_or7K0o96`) girano il codice nuovo —
+controllato scaricando i sorgenti, non a parole. Codice e banchi in `apps-script/` e `banchi/te/`.
+
+**Quattro guasti chiusi:**
+1. **Doppioni.** `MAX_VERIFY_MS` da 6000 a 30000: n8n scrive l'ack al secondo ~13, la finestra
+   si chiudeva a 6. Regressione dell'8 giugno. Verificato sul campo: invii `744830` (16/08
+   21:23) e `747324` (17/08 07:33), nessun rinvio.
+2. **Colonne per numero fisso.** Ora per nome, tolleranti su accenti/spazi/punteggiatura, senza
+   mai confronti «somiglia a» — `Tariffa` non può rubare `Tariffa a noi`.
+3. **RowNumber preso per buono.** Ora la riga si conferma cercando l'Id; se non c'è, ERROR e non
+   si manda niente.
+4. **Rinvii invisibili.** Righe che `Filter1` scarta (stato `Confermato`) non ricevevano mai
+   l'ack e ripartivano ogni 90 s senza produrre schede: dodici chiamate a vuoto fra le 06:31 e
+   le 06:40 del 17/08. Ora si riproduce il filtro di n8n prima di mandare. Il ciclo si è fermato
+   alle 07:47.
+
+**In più:** corretto un difetto della v1 di `normalizeOra` (gli orari con virgola tipo `21,15`
+non venivano mai normalizzati) e l'attivatore programmato su `installAllTimerTriggers`, che a
+ogni giro cancellava e ricreava il timer del lavoratore.
+
+**Resta da fare, roba di minuti:**
+- lanciare **`sistemaCodaVecchia`** dal Queue Processor: al 17/08 08:06 le sei righe rotte
+  dall'8 giugno erano ancora `ERROR` con data `16/08 21:25`. Sono ferme, non fanno danno, ma
+  vanno archiviate;
+- rinominare `Colonna 2` → `Note` su **La Peschiera** e `Colonna 1` → `Data` su
+  **Covo dei Saraceni** (vedi punto 1-bis);
+- `diagnosticaIntestazioni()` quando si vuole il quadro delle 18 strutture.
+
+**Idea aperta (Agostino, 17/08):** un progetto unico che chiami tutte le strutture, invece di
+uno stub su ogni foglio. Metà c'è già (`TransferLib`). La centralizzazione piena del *lavoro*
+però sfonda la quota: ~40 min/giorno per file × 18 ≈ 12 ore, contro un limite di 90 minuti al
+giorno per script su account gratuito. Centralizzabile semmai l'`onChange` (max 20 trigger per
+script). Serve prima vedere uno stub di una struttura: non è leggibile da fuori.
+
+---
+
+# Coda precedente — aggiornato 16/08/2026, notte
 
 Leggi prima `CLAUDE.md` (regole, zone di autonomia, trappole n8n). Qui c'è solo la coda
 di lavoro, in ordine. Ogni voce ha la prova da cui nasce: si riparte da lì, senza ripartire

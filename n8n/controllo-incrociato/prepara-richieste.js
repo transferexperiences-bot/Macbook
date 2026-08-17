@@ -34,6 +34,12 @@
 // LA TARIFFA NON ENTRA MAI in una correzione: sul gestionale è una formula.
 // Se l'unica differenza è la tariffa non si chiede niente — resta nel rapporto.
 //
+// LA RIGA DA SCRIVERE SI PREPARA ADESSO, non al click. Va nella coda insieme
+// alla scheda, in `azione`. Quando Agostino preme ✅ non si ricalcola niente e
+// non si rilegge niente: si esegue quello che gli è stato mostrato. Così quello
+// che finisce sul gestionale è **esattamente** quello che c'era scritto nella
+// scheda che ha approvato, non qualcosa deciso dopo.
+//
 // Banco: banchi/te/banco-richieste.js.
 
 var TE_MAX_SCHEDE = 12;   // per non svegliarsi con quaranta messaggi
@@ -80,12 +86,12 @@ function tePreparaRichieste_(confronto, strutture, risposte, max) {
 
   var schede = [], saltate = 0;
 
-  function aggiungi(tipo, id, impronta, testo, dettaglio) {
+  function aggiungi(tipo, id, impronta, testo, azione) {
     var chiave = tipo + '|' + id + '|' + impronta;
     if (giaChiesto[chiave]) { saltate++; return; }
     schede.push({
       chiave: chiave, tipo: tipo, idtransfer: id,
-      testo: testo, dettaglio: dettaglio
+      testo: testo, azione: azione
     });
   }
 
@@ -110,33 +116,54 @@ function tePreparaRichieste_(confronto, strutture, risposte, max) {
         '» → struttura «' + (x.strutture || '—') + '»';
     });
     var s = perId[d.Id];
+    var daScrivere = { Id: d.Id };
+    scrivibili.forEach(function (x) { daScrivere[TE_SCRIVIBILI[x.campo]] = x.strutture; });
+
     var testo = '🔧 *CORREZIONE DA APPROVARE*\n\n' +
       intestazione(s, d.Id) + '\n\n' +
       'Il gestionale non combacia con il foglio struttura:\n' + righe.join('\n') +
       '\n\nComanda la struttura. Correggo?';
-    aggiungi('C', d.Id, teImpronta_(righe.join('|')), testo, righe);
+    aggiungi('C', d.Id, teImpronta_(righe.join('|')), testo, daScrivere);
   });
 
   // ---------- 👯 DOPPIONI ----------
   (confronto.doppioni || []).forEach(function (p) {
     var s = perId[p.Id];
+    var notaVecchia = teS_(p.Note);
+    var daScrivere = {
+      Id: p.Id,
+      Note: '⚠️ DOPPIONE (' + p.quante + ' righe con questo stesso Id sul gestionale: ' +
+        'controlla e tieni quella giusta) · ' + (notaVecchia || '—')
+    };
     var testo = '👯 *DOPPIONE SUL GESTIONALE*\n\n' +
       intestazione(s, p.Id) + '\n\n' +
       'Ci sono ' + p.quante + ' righe con questo stesso Id.\n' +
       'Metto un avviso nella nota così le ritrovi? *Non cancello niente.*';
-    aggiungi('D', p.Id, teImpronta_('doppioni' + p.quante), testo, ['righe: ' + p.quante]);
+    aggiungi('D', p.Id, teImpronta_('doppioni' + p.quante), testo, daScrivere);
   });
 
   // ---------- ➕ MANCANTI ----------
   (confronto.mancanti || []).forEach(function (m) {
     var s = perId[m.Id];
     if (!s) return;                              // senza l'originale non si inventa
+    var noteOrig = teS_(s.Note);
+    var daScrivere = {
+      Id: m.Id,
+      Data: teS_(s.Data), Time: teS_(s.Time),
+      'Transfer > Da': teS_(s['TRS> DA']), 'Transfer < Per': teS_(s['TRS <PER']),
+      Pax: teS_(s.PAX), Nome: teS_(s.Nome), Fornitori: teS_(s.Fornitore),
+      Volo: teS_(s.Volo), 'Cell.': teS_(s['cell.']), 'Modalità': teS_(s['Modalità']),
+      Allert: 'Non Inviare',
+      Note: '⚠️ Aggiunta dal controllo strutture: mancava sul gestionale. ' +
+        'TARIFFA DA METTERE (sulla struttura: ' + (teS_(s['Tariffa a noi']) || '—') + ').' +
+        (noteOrig ? ' · ' + noteOrig : '')
+    };
     var testo = '➕ *RIGA MANCANTE SUL GESTIONALE*\n\n' +
       intestazione(s, m.Id) + '\n\n' +
       'C\'è sul foglio struttura e non sul gestionale.\n' +
       'La aggiungo? Entra con *Allert = Non Inviare* e *senza tariffa* ' +
       '(sulla struttura: ' + (teS_(s['Tariffa a noi']) || '—') + '), da mettere a mano.';
-    aggiungi('M', m.Id, teImpronta_('mancante'), testo, []);
+    aggiungi('M', m.Id, teImpronta_('mancante'), testo, daScrivere);
   });
 
   var troppe = schede.length > maxS;
@@ -165,6 +192,7 @@ return esito.schede.map(function (x) {
   return { json: {
     chiave: x.chiave, tipo: x.tipo, idtransfer: x.idtransfer,
     risposta: 'in attesa', quando: adesso, messageid: 0,
+    azione: JSON.stringify(x.azione),
     testo: x.testo
   } };
 });

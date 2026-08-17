@@ -129,6 +129,37 @@ const CONFR = {
   prova('niente da chiedere — nessuna scheda', 0, r.quante);
 }
 
+// =====================================================================
+// L'AZIONE: quello che si scrive e' deciso ADESSO, non al click
+// =====================================================================
+{
+  const r = tePreparaRichieste_(CONFR, STRUTT, [], 12);
+  const a = r.schede[0].azione;
+  prova('correzione — porta la riga da scrivere', ID, a.Id);
+  prova('correzione — scrive l\'ora della struttura', '17:30', a.Time);
+  prova('correzione — solo Id e Time', ['Id', 'Time'], Object.keys(a).sort());
+  prova('correzione — nessuna colonna di soldi', true,
+    !('Tariffa' in a) && !('Fee' in a) && !('Netto' in a));
+}
+{
+  const c = { discordanti: [], doppioni: [{ Id: ID, quante: 2, Nome: 'X', Note: 'porta il seggiolino' }], mancanti: [] };
+  const a = tePreparaRichieste_(c, STRUTT, [], 12).schede[0].azione;
+  prova('doppione — scrive solo Id e Note', ['Id', 'Note'], Object.keys(a).sort());
+  prova('doppione — la nota vecchia non si perde', true, a.Note.includes('porta il seggiolino'));
+  prova('doppione — l\'avviso va in testa', true, a.Note.startsWith('⚠️ DOPPIONE'));
+}
+{
+  const c = { discordanti: [], doppioni: [], mancanti: [{ Id: ID }] };
+  const a = tePreparaRichieste_(c, STRUTT, [], 12).schede[0].azione;
+  prova('mancante — Allert Non Inviare', 'Non Inviare', a.Allert);
+  prova('mancante — nessuna colonna di soldi', true,
+    !('Tariffa' in a) && !('Fee' in a) && !('Netto' in a) && !('Acconto' in a));
+  prova('mancante — niente autista ne veicolo', true, !('Autista' in a) && !('Veicolo' in a));
+  prova('mancante — la nota grida la tariffa', true, a.Note.includes('TARIFFA DA METTERE'));
+  prova('mancante — copia la tratta', ['Auraterrae', 'Polignano a mare'],
+    [a['Transfer > Da'], a['Transfer < Per']]);
+}
+
 // --- L'impronta ---
 prova('impronta — stessa cosa, stessa impronta', teImpronta_('a|b'), teImpronta_('a|b'));
 prova('impronta — cosa diversa, impronta diversa', true, teImpronta_('a|b') !== teImpronta_('a|c'));

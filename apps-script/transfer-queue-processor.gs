@@ -257,6 +257,32 @@ function teIsAck_(statoValue) {
     .toString().indexOf(": Pending") !== -1;
 }
 
+/**
+ * Riproduce ESATTAMENTE il filtro di n8n (nodo "Filter1" di Transfer webhook):
+ *   stato != "Confermato" AND non contiene "Pending"/"attesa"/"approvazione"
+ *   AND non è vuoto
+ *
+ * Perché serve. Una riga che n8n scarta non riceve mai l'ack, quindi qui
+ * scadevano i 30 secondi, la riga andava SENT e dopo 90 secondi ripartiva —
+ * all'infinito fino ai 6 tentativi, senza che comparisse nessuna scheda su
+ * Telegram. Rumore invisibile che si mangiava la quota UrlFetch.
+ * Prova: 17/08, Suite 10/Giovì riga 138 (Capogreco, stato "Confermato"),
+ * dodici chiamate fra le 06:31 e le 06:40, tutte respinte da Filter1 in 5 ms.
+ *
+ * Il confronto è case-sensitive come quello di n8n: se fossi più severo io,
+ * rischierei di NON mandare una riga che n8n avrebbe accettato.
+ */
+function teN8nAccetta_(statoValue) {
+  var s = (statoValue === null || statoValue === undefined ? "" : statoValue)
+    .toString().trim();
+  if (!s) return false;
+  if (s === "Confermato") return false;
+  if (s.indexOf("Pending") !== -1) return false;
+  if (s.indexOf("attesa") !== -1) return false;
+  if (s.indexOf("approvazione") !== -1) return false;
+  return true;
+}
+
 
 // ==========================================================================
 // TIMER
@@ -386,9 +412,21 @@ function processQueue() {
 
         var sourceRow = sourceSheet.getRange(rowNumber, 1, 1, lastCol).getValues()[0];
 
+        var statoCorrente = sourceRow[col.stato - 1];
+
         // Già preso in carico da n8n: chiudi e vai
-        if (teIsAck_(sourceRow[col.stato - 1])) {
+        if (teIsAck_(statoCorrente)) {
           teMarkQueue_(queueSheet, rowIndex, "DONE", "", avviso);
+          continue;
+        }
+
+        // n8n scarterebbe questa riga: mandarla non produce nessuna scheda e
+        // nessun ack, quindi ripartirebbe ogni 90 secondi a vuoto. Lo stato è
+        // cambiato fra quando la scansione l'ha accodata e adesso (di solito
+        // perché il transfer è stato confermato nel frattempo).
+        if (!teN8nAccetta_(statoCorrente)) {
+          teMarkQueue_(queueSheet, rowIndex, "IGNORATO", "",
+            'Stato ora è "' + statoCorrente + '": n8n la scarta, non è più da mandare');
           continue;
         }
 

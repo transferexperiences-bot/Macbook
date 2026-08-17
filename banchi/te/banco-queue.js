@@ -15,10 +15,11 @@ exports.teBuildColMap_  = teBuildColMap_;
 exports.teFindRowById_  = teFindRowById_;
 exports.teBuildPayload_ = teBuildPayload_;
 exports.teIsAck_        = teIsAck_;
+exports.teN8nAccetta_   = teN8nAccetta_;
 exports.TE_MAX_VERIFY_MS = TE_MAX_VERIFY_MS;
 `)(sandbox);
 
-const { teBuildColMap_, teFindRowById_, teBuildPayload_, teIsAck_ } = sandbox;
+const { teBuildColMap_, teFindRowById_, teBuildPayload_, teIsAck_, teN8nAccetta_ } = sandbox;
 
 // --- Intestazioni vere ---
 // Suite 10/Giovì, lette dal foglio il 16/08. Nota "Tariffa " con lo spazio,
@@ -50,6 +51,24 @@ prova('ack riconosciuto', true, teIsAck_('Pronto: Pending'));
 prova('ack: "Cancellato: Pending" vale', true, teIsAck_('Cancellato: Pending'));
 prova('ack: "Pronto" secco non vale', false, teIsAck_('Pronto'));
 prova('ack: cella vuota non vale', false, teIsAck_(''));
+
+// --- Il filtro di n8n: righe che verrebbero scartate non si mandano ---
+// Prova vera: 17/08, Suite 10/Giovì riga 138, stato "Confermato", dodici
+// chiamate fra le 06:31 e le 06:40 tutte respinte da Filter1 in 5 ms.
+prova('"Confermato" — n8n la scarta', false, teN8nAccetta_('Confermato'));
+prova('"Pronto: Pending" — scartata', false, teN8nAccetta_('Pronto: Pending'));
+prova('"In attesa approvazione" — scartata', false, teN8nAccetta_('In attesa approvazione'));
+prova('vuoto — scartata', false, teN8nAccetta_(''));
+prova('solo spazi — scartata', false, teN8nAccetta_('   '));
+prova('"Pronto" — passa', true, teN8nAccetta_('Pronto'));
+prova('"Modificato" — passa', true, teN8nAccetta_('Modificato'));
+prova('"Cancellato" — passa', true, teN8nAccetta_('Cancellato'));
+// Case-sensitive come n8n: se fossi più severo io perderei una riga che
+// n8n avrebbe accettato.
+prova('"confermato" minuscolo — passa, come n8n', true, teN8nAccetta_('confermato'));
+prova('"PENDING" maiuscolo — passa, come n8n', true, teN8nAccetta_('PENDING'));
+// L'ack va controllato PRIMA: contiene "Pending" e verrebbe scartato qui.
+prova('ack riconosciuto prima del filtro', true, teIsAck_('Pronto: Pending'));
 
 // --- (2) colonne per nome ---
 {

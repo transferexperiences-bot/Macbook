@@ -1,4 +1,4 @@
-# Da fare — aggiornato 16/08/2026, sera
+# Da fare — aggiornato 18/08/2026, sera
 
 Leggi prima `CLAUDE.md` (regole, zone di autonomia, trappole n8n). Qui c'è solo la coda
 di lavoro, in ordine. Ogni voce ha la prova da cui nasce: si riparte da lì, senza ripartire
@@ -19,16 +19,39 @@ di `Smart Write Struttura`, esecuzioni `729824`/`729828`). Solo Id, mai confront
 (regola di Agostino: «una struttura può inserire transfer identici, comanda l'Id»).
 **Backup:** `backups/n8n/TW_pre_dedup_20260814.json`.
 
-## 2. Codice del rientro — `f3Y46avI5O8dEnYn` (ora accessibile via MCP)
-**Prova:** esecuzione `742264` del 16/08 15:31 — una richiesta di rientro è diventata la
-**modifica dell'andata**: chiamato `cerca_servizi` invece di `tool_rientro`, riusato l'Id
-`TR/07082026/SSD1XU4R9NS80YGD` con `intent: modifica`, ereditati autista (Giovanni Vito
-Antonio) e veicolo. La scrittura è avvenuta davvero (`Parse transfer` esecuzione `742281`).
-**Fatto finora:** riscritte le regole nella descrizione di `tool_rientro` dentro Prenotazioni.
-Non basta: vanno messe nel codice.
-1. Rientro = **sempre riga nuova con Id nuovo**, mai `intent: modifica`.
-2. **Autista e veicolo vuoti** salvo conferma esplicita di Agostino in quel momento.
-3. La **destinazione detta da Agostino vince** su quella dedotta dall'andata.
+## 2. Codice del rientro — `f3Y46avI5O8dEnYn` — **FATTO il 18/08**
+Pubblicato: `Tool - Rientro` versione `9edb3fd9-2a14-44b9-a52a-0bd22c247188`
+(per tornare indietro: `restore_workflow_version` alla `cef25980-839e-4130-b975-37a32e9fa611`).
+`Prenotazioni Transfer 6.0` versione `481223f5-16e3-40e4-8ad4-48f61390117c`
+(indietro: `f76ac9b7-1f36-41f3-a283-af5759c57d83`).
+Codice e banco nel repo: `backups/n8n/tool-rientro/trova-rientro.js`, `banchi/te/banco-rientro.js`
+(39 prove, tutte verdi, con i dati veri delle esecuzioni).
+
+Cosa è stato corretto, con le prove:
+- **L'Id dell'andata usciva nei testi.** `758399` (18/08 17:39): la scheda diceva
+  «↩️ Andata: 16:45 · Id TR-20260818-47a6fd0f…», il modello di `Parse transfer` ha ripreso
+  quell'Id, `appendOrUpdate` fa match sull'Id → ha **aggiornato la riga 1114** invece di
+  aggiungerne una: l'andata 16:45 Pietra Blu → Città di Bari di LADANOV IGOR **non esiste più**
+  (ed è rimasto l'autista dell'andata, Claudio Moccia). Ora nessun Id compare più in `scheda`,
+  `avvisi`, `istruzioni`, `Note` del recap: sta solo nel campo dati `id_andata_solo_riferimento`.
+- **Liste lunghe di candidati.** `755902`: 4 andate da scegliere a mano con nome e destinazione
+  che ne indicavano una; `758295`: 6 andate, solo 2 partivano da Pietra Blu. Ora il codice
+  restringe con ora (l'andata parte prima del rientro, stesso giorno), destinazione detta e nome
+  del cliente nella frase; ogni filtro entra solo se lascia almeno un candidato e viene scritto
+  in `come_ho_scelto` e negli avvisi. Se restano in due o più sceglie sempre Agostino.
+- **Destinazione inventata.** `755905`: `recap_da_salvare` conteneva «Per: avratere di Dashka
+  Potanis» con l'avviso «✅ l'hai detta tu». Ora una destinazione presa dalla frase vale solo se
+  somiglia a un posto che sul gestionale esiste (colonne Da/Per + Fornitori); altrimenti si butta,
+  si usa quella dedotta e lo si dice.
+- **Descrizioni degli strumenti**: `tool_rientro` ha ora la regola «nel messaggio di salvataggio
+  non deve comparire nessun Id»; `cerca_servizi` dice di non essere la strada per un rientro.
+
+## 2-bis. Guardia dentro `Parse transfer` `IkFB29XmJJXQx1a9` — **zona rossa, serve il via**
+Le correzioni sopra tolgono l'Id dai testi, ma **chi scrive non si difende da solo**: `Google
+Sheets1` è `appendOrUpdate` con match su `Id`, quindi qualunque testo che contenga un Id
+esistente aggiorna quella riga. Difesa proposta: se il recap dice «Nuovo transfer» e l'Id
+arrivato esiste già su una riga con **Da/Per/Time diversi**, non aggiornare — generare un Id
+nuovo e segnalarlo. Tocca il salvataggio: non si fa senza l'ok di Agostino.
 
 ## 3. Riparazione dati sul gestionale (zona rossa — Agostino ha già dato il via il 16/08)
 1. Riga `TR/07082026/SSD1XU4R9NS80YGD` → `Transfer_Per` torna **Bari Airport**
@@ -36,6 +59,13 @@ Non basta: vanno messe nel codice.
 2. Creare il **rientro** come riga nuova: **Sabbiadoro → Serafini**, 16/08, Id nuovo,
    **autista e veicolo vuoti**. *Orario ancora da chiedere ad Agostino.*
    Ordine obbligatorio: prima il ripristino, poi il rientro.
+3. **Riga 1114 (18/08, zona rossa, non ancora toccata).** L'Id
+   `TR-20260818-47a6fd0f-9819-4bde-acf3-9e2ef23a78bd` adesso contiene il RIENTRO
+   (18:32, Città di Bari → Pietra Blu). L'ANDATA che c'era prima va rimessa come riga a sé:
+   **16:45, Pietra Blu → Città di Bari, LADANOV IGOR, 3 pax, cell 17189092369, Pietra Blu,
+   125,00 €, Incassare, autista Claudio Moccia**, note «L'ospite deve recarsi alla cattedrale».
+   Il rientro delle 18:32 va tenuto, ma con un **Id nuovo** e **autista vuoto**
+   (adesso si porta dietro Claudio Moccia, che era dell'andata).
 
 ## 4. Buffer messaggi su Orca — `UAz4R93BWh9VuLiR`
 Orca **non ha nessun buffer**: N messaggi = N risposte. Prova: 16/08 14:38:33, quattro

@@ -54,6 +54,32 @@ ce l'ha, sta al 18% e Covo dei Saraceni al 62%. Il grosso dei doppioni lo fa
 `recoverMissedStateEvents` in `TransferLib`, che accoda per conto suo. Quindi niente
 scorciatoie: per sapere cosa gira su un foglio bisogna leggerlo.
 
+### ✅ PRONTA DA INCOLLARE — la GUARD PRONTO portata sugli altri fogli
+
+`apps-script/struttura-guard-pronto.gs`. Regole identiche a Suite 10, eccezione `isFree`
+compresa: non ho inventato nessun controllo nuovo. Due cose sistemate:
+
+- **l'avviso non si perde più.** L'originale affida tutto a `getUi().alert()` dentro un
+  `try/catch` vuoto: in un trigger senza interfaccia lancia, il catch se lo mangia, e «Pronto»
+  sparisce senza motivo. Qui la motivazione va prima come **nota sulla cella** (non serve
+  nessuna finestra) più sfondo rosso; toast e alert restano come canali in più, non unici;
+- **l'avviso se ne va da solo** quando la riga torna a posto.
+
+Le colonne restano numeri (`gv[8]`, `gv[15]`, `gv[17]`) come nell'originale: il passaggio ai
+nomi si fa nel trasloco in `TransferLib`, su tutto il file insieme.
+
+Banco verde su 22 prove: `node banchi/te/banco-guard-pronto.js`. Il caso che deve **passare**
+è vero — la riga 255 di Pietra Blu di stamattina, presa dal `rowValues` dell'esecuzione
+`754716`. Se un giorno il banco la blocca, la guardia è diventata troppo severa.
+
+🔴 Da incollare solo dopo un sì: tocca il salvataggio.
+
+**Una decisione che spetta ad Agostino, non l'ho presa io.** Fra le parole di cortesia c'è
+`free` da solo, quindi la regola riconosce anche «Freedom», «Freeway», «Free Wi-Fi»: una riga
+con tariffa 0 e «Freedom Hotel» nelle note **passa**, e non dovrebbe. È così anche su Suite 10
+oggi. È una regola sui soldi: si cambia se lo dice lui. Basta togliere `free`, il resto resta
+coperto da `free shuttle` e `gratuit`.
+
 ### Dove si va a parare
 
 Non «sistemare diciotto script», ma **una sola versione in `TransferLib`** — che tutti e

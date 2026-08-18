@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+:root{--blu:#0b3d66;--oro:#c9a227;--verde:#1e8e3e;--rosso:#c5221f;--ambra:#e37400;--grigio:#5f6368;--bg:#f4f6f8;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;}
+body{background:var(--bg);color:#202124;padding-bottom:70px;}
+header{background:var(--blu);color:#fff;padding:12px 14px;position:sticky;top:0;z-index:10;}
+header h1{font-size:17px;font-weight:600;}
+.datebar{display:flex;gap:6px;margin-top:10px;align-items:center;}
+.datebar button{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:17px;width:38px;height:38px;border-radius:8px;flex-shrink:0;}
+.datebar input{flex:1;min-width:0;height:38px;border:none;border-radius:8px;padding:0 8px;font-size:14px;}
+.datebar .oggi{width:auto;padding:0 10px;font-size:13px;font-weight:600;background:var(--oro);color:#222;}
+.tabs{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;z-index:10;}
+.tabs button{flex:1;padding:12px 0 max(12px,env(safe-area-inset-bottom));border:none;background:none;font-size:12px;color:var(--grigio);}
+.tabs button.att{color:var(--blu);font-weight:700;}
+main{padding:12px;}
+.sommario{display:flex;gap:8px;flex-wrap:wrap;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:12.5px;}
+.card{background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:4px solid var(--verde);}
+.card.warn{border-left-color:var(--rosso);}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;}
+.card .ora{font-size:19px;font-weight:700;color:var(--blu);}
+.card .ora small{font-weight:400;color:var(--grigio);}
+.card .tratta{font-size:14.5px;margin:5px 0 2px;font-weight:600;}
+.card .info{font-size:12.5px;color:var(--grigio);margin-bottom:6px;}
+.card .meta{font-size:12px;color:var(--grigio);display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.card .extra{font-size:12.5px;color:var(--grigio);margin-top:7px;border-top:1px solid #f0f2f5;padding-top:6px;}
+.azioni{display:flex;gap:8px;margin-left:auto;}
+.azioni a{text-decoration:none;font-size:16px;background:#eef1f4;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.chip{background:#eef1f4;border-radius:20px;padding:2px 9px;font-size:12px;}
+.chip.rosso{background:#fce8e6;color:var(--rosso);font-weight:600;}
+.chip.verde{background:#e6f4ea;color:var(--verde);font-weight:600;}
+.chip.ambra{background:#fef3e0;color:var(--ambra);font-weight:600;}
+.vuoto{text-align:center;color:var(--grigio);padding:40px 20px;font-size:14px;}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none;}
+.modal{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;z-index:21;display:none;max-height:88vh;overflow-y:auto;padding:16px 16px max(20px,env(safe-area-inset-bottom));}
+.modal h2{font-size:16px;color:var(--blu);margin-bottom:2px;}
+.modal .sub{font-size:13px;color:var(--grigio);margin-bottom:12px;}
+.modal label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px;}
+.modal select,.modal input[type=text],.modal input[type=date],.modal input[type=time],.modal input[type=number],.modal textarea{width:100%;height:44px;font-size:15px;border:1px solid #ccc;border-radius:10px;padding:0 10px;background:#fff;}
+.modal textarea{height:70px;padding:8px 10px;}
+.avviso{font-size:13px;border-radius:8px;padding:8px 10px;margin-top:6px;display:none;}
+.avviso.ambra{background:#fef3e0;color:var(--ambra);display:block;}
+.avviso.rosso{background:#fce8e6;color:var(--rosso);display:block;}
+.btnrow{display:flex;gap:8px;margin-top:14px;}
+.btnrow button{flex:1;height:44px;border:none;border-radius:10px;font-size:14px;font-weight:600;}
+.salva{background:var(--blu);color:#fff;}
+.annulla{background:#eef1f4;color:#333;}
+.fl{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.fl .riga{display:flex;justify-content:space-between;align-items:center;}
+.fl .nome{font-weight:600;font-size:15px;}
+.fl .cat{font-size:11px;color:var(--grigio);}
+.fl .st{font-size:13px;text-align:right;}
+.bar{height:6px;background:#eef1f4;border-radius:4px;margin-top:8px;overflow:hidden;display:none;}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ambra),var(--rosso));border-radius:4px;}
+.clessidra{display:inline-block;animation:flip 2.5s infinite;}
+@keyframes flip{0%,80%{transform:rotate(0)}90%,100%{transform:rotate(180deg)}}
+.sez{font-size:13px;font-weight:700;color:var(--grigio);margin:16px 4px 8px;text-transform:uppercase;}
+.sez.sub{font-size:12px;margin:14px 4px 6px;letter-spacing:.3px;}
+.tl{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.tlbar{position:relative;height:24px;background:#f0f2f5;border-radius:6px;margin:7px 0 2px;overflow:visible;}
+.tlseg{position:absolute;top:3px;bottom:3px;}
+.tlnow{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--rosso);z-index:2;}
+.tlassi{display:flex;justify-content:space-between;font-size:10px;color:#9aa0a6;}
+.tltesto{font-size:12px;color:var(--grigio);margin-top:5px;line-height:1.6;}
+.legenda{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--grigio);background:#fff;border-radius:10px;padding:8px 12px;margin-bottom:10px;}
+.legenda span{display:flex;align-items:center;gap:5px;}
+.sw{display:inline-block;width:16px;height:10px;border-radius:3px;}
+.risultato{background:#fff;border:1px solid #e4e7eb;border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;}
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 18px;border-radius:24px;font-size:14px;z-index:30;display:none;max-width:90vw;}
+.spin{border:3px solid #eee;border-top-color:var(--blu);border-radius:50%;width:28px;height:28px;animation:sp 1s linear infinite;margin:40px auto;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   SCHEDA ASSEGNA — a sinistra i giri per autista, a destra la coda per ora.
+   Su telefono le due colonne stanno una sotto l'altra (prima la coda: è quella
+   su cui si agisce); da 980px in su affiancate, con la coda che resta ferma
+   mentre si scorrono i giri.
+   ============================================================ */
+/* su telefono prima la coda (è quella su cui si agisce), i giri sotto */
+.assegna{display:flex;flex-direction:column;gap:14px;}
+.assegna .coda{order:-1;}
+.pane{min-width:0;}
+.paneT{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--blu);
+       background:#e8eef4;border-radius:8px;padding:7px 11px;margin-bottom:9px;}
+.paneT.sub{margin-top:14px;background:#f2f0e6;color:#7a6a1f;}
+.paneN{background:var(--blu);color:#fff;border-radius:20px;padding:0 8px;font-size:11px;line-height:18px;}
+.paneT.sub .paneN{background:#7a6a1f;}
+.paneSel{font-weight:600;color:var(--grigio);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.giriPie{margin-top:10px;text-align:center;}
+
+/* --- blocco autista --- */
+.autbox{background:#fff;border-radius:10px;border-left:4px solid #9aa0a6;padding:8px 10px;
+        margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.autT{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.autNome{font-weight:700;font-size:14px;}
+.autCat{font-size:10.5px;color:var(--grigio);background:#eef1f4;border-radius:20px;padding:1px 7px;}
+.autN{font-size:11.5px;color:var(--grigio);}
+.autT>.chip,.autT>button{margin-left:auto;}
+.autV{font-size:12px;margin-top:5px;border-radius:7px;padding:4px 8px;background:#eef1f4;color:var(--grigio);}
+.autbox.v-ok{background:#f4fbf6;}      .autbox.v-ok .autV{background:#e6f4ea;color:var(--verde);font-weight:600;}
+.autbox.v-stretto .autV{background:#fef3e0;color:var(--ambra);font-weight:600;}
+.autbox.v-fermo .autV{background:#eceff2;color:#5f6368;}
+.autbox.v-libero .autV{background:#f1f3f5;color:#78808a;}
+.autbox.v-no{opacity:.75;}             .autbox.v-no .autV{background:#fce8e6;color:var(--rosso);}
+.autbox.v-off{opacity:.6;}             .autbox.v-off .autV{background:#f1f3f5;color:#9aa0a6;}
+
+/* --- riga di servizio dentro il giro --- */
+.srvmini{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 6px;margin-top:4px;
+         border-radius:7px;background:#f6f8fa;}
+.srvmini b{color:var(--blu);white-space:nowrap;}
+.srvT{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;}
+.srvmini.ghost{background:#fffbe9;border:1px dashed var(--oro);flex-wrap:wrap;}
+.srvmini.ghost b{color:#8a6d0b;}
+.ghostM{width:100%;font-size:11px;color:#8a6d0b;font-weight:600;}
+.srvvuoto{font-size:11.5px;color:#9aa0a6;padding:5px 6px;}
+.divario{font-size:10.5px;font-weight:600;padding:2px 8px 0;}
+
+/* --- scheda della coda --- */
+.ccard{background:#fff;border-radius:10px;border-left:4px solid var(--rosso);padding:9px 11px;
+       margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.ccard.mezzo{border-left-color:var(--ambra);}
+.ccard.sel{border-left-color:var(--oro);box-shadow:0 0 0 2px var(--oro),0 2px 8px rgba(201,162,39,.28);background:#fffdf5;}
+.ccT{display:flex;align-items:center;gap:8px;font-size:13px;}
+.ccT b{color:var(--blu);}
+.ccEuro{margin-left:auto;font-weight:600;color:var(--grigio);font-size:12px;}
+.ccTratta{font-size:13.5px;font-weight:600;margin:4px 0 2px;}
+.ccInfo{font-size:11.5px;color:var(--grigio);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ccBtn{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
+.ccWhy{font-size:11.5px;color:var(--grigio);margin-top:4px;}
+.ccPie{display:flex;align-items:center;gap:8px;font-size:11px;color:#9aa0a6;margin-top:6px;
+       border-top:1px solid #f0f2f5;padding-top:5px;}
+
+@media(min-width:980px){
+  body[data-tab="assegna"] .assegna{display:grid;grid-template-columns:1.15fr 1fr;gap:0 18px;align-items:start;}
+  body[data-tab="assegna"] .giri{grid-column:1;grid-row:1;}
+  body[data-tab="assegna"] .coda{grid-column:2;grid-row:1;position:sticky;top:104px;
+      max-height:calc(100vh - 130px);overflow-y:auto;padding-right:4px;}
+}
+/* cinque schede: su schermo stretto le scritte non devono più stare larghe della barra */
+@media(max-width:520px){
+  .tabs button{font-size:11px;padding:11px 0 max(11px,env(safe-area-inset-bottom));}
+}
+
+/* ============================================================
+   DESKTOP — la app nasce per il telefono: senza questo blocco su un monitor
+   il contenuto si stira per tutta la larghezza, le righe diventano lunghissime
+   e la barra dei tab resta incollata in fondo allo schermo.
+   ============================================================ */
+[onclick]{cursor:pointer;}
+.dsk{display:none;}  /* dettagli in più che compaiono solo quando c'è spazio */
+@media(min-width:820px){.dsk{display:inline;}}
+/* i due giorni vanno sempre uno sotto l'altro, a qualsiasi larghezza */
+.duecol>section{min-width:0;}
+.duecol>section+section{margin-top:26px;}
+.giorno{font-size:13px;font-weight:700;color:#fff;background:var(--blu);border-radius:8px;
+        padding:7px 12px;margin-bottom:9px;letter-spacing:.2px;}
+.giorno::first-letter{text-transform:uppercase;}
+
+@media (hover:hover) and (pointer:fine){
+  .card:hover,.risultato:hover,.fl:hover,.tl:hover{box-shadow:0 3px 12px rgba(11,61,102,.16);}
+  .datebar button:hover{background:rgba(255,255,255,.28);}
+  .datebar .oggi:hover{background:#dab52e;}
+  .tabs button:hover{background:#f2f5f8;}
+  .btnrow button:hover{filter:brightness(1.06);}
+}
+@media (min-width:820px){
+  body{padding-bottom:92px;}
+  header{padding:14px 0;box-shadow:0 1px 6px rgba(0,0,0,.18);}
+  header h1{font-size:20px;max-width:1120px;margin:0 auto;padding:0 22px;}
+  .datebar{max-width:1120px;margin:12px auto 0;padding:0 22px;}
+  .datebar input{flex:0 1 210px;}
+  .datebar .oggi{font-size:14px;padding:0 16px;}
+  main{max-width:1120px;margin:0 auto;padding:18px 22px 28px;}
+  /* i tab diventano una barra flottante centrata invece di occupare tutta la base */
+  .tabs{left:50%;right:auto;transform:translateX(-50%);bottom:20px;width:auto;
+        border:1px solid #dde3ea;border-radius:999px;overflow:hidden;
+        box-shadow:0 8px 28px rgba(11,61,102,.20);}
+  .tabs button{flex:0 0 auto;padding:12px 26px;font-size:13.5px;}
+  .tabs button.att{background:#eaf1f7;}
+  /* la modale diventa una finestra centrata, non più un foglio che sale dal basso */
+  .ovl{background:rgba(9,26,41,.5);}
+  .modal{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);
+         width:min(700px,92vw);max-height:88vh;border-radius:16px;padding:22px 24px;
+         box-shadow:0 28px 70px rgba(0,0,0,.34);}
+  .modal h2{font-size:18px;}
+  /* i campi dei dettagli su due colonne: la modale scorreva per tre schermate */
+  #editBox{column-count:2;column-gap:22px;}
+  #editBox label{break-after:avoid;-webkit-column-break-after:avoid;margin-top:10px;}
+  #editBox input,#editBox textarea{break-before:avoid;-webkit-column-break-before:avoid;break-inside:avoid;}
+  #editBox .btnrow{column-span:all;margin-top:18px;}
+  #toast{bottom:104px;}
+  .sommario{font-size:13.5px;padding:12px 16px;}
+}
+/* schermi larghi: Flotta e Rent su due colonne, le intestazioni di sezione a tutta riga */
+@media (min-width:1080px){
+  body[data-tab="flotta"] main,body[data-tab="rent"] main{
+    display:grid;grid-template-columns:1fr 1fr;gap:0 16px;align-items:start;}
+  body[data-tab="flotta"] .sez,body[data-tab="rent"] .sez,
+  body[data-tab="flotta"] .vuoto,body[data-tab="rent"] .vuoto,
+  body[data-tab="flotta"] .sommario,body[data-tab="rent"] .sommario{grid-column:1/-1;}
+}
+@media (min-width:1400px){
+  header h1,.datebar,main{max-width:1320px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚐 Transfer Experience — Planner</h1>
+  <div class="datebar">
+    <button onclick="shiftDay(-1)">‹</button>
+    <input type="date" id="datePick" onchange="useDate(this.value)">
+    <button onclick="shiftDay(1)">›</button>
+    <button class="oggi" onclick="goToday()">Oggi</button>
+    <button onclick="openSearch()">🔍</button>
+    <button onclick="load()">🔄</button>
+  </div>
+</header>
+
+<main id="main"><div class="spin"></div></main>
+
+<div class="tabs">
+  <button id="tabS" class="att" onclick="setTab('servizi')">📋 Servizi</button>
+  <button id="tabA" onclick="setTab('assegna')">🧩 Assegna</button>
+  <button id="tabF" onclick="setTab('flotta')">⏳ Flotta</button>
+  <button id="tabT" onclick="setTab('timeline')">📊 Timeline</button>
+  <button id="tabR" onclick="setTab('rent')">🔑 Rent</button>
+</div>
+
+<div class="ovl" id="ovl" onclick="closeModal()"></div>
+<div class="modal" id="modal"></div>
+<div id="toast"></div>
+
+<script>
+var BOOT=<?!= boot ?>;
+var DATA=null, TAB='servizi', CUR=null, TIMER=null, TICK=0, PENDING=null, MODAL_OPEN=false, PEND={}, SEARCH_RES=[];
+/* vista a due giorni affiancati (solo su schermo largo) */
+var DUE=false, G2=null, LOADING={};
+function setDue(v){
+  DUE=!!v;
+  try{localStorage.setItem('te_due',DUE?'1':'0');}catch(e){}
+  if(DUE){var d2=addDaysC(document.getElementById('datePick').value||DATA.date,1);if(!PLANS[d2])caricaGiorno(d2);}
+  render();
+}
+
+/* Filtri autisti e mezzi: si tiene l'elenco di chi è NASCOSTO, non di chi è mostrato,
+   così un autista o un mezzo nuovo (cambio giornata) resta visibile di default.
+   '__none__' = i servizi ancora scoperti su quel fronte. */
+var AUT_HIDE={}, AUT_FILTRI=[], VEI_HIDE={}, VEI_FILTRI=[];
+function autNascosti(){return Object.keys(AUT_HIDE).length;}
+function veiNascosti(){return Object.keys(VEI_HIDE).length;}
+function servizioVisibile(s){
+  return !AUT_HIDE[s.autista||'__none__'] && !VEI_HIDE[s.veicolo||'__none__'];
+}
+function toggleFiltro_(lista,hide,k){
+  var n=lista[k],x;
+  if(n===''){for(x in hide)delete hide[x];}
+  else if(n==='__nessuno__'){
+    for(x in hide)delete hide[x];
+    lista.forEach(function(z){if(z&&z!=='__nessuno__')hide[z]=true;});
+  }
+  else if(hide[n])delete hide[n];
+  else hide[n]=true;
+  render();
+}
+function setAutIdx(k){toggleFiltro_(AUT_FILTRI,AUT_HIDE,k);}
+function setVeiIdx(k){toggleFiltro_(VEI_FILTRI,VEI_HIDE,k);}
+
+/* Una fila di chip per ogni autista (o mezzo) che ha servizi nei giorni visibili,
+   col suo colore e il numero di servizi. Un tocco lo toglie dall'elenco.
+   I nomi non entrano mai dentro l'onclick (gli apostrofi romperebbero l'HTML):
+   si passa l'indice e il nome si rilegge dall'elenco. */
+function barraFiltro_(o){
+  var giorni=[DATA];
+  if(DUE&&G2&&PLANS[G2]&&PLANS[G2].services)giorni.push(PLANS[G2]);
+  var conta={},senza=0;
+  giorni.forEach(function(D){
+    D.services.forEach(function(s){
+      if(isCanc(s))return;
+      var v=String(s[o.campo]||'').trim();
+      if(v)conta[v]=(conta[v]||0)+1;else senza++;
+    });
+  });
+  var nomi=Object.keys(conta).sort(function(x,y){return x.localeCompare(y);});
+  if(!nomi.length&&!senza)return '';
+  var lista=['','__nessuno__'].concat(nomi);
+  if(senza)lista.push('__none__');
+  o.salvaLista(lista);
+  var hide=o.hide,totali=nomi.length+(senza?1:0),nascosti=Object.keys(hide).length;
+
+  // Tutti / Nessuno sono comandi, non voci dell'elenco: non vanno mai barrati
+  function azione(k,label,attivo){
+    return '<button class="chip'+(attivo?' verde':'')+'" style="border:none;white-space:nowrap" onclick="'+o.fn+'('+k+')">'+label+'</button>';
+  }
+  function chip(k,label,colore,spento,titolo){
+    var st=spento
+      ?'background:#eef1f4;color:#b6bcc3;font-weight:500;text-decoration:line-through;opacity:.85'
+      :'background:'+colore+'22;color:'+colore+';font-weight:600';
+    return '<button class="chip" style="border:none;white-space:nowrap;'+st+'" title="'+titolo+'" onclick="'+o.fn+'('+k+')">'+label+'</button>';
+  }
+  var h='<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;overflow-x:auto;font-size:12px">'
+    +'<span style="color:#9aa0a6;white-space:nowrap;min-width:52px">'+o.titolo+'</span>'
+    +azione(0,'Tutti',nascosti===0)
+    +azione(1,'Nessuno',nascosti>=totali);
+  nomi.forEach(function(n,k){
+    h+=chip(k+2,esc(n)+' <span style="opacity:.7">'+conta[n]+'</span>',o.colore(n),!!hide[n],
+            hide[n]?'rimetti in elenco':'togli dall\'elenco');
+  });
+  if(senza)h+='<button class="chip" style="border:none;white-space:nowrap;'
+    +(hide['__none__']?'background:#eef1f4;color:#b6bcc3;font-weight:500;text-decoration:line-through'
+                      :'background:#fce8e6;color:var(--rosso);font-weight:600')
+    +'" onclick="'+o.fn+'('+(lista.length-1)+')">⚠️ '+o.vuoto+' <span style="opacity:.7">'+senza+'</span></button>';
+  if(nascosti)h+='<span style="color:#9aa0a6;white-space:nowrap;margin-left:2px">'+(totali-nascosti)+' di '+totali+'</span>';
+  return h+'</div>';
+}
+function barraAutisti(){
+  return barraFiltro_({titolo:'Autisti:',campo:'autista',hide:AUT_HIDE,fn:'setAutIdx',
+    vuoto:'Senza autista',colore:colorOf,salvaLista:function(l){AUT_FILTRI=l;}});
+}
+function barraMezzi(){
+  return barraFiltro_({titolo:'Mezzi:',campo:'veicolo',hide:VEI_HIDE,fn:'setVeiIdx',
+    vuoto:'Senza mezzo',colore:colorOfVeicolo,salvaLista:function(l){VEI_FILTRI=l;}});
+}
+
+function caricaGiorno(d){
+  if(LOADING[d])return;
+  LOADING[d]=1;
+  google.script.run
+    .withSuccessHandler(function(r){delete LOADING[d];if(r&&r.date){PLANS[r.date]=r;if(TAB==='servizi')render();}})
+    .withFailureHandler(function(){delete LOADING[d];})
+    .getPlanData(d);
+}
+/* apre un servizio della colonna di destra: sposta la app su quel giorno e lo apre lì,
+   così salvataggi e assegnazioni lavorano sempre sulla giornata giusta */
+function apriGiorno2(i){
+  var P=PLANS[G2];
+  if(!P||!P.services||!P.services[i])return;
+  var id=P.services[i].id;
+  document.getElementById('datePick').value=G2;
+  DATA=P;render();
+  var idx=-1;DATA.services.forEach(function(s,k){if(s.id===id)idx=k;});
+  if(idx>=0)openModal(idx);
+  load(true);
+}
+
+var PALETTE=['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#0aa3a3','#f032e6','#9a6324','#800000','#808000','#000075','#2f4f4f','#c9a227','#1b7f8e','#8e44ad','#d35400','#16a085','#7f8c8d'];
+function colorOf(nome){
+  if(!nome||!DATA)return '#5f6368';
+  for(var i=0;i<DATA.autisti.length;i++)if(DATA.autisti[i].nome===nome)return PALETTE[i%PALETTE.length];
+  return '#5f6368';
+}
+function chipAut(nome){
+  if(!nome)return '<span class="chip rosso">⚠️ Senza autista</span>';
+  var c=colorOf(nome);
+  return '<span class="chip" style="background:'+c+'22;color:'+c+';font-weight:700"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+c+';margin-right:4px"></span>'+esc(nome)+'</span>';
+}
+
+function fmtMin(m){if(m<0)return '—';m=((m%1440)+1440)%1440;return ('0'+Math.floor(m/60)).slice(-2)+':'+('0'+(m%60)).slice(-2);}
+function fmtDur(m){m=Math.round(m);var neg=m<0;if(neg)m=-m;var h=Math.floor(m/60),r=m%60;return (neg?'-':'')+((h?h+'h ':'')+(r?r+'m':(h?'':'0m'))).trim();}
+/* riconosce il separatore decimale invece di eliminare sempre i punti.
+   Prima "150.5" (numero letto dal foglio) diventava 1505: incasso della giornata ×10. */
+function eur(t){
+  if(typeof t==='number')return isNaN(t)?0:t;
+  var s=String(t==null?'':t).trim().replace(/[^\d.,\-]/g,'');
+  if(!s||s==='-')return 0;
+  var lc=s.lastIndexOf(','),lp=s.lastIndexOf('.');
+  var dec=lc>lp?',':(lp>lc?'.':'');
+  if(dec){
+    var coda=s.length-s.lastIndexOf(dec)-1;
+    if(coda===3&&(lc===lp||s.split(dec).length===2))dec='';
+  }
+  if(dec===','){s=s.replace(/\./g,'').replace(',','.');}
+  else if(dec==='.'){s=s.replace(/,/g,'');}
+  else {s=s.replace(/[.,]/g,'');}
+  var n=parseFloat(s);return isNaN(n)?0:n;
+}
+function fmtData(iso){if(!iso)return '';var d=new Date(iso+'T12:00:00');return ['dom','lun','mar','mer','gio','ven','sab'][d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);}
+var MESI_IT=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+var GIORNI_IT=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+function fmtDataLunga(iso){
+  if(!iso)return '';
+  var d=new Date(iso+'T12:00:00');
+  var et=DATA?(iso===DATA.today?' · oggi':(iso===addDaysC(DATA.today,1)?' · domani':'')):'';
+  return GIORNI_IT[d.getDay()]+' '+d.getDate()+' '+MESI_IT[d.getMonth()]+et;
+}
+
+var PLANS={};
+/* data locale, non UTC: con toISOString dopo le 22:00 (ora legale) la app si apriva sul giorno prima */
+function isoLocal(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function oggiLocal(){return isoLocal(new Date());}
+function addDaysC(iso,n){var d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return isoLocal(d);}
+/* cambio data istantaneo: se la giornata è già in memoria la mostra subito e riallinea dietro */
+function useDate(iso){
+  document.getElementById('datePick').value=iso;
+  if(PLANS[iso]&&PLANS[iso].services){DATA=PLANS[iso];render();load(true);}
+  else load();
+}
+function goToday(){useDate(DATA?DATA.today:oggiLocal());}
+function shiftDay(d){useDate(addDaysC(document.getElementById('datePick').value,d));}
+function goDate(iso){closeModal();useDate(iso);}
+function setTab(t){TAB=t;
+  ['S','A','F','T','R'].forEach(function(k){document.getElementById('tab'+k).className='';});
+  document.getElementById('tab'+{servizi:'S',assegna:'A',flotta:'F',timeline:'T',rent:'R'}[t]).className='att';
+  render();}
+
+function load(silent){
+  var d=document.getElementById('datePick').value;
+  if(silent!==true)document.getElementById('main').innerHTML='<div class="spin"></div>';
+  google.script.run.withSuccessHandler(function(res){
+    DATA=res;
+    // riapplica le modifiche non ancora salvate
+    Object.keys(PEND).forEach(function(id){
+      DATA.services.forEach(function(s){if(s.id===id){s.autista=PEND[id].autista;s.veicolo=PEND[id].veicolo;}});
+    });
+    if(!document.getElementById('datePick').value)document.getElementById('datePick').value=res.date;
+    PLANS[res.date]=DATA;
+    try{if(DATA.date===DATA.today)localStorage.setItem('te_plan',JSON.stringify(DATA));}catch(e){}
+    render();
+    // prefetch: scarica in sottofondo il giorno prima e quello dopo
+    [addDaysC(res.date,1),addDaysC(res.date,-1)].forEach(function(dd){
+      if(!PLANS[dd])google.script.run.withSuccessHandler(function(r2){if(!PLANS[r2.date])PLANS[r2.date]=r2;}).withFailureHandler(function(){}).getPlanData(dd);
+    });
+    if(PENDING){
+      var idx=-1;
+      DATA.services.forEach(function(s,i){if(s.id===PENDING)idx=i;});
+      PENDING=null;
+      if(idx>=0)openModal(idx);
+    }
+    if(TIMER)clearInterval(TIMER);
+    TICK=0;
+    TIMER=setInterval(function(){
+      TICK++;
+      if(DATA&&DATA.date===DATA.today){DATA.nowMin++;if(!MODAL_OPEN)render();}
+      if(TICK%5===0&&!MODAL_OPEN)load(true);
+    },60000);
+  }).withFailureHandler(function(e){if(silent!==true)document.getElementById('main').innerHTML='<div class="vuoto">Errore: '+e.message+'</div>';}).getPlanData(d);
+}
+
+/* ---------- motore disponibilità (replica Turni v6) ---------- */
+/* Stesso posto = l'autista è già lì. Vale anche se scritto in modo diverso
+   ("Aeroporto di Bari" / "Apt Bari" / "Aeroporto di Bari - Arrivi").
+   Stessa regola del backend, ripetuta qui perché la app deve essere giusta anche
+   quando in _CacheTratte è rimasto un valore vecchio per quella coppia. */
+function normLuogoUI(x){
+  return String(x||'').toLowerCase().trim()
+    .replace(/[.,;:'"()\/\-]/g,' ')
+    .replace(/\b(aeroporto( di)?|airport|apt|aereoporto)\b/g,'apt')
+    .replace(/\b(arrivi|partenze|arrivals|departures|terminal|gate|t1|t2)\b/g,' ')
+    .replace(/\b(italia|italy|ba|br|bt|le|ta|fg)\b/g,' ')
+    .replace(/[^a-z0-9à-ù ]/g,' ')
+    .replace(/\s+/g,' ').trim();
+}
+function stessoLuogoUI(a,b){var x=normLuogoUI(a),y=normLuogoUI(b);return !!x&&x===y;}
+var _BYID_SRC=null,_BYID={};
+function srvById(id){
+  if(_BYID_SRC!==DATA){_BYID_SRC=DATA;_BYID={};if(DATA&&DATA.services)DATA.services.forEach(function(s){_BYID[s.id]=s;});}
+  return _BYID[id]||null;
+}
+function trf(aId,bId){
+  var A=srvById(aId),B=srvById(bId);
+  if(A&&B&&stessoLuogoUI(A.per,B.da))return {min:0,buffer:0};
+  var t=DATA.transfers[aId+'->'+bId];
+  return t||{min:30,buffer:DATA.bufferDefault};
+}
+function conflict(A,S){
+  if(A.startMin<0||S.startMin<0)return null;
+  var t1=trf(A.id,S.id),t2=trf(S.id,A.id);
+  var AbeforeS=A.endMin+t1.min+t1.buffer<=S.startMin;
+  var SbeforeA=S.endMin+t2.min+t2.buffer<=A.startMin;
+  if(AbeforeS||SbeforeA)return null;
+  return {freeAt:A.endMin+t1.min+t1.buffer,con:A};
+}
+function isCanc(s){return String(s.allert||'').indexOf('Cancellato')>=0;}
+function availability(list,keyFn,S){
+  var out={};
+  list.forEach(function(item){
+    var mine=DATA.services.filter(function(sv){return sv.id!==S.id&&!isCanc(sv)&&keyFn(sv)===item.nome&&sv.startMin>=0;});
+    var worst=null;
+    mine.forEach(function(A){var c=conflict(A,S);if(c&&(!worst||c.freeAt>worst.freeAt))worst=c;});
+    out[item.nome]=worst;
+  });
+  return out;
+}
+/* ---------- chi può prendere un servizio ----------
+   Soglie condivise fra consigli e scheda Assegna: un solo posto dove cambiarle.
+   ATTESA_LONTANO = oltre queste ore di vuoto non è più "allungare il giro", è richiamare
+   fuori uno che aveva finito. STRETTO = margine sotto il quale la riga diventa ambra. */
+var ATTESA_LONTANO=240, STRETTO=20;
+var FATT_OK={ok:1,stretto:1,fermo:1,libero:1};
+
+/* Il giro di un autista nella giornata mostrata: solo servizi veri, in ordine di ora. */
+function giroDi(nome,escludiId){
+  if(!nome||!DATA||!DATA.services)return [];
+  return DATA.services.filter(function(sv){
+    return sv.autista===nome&&sv.id!==escludiId&&!isCanc(sv)&&sv.startMin>=0;
+  }).sort(function(a,b){return a.startMin-b.startMin;});
+}
+function autistiInServizio(){
+  return DATA.autisti.filter(function(a){return giroDi(a.nome,null).length>0;});
+}
+
+/* Valuta un autista per un servizio: dove si aggancia, quanta attesa, se ci arriva.
+   È la base sia dei consigli sia della scheda Assegna, così quello che si legge a
+   schermo e quello che sceglie il codice sono la stessa identica cosa.
+   k: 'ok' incastro nel giro · 'stretto' margine risicato · 'fermo' in servizio ma lontano
+      · 'libero' oggi non lavora · 'no' occupato, non ci arriva · 'off' non disponibile */
+function valutaAutista(S,nome){
+  var out={nome:nome,k:'libero',txt:'',prev:null,next:null,attesaPrima:null,margineDopo:null,
+           n:0,minuti:0,freeAt:-1,inServizio:false,vicino:null,vuoto:null,punti:0};
+  var a=null,i;
+  for(i=0;i<DATA.autisti.length;i++)if(DATA.autisti[i].nome===nome)a=DATA.autisti[i];
+  if(a&&a.esclusoMotivo){out.k='off';out.txt=a.esclusoMotivo;return out;}
+  var mine=giroDi(nome,S.id);
+  out.n=mine.length;
+  out.inServizio=mine.length>0;
+  mine.forEach(function(P){out.minuti+=Math.max(0,P.durMin||0);});
+  if(S.startMin<0){out.k=mine.length?'fermo':'libero';out.txt='servizio senza orario';return out;}
+  // un solo conflitto basta per dire di no
+  var worst=null;
+  mine.forEach(function(P){var c=conflict(P,S);if(c&&(!worst||c.freeAt>worst.freeAt))worst=c;});
+  if(worst){
+    out.k='no';out.freeAt=worst.freeAt;out.prev=worst.con;
+    out.txt='impegnato: si libera ~'+fmtMin(worst.freeAt)+' a '+worst.con.per;
+    return out;
+  }
+  if(!mine.length){out.k='libero';out.txt='oggi non ha servizi';return out;}
+  // a quale servizio si aggancia, prima e dopo
+  mine.forEach(function(P){
+    if(P.endMin<=S.startMin&&(!out.prev||P.endMin>out.prev.endMin))out.prev=P;
+    if(P.startMin>=S.endMin&&(!out.next||P.startMin<out.next.startMin))out.next=P;
+  });
+  if(out.prev)out.attesaPrima=S.startMin-out.prev.endMin-trf(out.prev.id,S.id).min;
+  if(out.next)out.margineDopo=out.next.startMin-S.endMin-trf(S.id,out.next.id).min;
+  // vuoto = quanto l'autista resta fermo PRIMA di questo servizio (o, se il servizio
+  // viene prima di tutto il suo giro, quanto gli resta dopo): è questo che dice se
+  // conviene chiamarlo. vicino = il lato più stretto, e serve solo a dire se è rischioso.
+  // Ordinare per il lato più stretto metteva davanti i giri più fragili: 5 minuti di
+  // margine dopo sembravano meglio di mezz'ora d'attesa comoda.
+  var vicino=Math.min(out.attesaPrima===null?99999:out.attesaPrima,
+                      out.margineDopo===null?99999:out.margineDopo);
+  out.vicino=vicino;
+  out.vuoto=out.attesaPrima!==null?out.attesaPrima:(out.margineDopo!==null?out.margineDopo:99999);
+  if(out.vuoto>ATTESA_LONTANO){
+    out.k='fermo';
+    out.txt=out.prev?('in servizio oggi, ma stacca alle '+fmtMin(out.prev.endMin)+' a '+out.prev.per)
+           :(out.next?('in servizio oggi, ma solo dalle '+fmtMin(out.next.startMin)):'in servizio oggi');
+    return out;
+  }
+  out.k=vicino<STRETTO?'stretto':'ok';
+  out.punti=out.vuoto+(vicino<STRETTO?150:0);   // il rischio pesa, ma dopo il tempo morto
+  var pezzi=[];
+  if(out.prev)pezzi.push('arriva da '+out.prev.per+', attesa '+fmtDur(out.attesaPrima));
+  if(out.next)pezzi.push('poi riparte da '+out.next.da+', margine '+fmtDur(out.margineDopo));
+  out.txt=pezzi.join(' \u00b7 ');
+  return out;
+}
+
+/* catene sempre pronte: il miglior candidato per un servizio scoperto, calcolato
+   al volo dalle durate/tratte precalcolate (nessuna chiamata al server) */
+function bestFor(S){
+  if(S.autista||S.startMin<0)return null;
+  var avA=availability(DATA.autisti,function(sv){return sv.autista;},S);
+  var c=suggest(S,avA);
+  return c.length?c[0]:null;
+}
+/* riceve solo l'indice e ricalcola il candidato: passare il nome dentro l'attributo
+   onclick rompeva l'HTML con gli autisti che hanno l'apostrofo (D'Amico, Dell'Aquila) */
+function assegnaRapido(i,dISO){
+  var D=(dISO&&PLANS[dISO])?PLANS[dISO]:DATA;   // dISO = colonna di destra in vista 2 giorni
+  var s=D.services[i];
+  if(!s)return;
+  var salva=DATA;DATA=D;                        // i candidati vanno calcolati sulla giornata giusta
+  var bf=bestFor(s);
+  DATA=salva;
+  if(!bf){toast('Nessun autista disponibile per questo servizio');return;}
+  PEND[s.id]={autista:bf.nome,veicolo:s.veicolo};
+  s.autista=bf.nome;render();
+  toast('🕐 '+bf.nome+' in sospeso ('+fmtData(D.date)+') — salva dalla barra in alto');
+}
+/* colore stabile per ogni mezzo, sfasato rispetto a quello degli autisti
+   così un mezzo e un autista non finiscono mai con la stessa tinta */
+function colorOfVeicolo(nome){
+  if(!nome||!DATA)return '#7d93a8';
+  for(var i=0;i<DATA.veicoli.length;i++)if(DATA.veicoli[i].nome===nome)return PALETTE[(i*5+7)%PALETTE.length];
+  return '#7d93a8';
+}
+
+/* Miglior mezzo per un servizio scoperto: stessi controlli del menù a tendina
+   (fuori servizio, noleggio, capienza, conflitti) più due preferenze —
+   il mezzo che l'autista sta già usando in giornata, e il più piccolo che basta. */
+function bestVeicoloFor(S){
+  if(S.veicolo||S.startMin<0)return null;
+  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},S);
+  var cands=[];
+  DATA.veicoli.forEach(function(v){
+    if(v.fuoriServizio||v.inRent)return;
+    if(S.pax>0&&v.pax>0&&v.pax<S.pax)return;                 // non ci stanno
+    var w=avV[v.nome];
+    // impegnato su un servizio dello STESSO autista: viaggiano insieme, non è un conflitto
+    if(w&&w.con&&S.autista&&w.con.autista===S.autista)w=null;
+    if(w)return;
+    var stesso=!!(S.autista&&DATA.services.some(function(sv){
+      return sv.id!==S.id&&!isCanc(sv)&&sv.autista===S.autista&&sv.veicolo===v.nome;}));
+    var avanzo=(v.pax>0&&S.pax>0)?(v.pax-S.pax):50;
+    cands.push({nome:v.nome,pax:v.pax,score:(stesso?0:1000)+avanzo,
+      reason:stesso?'già con '+S.autista+' oggi':(v.pax?v.pax+' posti per '+(S.pax||'?')+' pax':'libero')});
+  });
+  cands.sort(function(x,y){return x.score-y.score;});
+  return cands.length?cands[0]:null;
+}
+function assegnaVeicoloRapido(i,dISO){
+  var D=(dISO&&PLANS[dISO])?PLANS[dISO]:DATA;
+  var s=D.services[i];
+  if(!s)return;
+  var salva=DATA;DATA=D;
+  var bv=bestVeicoloFor(s);
+  DATA=salva;
+  if(!bv){toast('Nessun mezzo libero e capiente per questo servizio');return;}
+  PEND[s.id]={autista:s.autista,veicolo:bv.nome};
+  s.veicolo=bv.nome;render();
+  toast('🕐 '+bv.nome+' in sospeso ('+fmtData(D.date)+') — salva dalla barra in alto');
+}
+/* Chi conviene chiamare, in ordine.
+   Regola cambiata il 18/08: PRIMA chi sta già lavorando in giornata.
+   La versione vecchia dava 300 di penalità a chi non era "Fisso" e solo 200 a chi non
+   aveva nessun servizio: un autista fermo a casa batteva sempre chi era già fuori e a
+   dieci minuti dal punto di ritiro. Ora l'ordine è:
+     1. si incastra nel giro (punteggio = minuti di vuoto, meno è meglio)
+     2. è in servizio oggi ma lontano nella giornata
+     3. oggi non lavora  ← ultimo, e la riga lo dice
+   Categoria e carico restano, ma come spareggio, non come fattore principale. */
+/* Un solo punteggio per tutta la app: lo usano sia i consigli sia l'ordine dei blocchi
+   nella scheda Assegna. Tenerne due significava vedere due classifiche diverse per lo
+   stesso servizio nelle due colonne. */
+function punteggioAutista(a,v){
+  var fisso=(a.categoria||'').toLowerCase()==='fisso',s;
+  if(v.k==='ok'||v.k==='stretto')s=Math.max(0,v.punti);
+  else if(v.k==='fermo')s=1000+Math.round(Math.min(1440,v.vuoto===null?600:v.vuoto)/10);
+  else if(v.k==='libero')s=4000+(fisso?0:150);
+  else if(v.k==='no')s=8000+Math.max(0,v.freeAt);
+  else s=9000;
+  return s+(fisso?0:25)   // a parità, prima chi è in organico
+          +v.n*3;         // e chi ha la giornata meno carica
+}
+function suggest(S,avA,quanti){
+  var cands=[];
+  DATA.autisti.forEach(function(a){
+    if(a.esclusoMotivo)return;
+    if(avA&&avA[a.nome])return;
+    var v=valutaAutista(S,a.nome);
+    if(v.k==='no'||v.k==='off')return;
+    cands.push({nome:a.nome,cat:a.categoria,score:punteggioAutista(a,v),reason:v.txt,
+                inServizio:v.inServizio,k:v.k,n:v.n,val:v});
+  });
+  cands.sort(function(x,y){return x.score-y.score||(x.nome<y.nome?-1:1);});
+  return cands.slice(0,quanti||3);
+}
+
+/* ---------- viste ---------- */
+function render(){
+  document.body.setAttribute('data-tab',TAB); // serve al CSS per le due colonne su schermo largo
+  if(TAB==='servizi')renderServizi();
+  else if(TAB==='assegna')renderAssegna();
+  else if(TAB==='flotta')renderFlotta();
+  else if(TAB==='timeline')renderTimeline();
+  else renderRent();
+}
+
+var FILT='tutti', VIEW='righe', ORD='orario';
+function setFilt(f){FILT=f;render();}
+function setView(v){VIEW=v;render();}
+function setOrd(o){ORD=o;render();}
+function isDone(s){
+  if(isCanc(s))return true;
+  if(String(s.stato||'').toLowerCase().indexOf('eseguito')>=0)return true;
+  if(DATA.date<DATA.today)return true;
+  if(DATA.date>DATA.today)return false;
+  if(s.endMin<0)return false;
+  return Math.min(s.endMin,1439)<=DATA.nowMin; // i servizi oltre mezzanotte contano come chiusi a fine giornata
+}
+function azioni(s){
+  var a='';
+  var digits=(s.cell||'').replace(/[^\d+]/g,'');
+  if(digits)a+='<a href="tel:'+digits+'" onclick="event.stopPropagation()">📞</a>';
+  var wa=s.wa&&s.wa.indexOf('http')===0?s.wa:(digits?'https://wa.me/'+digits.replace('+',''):'');
+  if(wa)a+='<a href="'+esc(wa)+'" target="_blank" onclick="event.stopPropagation()">💬</a>';
+  if(s.da&&s.per)a+='<a href="https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(s.da)+'&destination='+encodeURIComponent(s.per)+'" target="_blank" onclick="event.stopPropagation()">🗺️</a>';
+  return a?'<span class="azioni">'+a+'</span>':'';
+}
+/* la barra gialla dei salvataggi in sospeso: uguale in Servizi e in Assegna */
+function barraPend(){
+  var nP=Object.keys(PEND).length;
+  if(!nP)return '';
+  return '<div class="sommario" style="background:#fff8e6;border:1px solid #f0d9a8">'
+    +'<span>🕐 <b>'+nP+'</b> da salvare</span>'
+    +'<button class="chip verde" style="border:none" onclick="salvaTutto(false)">💾 Salva tutto</button>'
+    +'<button class="chip ambra" style="border:none" onclick="salvaTutto(true)">📋 Salva + Recap</button>'
+    +'<button class="chip" style="border:none" onclick="annullaPend()">↩️ Annulla</button>'
+    +'</div>';
+}
+function renderServizi(){
+  var m=document.getElementById('main'),h='';
+  h+=barraPend();
+  // giorni scoperti prossimi 7
+  if(DATA.prossimi&&DATA.prossimi.length){
+    var sc=DATA.prossimi.filter(function(p){return p.senzaAutista>0||p.senzaMezzo>0;});
+    if(sc.length){
+      h+='<div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px">';
+      sc.forEach(function(p){
+        h+='<button class="chip ambra" style="border:none;white-space:nowrap" onclick="goDate(\''+p.date+'\')">'+fmtData(p.date)+': '+p.tot+' srv · ⚠️'+Math.max(p.senzaAutista,p.senzaMezzo)+'</button>';
+      });
+      h+='</div>';
+    }
+  }
+  G2=DUE?addDaysC(DATA.date,1):null;
+  if(!DUE&&!DATA.services.length){m.innerHTML=h+'<div class="vuoto">Nessun servizio per '+DATA.weekday+' '+DATA.date+'</div>';return;}
+  // barre di filtro e ordinamento: sono globali, valgono per tutte e due le colonne
+  var nDone=DATA.services.filter(isDone).length,nTodo=DATA.services.length-nDone;
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">'
+    +'<button class="chip'+(FILT==='tutti'?' verde':'')+'" style="border:none" onclick="setFilt(\'tutti\')">Tutti ('+DATA.services.length+')</button>'
+    +'<button class="chip'+(FILT==='dafare'?' verde':'')+'" style="border:none" onclick="setFilt(\'dafare\')">🔜 Da fare ('+nTodo+')</button>'
+    +'<button class="chip'+(FILT==='svolti'?' verde':'')+'" style="border:none" onclick="setFilt(\'svolti\')">✔️ Svolti ('+nDone+')</button>'
+    +'<button class="chip'+(DUE?' verde':'')+'" style="border:none" onclick="setDue('+(DUE?'false':'true')+')" title="mostra oggi e domani affiancati">🗓 2 giorni</button>'
+    +'<button class="chip" style="border:none;margin-left:auto" onclick="setView(\''+(VIEW==='righe'?'card':'righe')+'\')">'+(VIEW==='righe'?'▤ Card':'≡ Righe')+'</button>'
+    +'</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:10px;align-items:center;overflow-x:auto;font-size:12px">'
+    +'<span style="color:#9aa0a6;white-space:nowrap">Ordina:</span>'
+    +'<button class="chip'+(ORD==='orario'?' verde':'')+'" style="border:none;white-space:nowrap" onclick="setOrd(\'orario\')">🕐 Orario</button>'
+    +'<button class="chip'+(ORD==='autista'?' verde':'')+'" style="border:none;white-space:nowrap" onclick="setOrd(\'autista\')">🚹 Autista</button>'
+    +'<button class="chip'+(ORD==='mezzo'?' verde':'')+'" style="border:none;white-space:nowrap" onclick="setOrd(\'mezzo\')">🚗 Mezzo</button>'
+    +'<button class="chip'+(ORD==='fornitore'?' verde':'')+'" style="border:none;white-space:nowrap" onclick="setOrd(\'fornitore\')">🏨 Fornitore</button>'
+    +'<button class="chip'+(ORD==='scoperti'?' verde':'')+'" style="border:none;white-space:nowrap" onclick="setOrd(\'scoperti\')">⚠️ Scoperti prima</button>'
+    +'</div>';
+  h+=barraAutisti();
+  h+=barraMezzi();
+
+  // vista a un giorno solo
+  if(!DUE){m.innerHTML=h+pannelloGiorno(null);return;}
+
+  // 2 giorni + ordinamento per autista o per mezzo: un elenco solo, il giro di ognuno di seguito
+  if(ORD==='autista'||ORD==='mezzo'){
+    var chiave=ORD==='autista'?'autista':'veicolo';
+    var pronto=G2&&PLANS[G2]&&PLANS[G2].services;
+    if(!pronto)caricaGiorno(G2);
+    m.innerHTML=h+'<div class="giorno">'+esc(fmtDataLunga(DATA.date))+' + '+esc(fmtDataLunga(G2))+' — giro per '+(ORD==='autista'?'autista':'mezzo')+'</div>'
+      +(pronto?pannelloUnito(chiave):'<div class="spin"></div>');
+    return;
+  }
+
+  // due giornate una sotto l'altra: la seconda è quasi sempre già in memoria
+  // perché load() la scarica in sottofondo appena apri la prima
+  var d2=G2;
+  var p1='<section><div class="giorno">'+esc(fmtDataLunga(DATA.date))+'</div>'+pannelloGiorno(null)+'</section>';
+  var p2,P2=PLANS[d2];
+  if(P2&&P2.services){
+    var salva=DATA;DATA=P2;
+    p2='<section><div class="giorno">'+esc(fmtDataLunga(d2))+'</div>'+pannelloGiorno(d2)+'</section>';
+    DATA=salva;
+  } else {
+    p2='<section><div class="giorno">'+esc(fmtDataLunga(d2))+'</div><div class="spin"></div></section>';
+    caricaGiorno(d2);
+  }
+  m.innerHTML=h+'<div class="duecol">'+p1+p2+'</div>';
+}
+
+/* Costruisce sommario + elenco per la giornata attualmente in DATA.
+   g2 = data ISO quando è la colonna di destra: serve per far puntare i tocchi
+   al giorno giusto invece che al giorno ancorato. */
+function pannelloGiorno(g2){
+  var h='';
+  if(!DATA.services.length)return '<div class="vuoto">Nessun servizio per '+DATA.weekday+' '+DATA.date+'</div>';
+  // sommario giornata
+  var nA=0,nV=0,tot=0;
+  DATA.services.forEach(function(s){if(isCanc(s))return;if(!s.autista)nA++;if(!s.veicolo)nV++;tot+=eur(s.tariffa);});
+  h+='<div class="sommario">'
+    +'<span><b>'+DATA.services.length+'</b> servizi</span>'
+    +(nA?'<span class="chip rosso">'+nA+' senza autista</span>':'<span class="chip verde">autisti ok</span>')
+    +(nV?'<span class="chip rosso">'+nV+' senza mezzo</span>':'<span class="chip verde">mezzi ok</span>')
+    +'<span style="margin-left:auto">💶 <b>'+tot.toLocaleString('it-IT',{minimumFractionDigits:2})+'€</b></span>'
+    +'</div>';
+  var lista=[];
+  DATA.services.forEach(function(s,i){
+    var done=isDone(s);
+    if(FILT==='dafare'&&done)return;
+    if(FILT==='svolti'&&!done)return;
+    if(!servizioVisibile(s))return;
+    lista.push({s:s,i:i,done:done});
+  });
+  if(ORD==='autista')lista.sort(function(a,b){var x=a.s.autista||'\uffff',y=b.s.autista||'\uffff';return x===y?a.s.startMin-b.s.startMin:(x<y?-1:1);});
+  else if(ORD==='mezzo')lista.sort(function(a,b){var x=a.s.veicolo||'\uffff',y=b.s.veicolo||'\uffff';return x===y?a.s.startMin-b.s.startMin:(x<y?-1:1);});
+  else if(ORD==='fornitore')lista.sort(function(a,b){var x=(a.s.fornitore||'zzz').toLowerCase(),y=(b.s.fornitore||'zzz').toLowerCase();return x===y?a.s.startMin-b.s.startMin:(x<y?-1:1);});
+  else if(ORD==='scoperti')lista.sort(function(a,b){var x=(!a.s.autista||!a.s.veicolo)?0:1,y=(!b.s.autista||!b.s.veicolo)?0:1;return x===y?a.s.startMin-b.s.startMin:x-y;});
+  if(!lista.length)return h+'<div class="vuoto" style="padding:16px">Nessun servizio con i filtri attivi</div>';
+  var grp='',prec=null;
+  lista.forEach(function(o){
+    var s=o.s,i=o.i,done=o.done;
+    // in vista 2 giorni la colonna di destra deve aprire il servizio del SUO giorno
+    var head;
+    if(ORD==='orario')head=s.startMin<0?'SENZA ORARIO':(s.startMin<720?'MATTINA':(s.startMin<1080?'POMERIGGIO':'SERA'));
+    else if(ORD==='autista')head=s.autista||'⚠️ SENZA AUTISTA';
+    else if(ORD==='mezzo')head=s.veicolo||'⚠️ SENZA MEZZO';
+    else if(ORD==='fornitore')head=s.fornitore||'SENZA FORNITORE';
+    else head=(!s.autista||!s.veicolo)?'⚠️ DA COPRIRE':'✅ COPERTI';
+    if(head!==grp){grp=head;prec=null;
+      var hc=(ORD==='autista'&&s.autista)?colorOf(s.autista):((ORD==='mezzo'&&s.veicolo)?colorOfVeicolo(s.veicolo):'#9aa0a6');
+      h+='<div style="padding:3px 10px;color:'+hc+';font-size:11px;font-weight:700;margin-top:6px">'+esc(head)+'</div>';}
+    var chiaveOrd=ORD==='autista'?'autista':(ORD==='mezzo'?'veicolo':null);
+    if(chiaveOrd)h+=connettoreHtml(prec,{s:s,D:DATA},chiaveOrd);
+    h+=rigaServizio(o,g2);
+    prec={s:s,D:DATA};
+  });
+  return h;
+}
+
+/* Oggi e domani in un elenco solo, raggruppati per autista: sotto ogni nome ci sono
+   di seguito i servizi delle due giornate, separati dai connettori, così si vede
+   se il giro regge — compreso lo stacco della notte. */
+function pannelloUnito(chiave){
+  chiave=chiave||'autista';
+  var giorni=[{D:DATA,g2:null}];
+  if(G2&&PLANS[G2]&&PLANS[G2].services)giorni.push({D:PLANS[G2],g2:G2});
+  var items=[],nA=0,nV=0,tot=0,nTot=0;
+  giorni.forEach(function(G){
+    var salva=DATA;DATA=G.D;
+    G.D.services.forEach(function(s,i){
+      if(!isCanc(s)){nTot++;if(!s.autista)nA++;if(!s.veicolo)nV++;tot+=eur(s.tariffa);}
+      var done=isDone(s);
+      if(FILT==='dafare'&&done)return;
+      if(FILT==='svolti'&&!done)return;
+      if(!servizioVisibile(s))return;
+      items.push({s:s,i:i,done:done,D:G.D,g2:G.g2});
+    });
+    DATA=salva;
+  });
+  items.sort(function(a,b){
+    var x=a.s[chiave]||'\uffff',y=b.s[chiave]||'\uffff';
+    if(x!==y)return x<y?-1:1;
+    if(a.D.date!==b.D.date)return a.D.date<b.D.date?-1:1;
+    return a.s.startMin-b.s.startMin;
+  });
+  var h='<div class="sommario">'
+    +'<span><b>'+nTot+'</b> servizi sui due giorni</span>'
+    +(nA?'<span class="chip rosso">'+nA+' senza autista</span>':'<span class="chip verde">autisti ok</span>')
+    +(nV?'<span class="chip rosso">'+nV+' senza mezzo</span>':'<span class="chip verde">mezzi ok</span>')
+    +'<span style="margin-left:auto">💶 <b>'+tot.toLocaleString('it-IT',{minimumFractionDigits:2})+'€</b></span>'
+    +'</div>';
+  if(!items.length)return h+'<div class="vuoto" style="padding:16px">Nessun servizio con i filtri attivi</div>';
+  var grp=null,prec=null;
+  items.forEach(function(o){
+    var salva=DATA;DATA=o.D;
+    var nome=o.s[chiave]||(chiave==='autista'?'⚠️ SENZA AUTISTA':'⚠️ SENZA MEZZO');
+    if(nome!==grp){
+      grp=nome;prec=null;
+      var c=o.s[chiave]?(chiave==='autista'?colorOf(o.s.autista):colorOfVeicolo(o.s.veicolo)):'#9aa0a6';
+      h+='<div style="margin:16px 0 7px;padding:7px 11px;border-left:4px solid '+c+';background:'+c+'14;'
+        +'border-radius:0 8px 8px 0;color:'+c+';font-size:13px;font-weight:700">'+esc(nome)+'</div>';
+    }
+    h+=connettoreHtml(prec,o,chiave);
+    h+=rigaServizio(o,o.g2,true);
+    prec=o;
+    DATA=salva;
+  });
+  return h;
+}
+
+/* Una riga di servizio. Usa il DATA correntemente impostato (in vista unita viene
+   scambiato riga per riga), così colori, catene e candidati sono quelli del giorno giusto.
+   g2    = data ISO se la riga NON appartiene al giorno ancorato (dove mandare il tocco)
+   badge = mostra la targhetta del giorno, serve quando oggi e domani sono in un elenco solo */
+function rigaServizio(o,g2,badge){
+  var s=o.s,i=o.i,done=o.done,h='';
+  var oc=g2?('apriGiorno2('+i+')'):('openModal('+i+')');
+  var ar=g2?('assegnaRapido('+i+',\''+g2+'\')'):('assegnaRapido('+i+')');
+  var av=g2?('assegnaVeicoloRapido('+i+',\''+g2+'\')'):('assegnaVeicoloRapido('+i+')');
+  var tagGiorno=badge?'<span class="chip" style="background:#e3eaf1;color:var(--blu);font-weight:700;white-space:nowrap;padding:1px 7px">'+esc(fmtData(DATA.date))+'</span>':'';
+  if(VIEW==='righe'){
+    var mancaA=!s.autista, mancaV=!s.veicolo;
+    var c, bg, testo, destra;
+    if(isCanc(s)){
+      c='#b8bfc7'; bg='#eceef1'; testo='#9aa0a6';
+      h+='<div onclick="'+oc+'" style="display:flex;gap:8px;padding:8px 10px;margin-bottom:3px;border-radius:8px;background:'+bg+';border-left:4px solid '+c+';align-items:center;font-size:13px;opacity:.7;text-decoration:line-through">'
+        +'<b style="min-width:92px;color:'+testo+'">'+s.time+'</b>'
+        +'<span style="flex:1;color:'+testo+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.da)+' → '+esc(s.per)+'</span>'
+        +'<b style="color:#9aa0a6;white-space:nowrap;text-decoration:none">🗑 CANCELLATO</b>'
+        +'</div>';
+      return h;
+    }
+    if(done){
+      c='#b8bfc7'; bg='#e9ebee'; testo='#8a8f96';
+      destra='<b style="color:#8a8f96;white-space:nowrap">'+esc(s.autista||'—')+'</b>';
+    } else if(mancaA){
+      // catena pronta: il miglior autista è già calcolato e assegnabile con un tocco
+      var bf=bestFor(s);
+      c=mancaV?'#8B0000':'#E24B4A'; bg=mancaV?'#F8D7D7':'#FCEBEB'; testo=mancaV?'#4A0F0F':'#501313';
+      // un candidato che oggi NON lavora si vede: grigio e con l'avviso, non verde come
+      // gli altri. Prima era indistinguibile e finiva assegnato per sbaglio.
+      destra=bf
+        ?'<button class="chip" style="border:none;background:'+(bf.inServizio?colorOf(bf.nome):'#8a8f96')+';color:#fff;font-weight:700;white-space:nowrap" title="'+esc(bf.reason)+'" onclick="event.stopPropagation();'+ar+'">'+(bf.inServizio?'➕ ':'➕ ⚠️ ')+esc(bf.nome)+'</button>'
+        :'<b style="color:#A32D2D;white-space:nowrap">'+(mancaV?'⛔ MANCA TUTTO':'MANCA AUT.')+'</b>';
+    } else if(mancaV){
+      // l'autista c'è, manca il mezzo: proponi quello giusto, un tocco e l'hai messo
+      var bv=bestVeicoloFor(s);
+      c=colorOf(s.autista); bg=c+'26'; testo='#1f2937';
+      destra='<b style="color:'+c+';white-space:nowrap">'+esc(s.autista)+'</b> '
+        +(bv?'<button class="chip" style="border:none;background:'+colorOfVeicolo(bv.nome)+';color:#fff;font-weight:700;white-space:nowrap" title="'+esc(bv.reason)+'" onclick="event.stopPropagation();'+av+'">🚗 '+esc(bv.nome)+'</button>'
+            :'<span class="chip ambra" style="white-space:nowrap">🚗 nessun mezzo libero</span>');
+    } else {
+      c=colorOf(s.autista); bg=c+'26'; testo='#1f2937';
+      destra='<b style="color:'+c+';white-space:nowrap">'+esc(s.autista)+'</b><span style="color:'+testo+';font-size:11px;white-space:nowrap"> · '+esc(s.veicolo)+'</span>';
+    }
+    // riga su due livelli: sopra orario + tratta completa (va a capo), sotto autista/mezzo
+    h+='<div onclick="'+oc+'" style="padding:7px 10px;margin-bottom:3px;border-radius:8px;background:'+bg+';border-left:4px solid '+c+';font-size:13px;'+(done?'opacity:.75;':'')+'">'
+      +'<div style="display:flex;gap:8px;align-items:baseline">'
+        +'<b style="min-width:92px;color:'+testo+';flex-shrink:0">'+s.time+'→'+fmtMin(s.endMin)+'</b>'
+        +'<span style="flex:1;color:'+testo+';font-weight:600">'+esc(s.da)+' → '+esc(s.per)+'</span>'
+      +'</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;margin-top:3px;padding-left:92px">'
+        +tagGiorno
+        +'<span style="color:'+testo+';opacity:.8;white-space:nowrap">'+(s.pax||'?')+' pax</span>'
+        +(s.nome?'<span style="color:'+testo+';opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.nome)+'</span>':'')
+        // su desktop lo spazio c'è: volo, fornitore e tariffa invece di un vuoto in mezzo alla riga
+        +(s.volo?'<span class="dsk" style="color:'+testo+';opacity:.6;white-space:nowrap">✈️ '+esc(s.volo)+'</span>':'')
+        +(s.fornitore?'<span class="dsk" style="color:'+testo+';opacity:.6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">🏨 '+esc(s.fornitore)+'</span>':'')
+        +(s.tariffa?'<span class="dsk" style="color:'+testo+';opacity:.75;white-space:nowrap;font-weight:600">💶 '+esc(s.tariffa)+'</span>':'')
+        +(PEND[s.id]?'<span title="da salvare">🕐</span>':'')
+        +(s.allert?'<span title="allert">📣</span>':'')
+        +(s.durSrc&&s.durSrc.indexOf('stima')>=0?'<span title="tempo stimato, non ancora preciso" style="color:'+testo+';opacity:.6">~</span>':'')
+        +'<span style="margin-left:auto;text-align:right">'+destra+'</span>'
+      +'</div>'
+      +(mancaA&&bf?'<div style="font-size:11.5px;color:'+testo+';opacity:.75;padding-left:92px;margin-top:2px">'+esc(bf.reason)+'</div>':'')
+      +'</div>';
+    return h;
+  }
+  var warn=!s.autista&&!done;
+  var bordoCard=done?'#b8bfc7':(!s.autista&&!s.veicolo?'#8B0000':(!s.autista?'#E24B4A':colorOf(s.autista)));
+  var stile='border-left-color:'+bordoCard+';'+(done?'opacity:.55;':'');
+  var extra=[];
+  if(s.tariffa)extra.push('💶 '+esc(s.tariffa));
+  if(s.stato)extra.push('✅ '+esc(s.stato));
+  if(s.note)extra.push('📝 '+esc(s.note));
+  h+='<div class="card'+(warn?' warn':'')+'" style="'+stile+'" onclick="'+oc+'">'
+    +'<div class="top"><span class="ora">'+s.time+' <small>→ '+fmtMin(s.endMin)+'</small></span><span class="chip">'+(s.pax||'?')+' pax</span></div>'
+    +'<div class="tratta">'+esc(s.da)+' → '+esc(s.per)+'</div>'
+    +'<div class="info" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span>'
+    +(s.nome?'👤 '+esc(s.nome):'')
+    +(s.volo?' · ✈️ '+esc(s.volo):'')
+    +(s.fornitore?' · 🏨 '+esc(s.fornitore):'')
+    +' · ⏱ ~'+fmtDur(s.durMin)
+    +'</span>'+azioni(s)+'</div>'
+    +'<div class="meta">'
+    +chipAut(s.autista)
+    +(s.veicolo?'<span class="chip verde">🚗 '+esc(s.veicolo)+'</span>'
+      :(function(){var bvc=(s.autista&&!done)?bestVeicoloFor(s):null;return bvc
+        ?'<button class="chip" style="border:none;background:'+colorOfVeicolo(bvc.nome)+';color:#fff;font-weight:700" onclick="event.stopPropagation();'+av+'">🚗 + '+esc(bvc.nome)+'</button>'
+        :'<span class="chip ambra">⚠️ Senza mezzo</span>';})())
+    +(s.allert?'<span class="chip ambra">📣 '+esc(s.allert)+'</span>':'')
+    +'</div>'
+    +(extra.length?'<div class="extra">'+extra.join(' · ')+'</div>':'')
+    +'</div>';
+  return h;
+}
+
+/* Il collegamento fra due servizi consecutivi dello stesso autista: è questo che fa
+   vedere a colpo d'occhio se il giro regge. */
+function connettoreHtml(A,B,chiave){
+  if(!A||!B)return '';
+  chiave=chiave||'autista';
+  var a=A.s,b=B.s;
+  if(!a[chiave]||a[chiave]!==b[chiave])return '';
+  if(a.endMin<0||b.startMin<0)return '';
+  var col,txt,bgc;
+  if(A.D.date!==B.D.date){
+    var notte=(1440-a.endMin)+b.startMin;
+    col='#5f6368';bgc='#eceff2';
+    txt='🌙 stacco notturno '+fmtDur(notte)+' — chiude '+fmtMin(a.endMin)+' a '+esc(a.per)+', riprende '+fmtMin(b.startMin)+' da '+esc(b.da);
+  } else {
+    var t=stessoLuogoUI(a.per,b.da)?{min:0,buffer:0}
+      :((A.D.transfers&&A.D.transfers[a.id+'->'+b.id])||{min:30,buffer:(A.D.bufferDefault||15)});
+    var gap=b.startMin-a.endMin-t.min;
+    if(t.min===0&&gap>=0){col='#1e8e3e';bgc='#e6f4ea';txt='📍 stesso posto ('+esc(a.per)+'), '+fmtDur(gap)+' di attesa';}
+    else if(gap>=30){col='#1e8e3e';bgc='#e6f4ea';txt='🕳 '+fmtDur(gap)+' liberi (trasf. '+t.min+'m da '+esc(a.per)+' a '+esc(b.da)+')';}
+    else if(gap>=0){col='#e37400';bgc='#fef3e0';txt='⏱ stretto: '+fmtDur(gap)+' di margine (trasf. '+t.min+'m)';}
+    else {col='#c5221f';bgc='#fce8e6';txt='⛔ non ci arriva: mancano '+fmtDur(-gap)+' (trasf. '+t.min+'m)';}
+  }
+  return '<div style="display:flex;align-items:center;gap:7px;margin:0 0 3px 16px;font-size:11.5px">'
+    +'<span style="width:3px;align-self:stretch;min-height:16px;background:'+col+';border-radius:2px;flex-shrink:0;opacity:.55"></span>'
+    +'<span style="background:'+bgc+';color:'+col+';border-radius:6px;padding:3px 8px;font-weight:600">'+txt+'</span>'
+    +'</div>';
+}
+
+
+/* ---------- scheda Assegna: i giri a sinistra, la coda a destra ----------
+   A sinistra i servizi raggruppati per autista (chi sta lavorando e come è messo),
+   a destra quelli ancora da assegnare in ordine di ora. Si tocca un servizio a destra
+   e a sinistra ogni autista dice se ci arriva, con quanta attesa e dove si incastra:
+   il servizio compare come riga tratteggiata dentro il giro, al suo posto d'orario. */
+var SEL_ID=null, ASS_SOLO=true;
+try{if(localStorage.getItem('te_ass_solo')==='0')ASS_SOLO=false;}catch(e){}
+function toggleAssSolo(){
+  ASS_SOLO=!ASS_SOLO;
+  try{localStorage.setItem('te_ass_solo',ASS_SOLO?'1':'0');}catch(e){}
+  render();
+}
+function selezionaSrv(i){
+  var s=DATA.services[i];
+  if(!s)return;
+  SEL_ID=(SEL_ID===s.id)?null:s.id;
+  render();
+}
+function idxAut(nome){
+  for(var i=0;i<DATA.autisti.length;i++)if(DATA.autisti[i].nome===nome)return i;
+  return -1;
+}
+function idxSrv(s){
+  for(var i=0;i<DATA.services.length;i++)if(DATA.services[i].id===s.id)return i;
+  return -1;
+}
+/* Assegna dalla scheda: mai il nome dentro l'onclick (gli apostrofi rompono l'HTML),
+   solo indici. forza = l'autista ha un conflitto e lo si vuole comunque. */
+function assegnaDa(i,ai,forza){
+  var s=DATA.services[i],a=DATA.autisti[ai];
+  if(!s||!a)return;
+  var v=valutaAutista(s,a.nome);
+  if(v.k==='off'){toast('🚫 '+a.nome+': '+v.txt);return;}
+  if(v.k==='no'&&!forza){toast('⛔ '+a.nome+': '+v.txt);return;}
+  PEND[s.id]={autista:a.nome,veicolo:s.veicolo};
+  s.autista=a.nome;
+  if(SEL_ID===s.id)SEL_ID=null;
+  render();
+  toast((v.k==='no'?'⚡ forzato: ':'🕐 ')+a.nome+' in sospeso — salva dalla barra in alto');
+}
+
+function renderAssegna(){
+  var m=document.getElementById('main');
+  if(!DATA.services.length){m.innerHTML='<div class="vuoto">Nessun servizio per '+DATA.weekday+' '+DATA.date+'</div>';return;}
+  if(SEL_ID&&!srvById(SEL_ID))SEL_ID=null;
+  var scoperti=[],senzaMezzo=[];
+  DATA.services.forEach(function(s){
+    if(isCanc(s))return;
+    if(!s.autista)scoperti.push(s);
+    else if(!s.veicolo)senzaMezzo.push(s);
+  });
+  var inServizio=autistiInServizio().length;
+  var h=barraPend();
+  h+='<div class="sommario">'
+    +(scoperti.length?'<span class="chip rosso">'+scoperti.length+' senza autista</span>'
+                     :'<span class="chip verde">tutti assegnati</span>')
+    +(senzaMezzo.length?'<span class="chip ambra">'+senzaMezzo.length+' senza mezzo</span>':'')
+    +'<span class="chip">🚹 '+inServizio+' in servizio oggi</span>'
+    +'<button class="chip'+(ASS_SOLO?' verde':'')+'" style="border:none;margin-left:auto" '
+    +'title="mostra a sinistra solo gli autisti che oggi hanno servizi" onclick="toggleAssSolo()">'
+    +(ASS_SOLO?'👥 Solo chi lavora':'👥 Tutti gli autisti')+'</button>'
+    +'</div>';
+  h+='<div class="assegna">'+pannelloGiri()+pannelloCoda(scoperti,senzaMezzo)+'</div>';
+  m.innerHTML=h;
+}
+
+/* ---- colonna destra: la coda, in ordine di ora ---- */
+function pannelloCoda(scoperti,senzaMezzo){
+  var h='<section class="pane coda"><div class="paneT">🕐 Da assegnare — in ordine di ora'
+    +'<span class="paneN">'+scoperti.length+'</span></div>';
+  if(!scoperti.length&&!senzaMezzo.length)return h+'<div class="vuoto" style="padding:26px">Niente da assegnare 🎉</div></section>';
+  if(!scoperti.length)h+='<div class="vuoto" style="padding:14px">Nessun servizio senza autista</div>';
+  scoperti.slice().sort(function(a,b){return a.startMin-b.startMin;}).forEach(function(s){h+=cardCoda(s,false);});
+  if(senzaMezzo.length){
+    h+='<div class="paneT sub">🚗 Autista sì, mezzo no<span class="paneN">'+senzaMezzo.length+'</span></div>';
+    senzaMezzo.slice().sort(function(a,b){return a.startMin-b.startMin;}).forEach(function(s){h+=cardCoda(s,true);});
+  }
+  return h+'</section>';
+}
+function cardCoda(s,soloMezzo){
+  var i=idxSrv(s),sel=(SEL_ID===s.id),h='';
+  var testa='<div class="ccT"><b>'+s.time+'→'+fmtMin(s.endMin)+'</b>'
+    +'<span class="chip">'+(s.pax||'?')+' pax</span>'
+    // un servizio scoperto di stamattina resta in coda (va comunque sistemato) ma si vede
+    // che l'ora è passata: senza l'etichetta sembrava ancora da organizzare
+    +(isDone(s)?'<span class="chip" style="background:#eceef1;color:#8a8f96">ora passata</span>':'')
+    +(s.tariffa?'<span class="ccEuro">💶 '+esc(s.tariffa)+'</span>':'')
+    +(PEND[s.id]?'<span title="da salvare">🕐</span>':'')
+    +'</div>'
+    +'<div class="ccTratta">'+esc(s.da)+' → '+esc(s.per)+'</div>'
+    +'<div class="ccInfo">'+(s.nome?'👤 '+esc(s.nome):'')
+      +(s.volo?' · ✈️ '+esc(s.volo):'')+(s.fornitore?' · 🏨 '+esc(s.fornitore):'')
+      +' · ⏱ ~'+fmtDur(s.durMin)+'</div>';
+  if(soloMezzo){
+    var bv=bestVeicoloFor(s);
+    h+='<div class="ccard mezzo" onclick="openModal('+i+')">'+testa
+      +'<div class="ccBtn">'+chipAut(s.autista)
+      +(bv?'<button class="chip" style="border:none;background:'+colorOfVeicolo(bv.nome)+';color:#fff;font-weight:700" title="'+esc(bv.reason)+'" onclick="event.stopPropagation();assegnaVeicoloRapido('+i+')">🚗 '+esc(bv.nome)+'</button>'
+          :'<span class="chip ambra">nessun mezzo libero</span>')
+      +'</div></div>';
+    return h;
+  }
+  var avA=availability(DATA.autisti,function(sv){return sv.autista;},s);
+  var sug=suggest(s,avA,3);
+  var btn='';
+  sug.forEach(function(c){
+    var ai=idxAut(c.nome);
+    btn+='<button class="chip" style="border:none;background:'+(c.inServizio?colorOf(c.nome):'#8a8f96')
+      +';color:#fff;font-weight:700" title="'+esc(c.reason)+'" onclick="event.stopPropagation();assegnaDa('+i+','+ai+')">'
+      +(c.inServizio?'➕ ':'➕ ⚠️ ')+esc(c.nome)+'</button>';
+  });
+  if(!sug.length)btn='<span class="chip rosso">nessun autista libero: guarda a sinistra chi forzare</span>';
+  h+='<div class="ccard'+(sel?' sel':'')+'" onclick="selezionaSrv('+i+')">'+testa
+    +'<div class="ccBtn">'+btn+'</div>'
+    +(sug.length?'<div class="ccWhy">'+esc(sug[0].reason)+'</div>':'')
+    +'<div class="ccPie">'+(sel?'✓ selezionato — a sinistra vedi dove si incastra':'tocca per vedere a chi darlo')
+    +'<button class="chip" style="border:none;margin-left:auto" onclick="event.stopPropagation();openModal('+i+')">✏️ scheda</button></div>'
+    +'</div>';
+  return h;
+}
+
+/* ---- colonna sinistra: i giri, un blocco per autista ---- */
+function pannelloGiri(){
+  var S=SEL_ID?srvById(SEL_ID):null;
+  var h='<section class="pane giri"><div class="paneT">🚹 Giri degli autisti'
+    +(S?'<span class="paneSel">per le '+S.time+' '+esc(S.da)+' → '+esc(S.per)+'</span>':'')
+    +'</div>';
+  var lista=ordineAutisti(S),nascosti=0,corpo='';
+  lista.forEach(function(o){
+    if(ASS_SOLO&&!o.mine.length){nascosti++;return;}
+    corpo+=boxAutista(o,S);
+  });
+  if(!corpo)corpo='<div class="vuoto" style="padding:22px">Nessun autista con servizi in giornata</div>';
+  h+=corpo;
+  if(nascosti)h+='<div class="giriPie"><button class="chip" style="border:none" onclick="toggleAssSolo()">'
+    +'👥 mostra anche i '+nascosti+' che oggi non lavorano</button></div>';
+  return h+'</section>';
+}
+/* Ordine dei blocchi: senza selezione per ora di inizio giro, con un servizio
+   selezionato per quanto bene ci sta (prima chi ci arriva, ultimi gli impegnati). */
+function ordineAutisti(S){
+  var out=[];
+  DATA.autisti.forEach(function(a,ai){
+    var mine=giroDi(a.nome,S?S.id:null);
+    var v=S?valutaAutista(S,a.nome):null;
+    var key=v?punteggioAutista(a,v)
+             :((mine.length?mine[0].startMin:99000)+(a.esclusoMotivo?900000:0));
+    out.push({a:a,ai:ai,mine:mine,v:v,key:key});
+  });
+  out.sort(function(x,y){return x.key-y.key||(x.a.nome<y.a.nome?-1:1);});
+  return out;
+}
+function boxAutista(o,S){
+  var c=colorOf(o.a.nome),v=o.v;
+  var ore=0;o.mine.forEach(function(s){ore+=Math.max(0,s.durMin||0);});
+  var riass=o.mine.length
+    ? o.mine.length+' srv · '+fmtMin(o.mine[0].startMin)+'→'+fmtMin(o.mine[o.mine.length-1].endMin)+' · '+fmtDur(ore)+' guidati'
+    : (o.a.esclusoMotivo?esc(o.a.esclusoMotivo):'oggi nessun servizio');
+  var h='<div class="autbox'+(v?' v-'+v.k:'')+'" style="border-left-color:'+c+'">'
+    +'<div class="autT"><span class="autNome" style="color:'+c+'">'+esc(o.a.nome)+'</span>'
+    +(o.a.categoria?'<span class="autCat">'+esc(o.a.categoria)+'</span>':'')
+    +'<span class="autN">'+riass+'</span>'
+    +(S?bottoneAssegna(o,S):'')
+    +'</div>';
+  if(v)h+='<div class="autV">'+segnoFatt(v.k)+' '+esc(v.txt||'')+'</div>';
+  h+=giroHtml(o.mine,S,v);
+  return h+'</div>';
+}
+function segnoFatt(k){
+  return {ok:'✅',stretto:'⏱',fermo:'🌙',libero:'🆓',no:'⛔',off:'🚫'}[k]||'';
+}
+function bottoneAssegna(o,S){
+  var v=o.v,i=idxSrv(S);
+  if(!v||i<0)return '';
+  if(v.k==='off')return '<span class="chip" style="background:#eef1f4;color:#9aa0a6">🚫 non disponibile</span>';
+  if(v.k==='no')return '<button class="chip ambra" style="border:none" title="ha un conflitto: assegna comunque" onclick="assegnaDa('+i+','+o.ai+',true)">⚡ Forza</button>';
+  var st=(v.k==='ok')?'background:var(--verde);color:#fff'
+        :(v.k==='stretto'?'background:var(--ambra);color:#fff':'background:#8a8f96;color:#fff');
+  return '<button class="chip" style="border:none;font-weight:700;'+st+'" onclick="assegnaDa('+i+','+o.ai+')">➕ Assegna</button>';
+}
+/* Il giro dell'autista, con il servizio selezionato inserito al suo posto d'orario
+   come riga tratteggiata: è lì che si vede se regge. */
+function giroHtml(mine,S,v){
+  var h='',inserito=false,i,prec=null,salta=false;
+  var ghost=!!(S&&v&&FATT_OK[v.k]);
+  for(i=0;i<mine.length;i++){
+    if(ghost&&!inserito&&S.startMin<mine[i].startMin){h+=ghostRiga(S,v);inserito=true;salta=true;}
+    if(prec&&!salta)h+=divarioHtml(prec,mine[i]);
+    salta=false;
+    h+=srvRigaMini(mine[i]);
+    prec=mine[i];
+  }
+  if(ghost&&!inserito)h+=ghostRiga(S,v);
+  if(!mine.length&&!ghost)h+='<div class="srvvuoto">— nessun servizio in giornata —</div>';
+  return h;
+}
+/* Quanto vuoto (o quanto rosso) c'è fra due servizi già assegnati allo stesso autista:
+   è quello che dice se il giro regge, senza aprire la scheda Servizi. */
+function divarioHtml(a,b){
+  if(a.endMin<0||b.startMin<0)return '';
+  var t=trf(a.id,b.id);
+  var gap=b.startMin-a.endMin-t.min,col,txt;
+  if(t.min===0&&gap>=0){col='#1e8e3e';txt='📍 stesso posto · '+fmtDur(gap)+' di attesa';}
+  else if(gap>=30){col='#1e8e3e';txt='🕳 '+fmtDur(gap)+' liberi · trasf. '+t.min+'m';}
+  else if(gap>=0){col='#e37400';txt='⏱ stretto: '+fmtDur(gap)+' · trasf. '+t.min+'m';}
+  else {col='#c5221f';txt='⛔ non ci arriva: mancano '+fmtDur(-gap);}
+  return '<div class="divario" style="color:'+col+'">'+txt+'</div>';
+}
+function srvRigaMini(s){
+  var i=idxSrv(s);
+  return '<div class="srvmini" onclick="openModal('+i+')">'
+    +'<b>'+s.time+'→'+fmtMin(s.endMin)+'</b>'
+    +'<span class="srvT">'+esc(s.da)+' → '+esc(s.per)+'</span>'
+    +(s.veicolo?'<span class="chip" style="background:'+colorOfVeicolo(s.veicolo)+'22;color:'+colorOfVeicolo(s.veicolo)+'">🚗 '+esc(s.veicolo)+'</span>'
+               :'<span class="chip ambra">senza mezzo</span>')
+    +'</div>';
+}
+function ghostRiga(S,v){
+  var det=[];
+  if(v.attesaPrima!==null&&v.prev)det.push('⏱ '+fmtDur(v.attesaPrima)+' dopo '+esc(v.prev.per));
+  if(v.margineDopo!==null&&v.next)det.push('➡️ '+fmtDur(v.margineDopo)+' prima di '+esc(v.next.da));
+  if(!det.length)det.push(v.k==='libero'?'unico servizio della giornata':esc(v.txt||''));
+  return '<div class="srvmini ghost">'
+    +'<b>'+S.time+'→'+fmtMin(S.endMin)+'</b>'
+    +'<span class="srvT">'+esc(S.da)+' → '+esc(S.per)+'</span>'
+    +'<span class="ghostM">'+det.join(' · ')+'</span>'
+    +'</div>';
+}
+
+/* ---------- ricerca ---------- */
+function openSearch(){
+  MODAL_OPEN=true;
+  var md=document.getElementById('modal');
+  md.innerHTML='<h2>🔍 Cerca servizio</h2>'
+    +'<div class="sub">Nome cliente, Id, luogo, fornitore, volo o telefono — su tutte le date</div>'
+    +'<input type="text" id="q" placeholder="es. Rossi, Melograno, FR8826…" onkeydown="if(event.key===\'Enter\')doSearch()">'
+    +'<div class="btnrow"><button class="annulla" onclick="closeModal()">Chiudi</button><button class="salva" onclick="doSearch()">Cerca</button></div>'
+    +'<div id="risultati"></div>';
+  document.getElementById('ovl').style.display='block';
+  md.style.display='block';
+  setTimeout(function(){document.getElementById('q').focus();},100);
+}
+function doSearch(){
+  var q=document.getElementById('q').value;
+  document.getElementById('risultati').innerHTML='<div class="spin"></div>';
+  google.script.run.withSuccessHandler(function(res){
+    var h='';
+    SEARCH_RES=res||[];
+    if(!res.length)h='<div class="vuoto">Nessun risultato</div>';
+    res.forEach(function(r,ri){
+      h+='<div class="risultato" onclick="apri('+ri+')">'
+        +'<b>'+esc(r.dataTxt||r.dateISO)+' '+esc(r.time)+'</b> · '+esc(r.da)+' → '+esc(r.per)
+        +'<br><span style="color:var(--grigio)">'+(r.nome?'👤 '+esc(r.nome)+' · ':'')+(r.pax||'?')+' pax'
+        +(r.fornitore?' · 🏨 '+esc(r.fornitore):'')+(r.autista?' · 🚹 '+esc(r.autista):' · ⚠️ senza autista')+'</span></div>';
+    });
+    document.getElementById('risultati').innerHTML=h;
+  }).withFailureHandler(function(e){document.getElementById('risultati').innerHTML='<div class="vuoto">Errore: '+e.message+'</div>';}).searchServices(q);
+}
+/* riceve l'indice del risultato: id e date passati come stringhe dentro l'onclick
+   rompevano l'HTML se contenevano un apice */
+function apri(ri){
+  var r=SEARCH_RES[ri];
+  if(!r||!r.dateISO){toast('❌ Data non riconosciuta');return;}
+  PENDING=r.id;
+  closeModal();
+  document.getElementById('datePick').value=r.dateISO;
+  load();
+}
+
+/* ---------- modale assegnazione ---------- */
+function openModal(i){
+  CUR=DATA.services[i];MODAL_OPEN=true;
+  var s=CUR;
+  var avA=availability(DATA.autisti,function(sv){return sv.autista;},s);
+  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},s);
+  var sug=suggest(s,avA);
+
+  /* Chi oggi non lavora sta in un gruppo suo, in fondo: mescolato ai «Disponibili»
+     veniva scelto per sbaglio, ed è il difetto segnalato il 18/08. */
+  function optA(){
+    var top='',lib='',fermi='',occ='',ind='';
+    sug.forEach(function(c){
+      top+='<option value="'+esc(c.nome)+'">'+(c.inServizio?'':'⚠️ ')+esc(c.nome)+(c.cat?' ('+esc(c.cat)+')':'')+' — '+esc(c.reason)+'</option>';
+    });
+    DATA.autisti.forEach(function(a){
+      var sel=a.nome===s.autista?' selected':'';
+      var label=a.nome+(a.categoria?' ('+a.categoria+')':'');
+      if(a.esclusoMotivo){ind+='<option value="'+esc(a.nome)+'"'+sel+'>'+esc(label)+' — '+a.esclusoMotivo+'</option>';return;}
+      var w=avA[a.nome];
+      if(w){var rit=w.freeAt-s.startMin;occ+='<option value="'+esc(a.nome)+'"'+sel+' data-rit="'+rit+'">'+esc(label)+' — libero ~'+fmtMin(w.freeAt)+' ('+esc(w.con.per)+')</option>';return;}
+      var v=valutaAutista(s,a.nome);
+      var riga='<option value="'+esc(a.nome)+'"'+sel+'>'+esc(label)+(v.txt?' — '+esc(v.txt):'')+'</option>';
+      if(v.inServizio)lib+=riga;else fermi+=riga;
+    });
+    return '<option value="">— nessuno —</option>'
+      +(top?'<optgroup label="🔝 Consigliati">'+top+'</optgroup>':'')
+      +(lib?'<optgroup label="✅ Disponibili — già in servizio oggi">'+lib+'</optgroup>':'')
+      +(occ?'<optgroup label="⏳ Occupati (forzabile)">'+occ+'</optgroup>':'')
+      +(fermi?'<optgroup label="💤 Oggi non lavorano">'+fermi+'</optgroup>':'')
+      +(ind?'<optgroup label="🚫 Non disponibili oggi">'+ind+'</optgroup>':'');
+  }
+  function optV(){
+    var lib='',occ='',cap='',fs='';
+    DATA.veicoli.forEach(function(v){
+      var sel=v.nome===s.veicolo?' selected':'';
+      var label=v.nome+' · '+v.tipo+' · '+v.pax+' posti';
+      var isCur=v.nome===s.veicolo;
+      if(v.inRent){fs+='<option value="'+esc(v.nome)+'"'+(isCur?sel:' disabled')+'>'+esc(label)+' — a noleggio</option>';return;}
+      if(v.fuoriServizio){fs+='<option value="'+esc(v.nome)+'"'+(isCur?sel:' disabled')+'>'+esc(label)+' — '+v.stato+'</option>';return;}
+      var w=avV[v.nome];
+      // smart: se il mezzo è impegnato su un servizio dello STESSO autista di questo transfer,
+      // viaggiano insieme: la fattibilità è già quella dell'autista → consideralo disponibile
+      if(w&&w.con&&w.con.autista&&s.autista&&w.con.autista===s.autista)w=null;
+      var small=s.pax>0&&v.pax>0&&v.pax<s.pax;
+      if(w){var ritV=w.freeAt-s.startMin;occ+='<option value="'+esc(v.nome)+'"'+sel+' data-rit="'+ritV+'">'+esc(label)+' — libero ~'+fmtMin(w.freeAt)+(w.con.autista?' (con '+esc(w.con.autista)+')':'')+'</option>';}
+      else if(small)cap+='<option value="'+esc(v.nome)+'"'+sel+'>'+esc(label)+' — solo '+v.pax+' posti per '+s.pax+' pax</option>';
+      else lib+='<option value="'+esc(v.nome)+'"'+sel+'>'+esc(label)+'</option>';
+    });
+    return '<option value="">— nessuno —</option>'
+      +(lib?'<optgroup label="✅ Disponibili e adatti">'+lib+'</optgroup>':'')
+      +(occ?'<optgroup label="⏳ Occupati (forzabile)">'+occ+'</optgroup>':'')
+      +(cap?'<optgroup label="⚠️ Capienza insufficiente">'+cap+'</optgroup>':'')
+      +(fs?'<optgroup label="🚫 Non disponibili">'+fs+'</optgroup>':'');
+  }
+
+  var md=document.getElementById('modal');
+  md.innerHTML='<h2>'+s.time+' → '+fmtMin(s.endMin)+' · '+esc(s.da)+' → '+esc(s.per)+'</h2>'
+    +'<div class="sub">'+(s.pax||'?')+' pax'+(s.nome?' · '+esc(s.nome):'')+(s.volo?' · ✈️ '+esc(s.volo):'')+' · durata ~'+fmtDur(s.durMin)+(s.rientroMin>0&&s.endMin>=0?' · 🏠 in garage '+fmtMin(s.endMin+s.rientroMin)+' (+'+s.rientroMin+'m)':'')+(s.tariffa?' · 💶 '+esc(s.tariffa):'')+(s.modalita?' · '+esc(s.modalita):'')+(s.hextra?' · +'+esc(s.hextra)+'h':'')+(s.stato?' · ✅ '+esc(s.stato):'')+(s.note?'<br>📝 '+esc(s.note):'')+'</div>'
+    +'<label>Autista</label><select id="selA" onchange="warnCheck()">'+optA()+'</select><div class="avviso" id="wA"></div>'
+    +'<label>Veicolo</label><select id="selV" onchange="warnCheck()">'+optV()+'</select><div class="avviso" id="wV"></div>'
+    +'<label>Allert / Recap'+(s.allert?' <span style="font-weight:400;color:var(--grigio)">(attuale: '+esc(s.allert)+')</span>':'')+'</label>'
+    +'<div class="btnrow" style="margin-top:4px">'
+    +'<button class="annulla" onclick="doAllert(\'Invia\')">📣 Invia</button>'
+    +'<button class="annulla" onclick="doAllert(\'Modificato\')">✏️ Modifica</button>'
+    +'<button class="annulla" onclick="doAllert(\'Recap\')">📋 Recap</button>'
+    +'<button class="annulla" onclick="doAllert(\'Non Inviare\')">🔕 No</button>'
+    +'</div>'
+    +'<div class="btnrow">'
+    +(s.stato==='Eseguito'
+      ?'<button class="annulla" onclick="doStato(\'\')">↩️ Togli eseguito</button>'
+      :'<button class="annulla" style="background:#e6f4ea;color:var(--verde)" onclick="doStato(\'Eseguito\')">✅ Eseguito</button>')
+    +'<button class="annulla" style="background:#fce8e6;color:var(--rosso)" onclick="doAllert(\'Cancellato\')">🗑 Cancella</button>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-top:16px;border-top:1px solid #eef1f4;padding-top:10px">'
+    +'<b style="font-size:13px;color:var(--blu)">✏️ Dettagli servizio</b>'
+    +'<button class="chip" style="border:none;margin-left:auto" onclick="toggleEdit()">🔼 comprimi</button>'
+    +'</div>'
+    +'<div id="editBox" style="display:block">'
+    +'<datalist id="dlLuoghi">'+(DATA.luoghiNomi||[]).map(function(l){return '<option value="'+esc(l)+'">';}).join('')+'</datalist>'
+    +'<datalist id="dlForn">'+(DATA.fornitori||[]).map(function(l){return '<option value="'+esc(l)+'">';}).join('')+'</datalist>'
+    +'<label>Data</label><input type="date" id="edData" value="'+DATA.date+'">'
+    +'<label>Ora</label><input type="time" id="edOra" value="'+(s.startMin>=0?s.time:'')+'">'
+    +'<label>Transfer &gt; Da <span style="font-weight:400;color:var(--grigio)">(suggerimenti dai Luoghi, o scrivi libero)</span></label>'
+    +'<input type="text" id="edDa" list="dlLuoghi" value="'+esc(s.da)+'">'
+    +'<label>Transfer &lt; Per</label>'
+    +'<input type="text" id="edPer" list="dlLuoghi" value="'+esc(s.per)+'">'
+    +'<label>Pax</label><input type="number" id="edPax" value="'+(s.pax||'')+'" min="1" max="60">'
+    +'<label>Cliente</label><input type="text" id="edNome" value="'+esc(s.nome)+'">'
+    +'<label>Volo</label><input type="text" id="edVolo" value="'+esc(s.volo)+'">'
+    +'<label>Fornitore</label><input type="text" id="edForn" list="dlForn" value="'+esc(s.fornitore)+'">'
+    +'<label>Cellulare</label><input type="text" id="edCell" value="'+esc(s.cell)+'">'
+    +'<label>Tariffa (€)</label><input type="text" id="edTar" value="'+esc(s.tariffa)+'">'
+    +'<label>Acconto (€)</label><input type="text" id="edAcc" value="'+esc(s.acconto||'')+'">'
+    +'<label>Modalità</label><input type="text" id="edMod" list="dlMod" value="'+esc(s.modalita||'')+'">'
+    +'<datalist id="dlMod"><option value="Fattura"><option value="Contanti"><option value="Incassare"><option value="Bonifico"><option value="Sconto in fattura"><option value="Carta"></datalist>'
+    +'<label>h extra / ritardi</label><input type="text" id="edHex" value="'+esc(s.hextra||'')+'">'
+    +'<label>Note</label><textarea id="edNote">'+esc(s.note)+'</textarea>'
+    +'<div class="btnrow"><button class="salva" onclick="saveEdit()">💾 Salva dettagli</button></div>'
+    +'</div>'
+    +'<div class="btnrow"><button class="annulla" onclick="closeModal()">Annulla</button><button class="salva" id="btnSave" onclick="save(false)">💾 Salva</button></div>';
+  document.getElementById('ovl').style.display='block';
+  md.style.display='block';
+  warnCheck();
+}
+function toggleEdit(){
+  var e=document.getElementById('editBox');
+  e.style.display=e.style.display==='none'?'block':'none';
+}
+function warnCheck(){
+  ['A','V'].forEach(function(k){
+    var sel=document.getElementById('sel'+k),w=document.getElementById('w'+k);
+    if(!sel||!w)return;
+    var o=sel.options[sel.selectedIndex];w.className='avviso';w.textContent='';
+    if(!o||!o.value)return;
+    var g=o.parentElement.label||'';
+    if(g.indexOf('Occupati')>=0){var r=+o.getAttribute('data-rit')||0;w.className='avviso ambra';w.textContent='⏳ Impegnato su un altro servizio: si libera ~'+fmtDur(r)+' dopo la partenza.';}
+    else if(g.indexOf('Non disponibili')>=0){w.className='avviso rosso';w.textContent='🚫 Selezione forzata: segnato come non disponibile.';}
+    else if(g.indexOf('Capienza')>=0){w.className='avviso rosso';w.textContent='⚠️ Posti insufficienti per i pax del servizio.';}
+  });
+}
+function closeModal(){document.getElementById('ovl').style.display='none';document.getElementById('modal').style.display='none';CUR=null;MODAL_OPEN=false;}
+/* pulsanti azione: salvano subito la riga (se modificata) e chiamano DIRETTAMENTE
+   il webhook Promemoria n8n → notifica istantanea al driver.
+   'Non Inviare' scrive solo la cella. 'Cancellato' = soft delete + notifica. */
+function doAllert(val){
+  if(!CUR)return;
+  var svc=CUR;
+  if(val==='Cancellato'&&!confirm('🗑 Cancellare questo servizio (soft delete) e avvisare il driver?'))return;
+  var selA=document.getElementById('selA'),selV=document.getElementById('selV');
+  var a=selA?selA.value:svc.autista, v=selV?selV.value:svc.veicolo;
+  var cambiato=(a!==svc.autista)||(v!==svc.veicolo)||!!PEND[svc.id];
+  var prev={autista:svc.autista,veicolo:svc.veicolo};
+  // se il pannello Dettagli contiene modifiche non salvate, le salva prima di notificare
+  var mod=null;
+  if(document.getElementById('edDa')){
+    var g=function(id){var el=document.getElementById(id);return el?el.value:'';};
+    var cand={dateISO:g('edData'),time:g('edOra'),pax:g('edPax'),da:g('edDa'),per:g('edPer'),nome:g('edNome'),volo:g('edVolo'),fornitore:g('edForn'),cell:g('edCell'),tariffa:g('edTar'),acconto:g('edAcc'),modalita:g('edMod'),hextra:g('edHex'),note:g('edNote')};
+    var dett=(cand.da!==svc.da)||(cand.per!==svc.per)||(svc.startMin>=0&&cand.time!==svc.time)||(String(cand.pax||'')!==String(svc.pax||''))||(cand.nome!==svc.nome)||(cand.volo!==svc.volo)||(cand.fornitore!==svc.fornitore)||(cand.note!==svc.note)||(cand.dateISO!==DATA.date)||(cand.modalita!==(svc.modalita||''))||(cand.hextra!==(svc.hextra||''));
+    if(dett)mod=cand;
+  }
+  delete PEND[svc.id];
+  svc.autista=a;svc.veicolo=v;svc.allert=val;
+  if(mod){
+    svc.da=mod.da||svc.da;svc.per=mod.per||svc.per;svc.nome=mod.nome;svc.volo=mod.volo;
+    svc.fornitore=mod.fornitore;svc.note=mod.note;
+    if(mod.pax)svc.pax=+mod.pax;
+    if(mod.time)svc.time=mod.time;
+  }
+  closeModal();render();
+  toast(val==='Non Inviare'?'🔕 Imposto Non Inviare…':(mod?'💾 Salvo modifiche e notifico…':'📣 Notifica '+val+' in partenza…'));
+  function fire(){
+    if(val==='Non Inviare'){
+      google.script.run.withSuccessHandler(function(){toast('🔕 Impostato Non Inviare');load(true);})
+        .withFailureHandler(function(e){toast('❌ NON impostato: '+e.message);load(true);})
+        .setAllert(svc.id,'Non Inviare');
+    } else {
+      google.script.run.withSuccessHandler(function(r){toast(r.ok?'✅ Notifica '+val+' inviata al driver':'⚠️ Webhook HTTP '+r.http);load(true);})
+        .withFailureHandler(function(e){toast('❌ Notifica NON inviata: '+e.message);load(true);})
+        .notificaOra(svc.id,val);
+    }
+  }
+  function step2(){
+    if(cambiato){
+      google.script.run.withSuccessHandler(fire)
+        .withFailureHandler(function(e){toast('❌ NON salvato: '+e.message);load(true);})
+        .assignService(svc.id,a,v,prev,true);
+    } else fire();
+  }
+  if(mod){
+    google.script.run.withSuccessHandler(step2)
+      .withFailureHandler(function(e){toast('❌ Dettagli NON salvati: '+e.message);load(true);})
+      .updateService(svc.id,mod);
+  } else step2();
+}
+function doStato(val){
+  if(!CUR)return;
+  var svc=CUR;
+  svc.stato=val;closeModal();render();toast(val?'✅ Segnato eseguito':'↩️ Stato tolto');
+  google.script.run.withFailureHandler(function(e){toast('❌ Stato NON salvato: '+e.message);load(true);}).setStato(svc.id,val);
+}
+function saveEdit(){
+  if(!CUR)return;
+  var svc=CUR;
+  var mod={
+    dateISO:document.getElementById('edData').value,
+    time:document.getElementById('edOra').value,
+    pax:document.getElementById('edPax').value,
+    da:document.getElementById('edDa').value,
+    per:document.getElementById('edPer').value,
+    nome:document.getElementById('edNome').value,
+    volo:document.getElementById('edVolo').value,
+    fornitore:document.getElementById('edForn').value,
+    cell:document.getElementById('edCell').value,
+    tariffa:document.getElementById('edTar').value,
+    acconto:document.getElementById('edAcc').value,
+    modalita:document.getElementById('edMod').value,
+    hextra:document.getElementById('edHex').value,
+    note:document.getElementById('edNote').value
+  };
+  if(!confirm('Aggiornare i dettagli di questo servizio sul gestionale?'))return;
+  // aggiornamento immediato in locale
+  svc.da=mod.da||svc.da;svc.per=mod.per||svc.per;svc.nome=mod.nome;svc.volo=mod.volo;
+  svc.fornitore=mod.fornitore;svc.cell=mod.cell;svc.note=mod.note;
+  svc.tariffa=mod.tariffa;svc.acconto=mod.acconto;svc.modalita=mod.modalita;svc.hextra=mod.hextra;
+  if(mod.pax)svc.pax=+mod.pax;
+  closeModal();render();toast('💾 Salvataggio dettagli…');
+  google.script.run.withSuccessHandler(function(res){
+    toast('✅ Dettagli aggiornati');load(true);
+  }).withFailureHandler(function(e){toast('❌ NON salvato: '+e.message);load(true);}).updateService(svc.id,mod);
+}
+/* il Salva del dettaglio accumula la modifica: si scrive tutto insieme dalla barra in alto */
+function save(force){
+  var a=document.getElementById('selA').value,v=document.getElementById('selV').value;
+  var svc=CUR;
+  if(a===svc.autista&&v===svc.veicolo){closeModal();return;}
+  PEND[svc.id]={autista:a,veicolo:v};
+  svc.autista=a;svc.veicolo=v;
+  closeModal();render();
+  toast('🕐 In sospeso — salva dalla barra in alto');
+}
+function salvaTutto(recap){
+  var mosse=Object.keys(PEND).map(function(id){return {id:id,autista:PEND[id].autista,veicolo:PEND[id].veicolo};});
+  if(!mosse.length)return;
+  toast('💾 Salvo '+mosse.length+' modifiche'+(recap?' + recap':'')+'…');
+  google.script.run.withSuccessHandler(function(res){
+    if(recap)mosse.forEach(function(m){DATA.services.forEach(function(s){if(s.id===m.id)s.allert='Recap';});});
+    PEND={};render();
+    toast('✅ Salvate '+res.n+' modifiche'+(recap?' · 📋 Recap in partenza':''));
+    load(true);
+  }).withFailureHandler(function(e){toast('❌ Errore salvataggio: '+e.message);})
+    .assignBatch(mosse,recap?'Recap':null);
+}
+function annullaPend(){PEND={};load();}
+
+/* ---------- stato per flotta e timeline ---------- */
+function statusOf(list,keyFn){
+  var now=DATA.nowMin;
+  return list.map(function(item){
+    var mine=DATA.services.filter(function(sv){return !isCanc(sv)&&keyFn(sv)===item.nome&&sv.startMin>=0;}).sort(function(a,b){return a.startMin-b.startMin;});
+    var cur=null,next=null;
+    if(now>=0){
+      mine.forEach(function(sv){
+        if(sv.startMin<=now&&now<sv.endMin&&!cur)cur=sv;
+        if(sv.startMin>now&&!next)next=sv;
+      });
+    } else if(mine.length) next=mine[0];
+    return {item:item,cur:cur,next:next,n:mine.length,mine:mine};
+  });
+}
+/* ---------- rientro in garage ----------
+   Un mezzo che stacca a Monopoli alle 15:30 non è in sede alle 15:30: lo è dopo il
+   rientro alla base. Il backend manda rientroMin su ogni servizio (minuti dal drop-off
+   a Polignano, presi da _CacheTratte). Qui si calcola l'ora di rientro effettiva. */
+function garageInfo(mine){
+  if(!mine||!mine.length)return null;
+  var last=null;
+  mine.forEach(function(s){if(s.endMin>=0&&(!last||s.endMin>last.endMin))last=s;});
+  if(!last)return null;
+  // rientroMin assente = backend vecchio o deployment non aggiornato: meglio non dire nulla
+  // che affermare che il mezzo è già in sede
+  if(last.rientroMin===undefined||last.rientroMin===null)return null;
+  var r=Math.max(0,Math.round(+last.rientroMin||0));
+  return {at:last.endMin+r,min:r,from:last.per,last:last};
+}
+function garageHtml(mine){
+  var g=garageInfo(mine);if(!g)return '';
+  var now=DATA.nowMin;
+  var quando=(now>=0)?(g.at>now?' · tra '+fmtDur(g.at-now):' · già rientrato'):'';
+  var det=g.min>0
+    ?'ultimo stacco '+fmtMin(g.last.endMin)+' a '+esc(g.last.per)+' + '+g.min+'m di rientro'
+    :'l\'ultimo servizio termina già in sede';
+  return '<div style="margin-top:7px;padding-top:6px;border-top:1px dashed #e4e7eb;font-size:12.5px;color:var(--grigio)">'
+    +'<b style="color:var(--blu)">🏠 In garage alle '+fmtMin(g.at)+'</b><span style="opacity:.85">'+quando+'</span>'
+    +'<div style="font-size:11.5px;opacity:.75;margin-top:1px">'+det+'</div></div>';
+}
+function statusChip(st){
+  var a=st.item,now=DATA.nowMin;
+  if(a.esclusoMotivo)return '<span class="chip rosso">🚫 '+esc(a.esclusoMotivo)+'</span>';
+  if(a.inRent)return '<span class="chip ambra">🔑 a noleggio</span>';
+  if(a.fuoriServizio)return '<span class="chip rosso">🚫 Fuori servizio</span>';
+  if(st.cur&&now>=0){
+    var h='<span class="chip ambra"><span class="clessidra">⏳</span> stacca tra '+fmtDur(st.cur.endMin-now)+' (alle '+fmtMin(st.cur.endMin)+(st.cur.per?' a '+esc(st.cur.per):'')+')</span>';
+    // se dopo questo non ha altri servizi, torna in base: è lì che è davvero disponibile
+    if(!st.next){
+      var g=garageInfo(st.mine);
+      if(g&&g.min>0)h+=' <span class="chip">🏠 in garage '+fmtMin(g.at)+'</span>';
+    }
+    return h;
+  }
+  if(st.next&&now>=0)return '<span class="chip verde">🟢 libero per '+fmtDur(st.next.startMin-now)+' (fino alle '+fmtMin(st.next.startMin)+')</span>';
+  if(st.next)return '<span class="chip">primo servizio: '+st.next.time+'</span>';
+  return '<span class="chip verde">🟢 libero'+(st.n?'':' tutto il giorno')+'</span>';
+}
+
+/* Chi compare in Flotta e in Timeline. Prima la condizione era
+   `categoria valida && in elenco || esclusoMotivo===''`: per la precedenza di && su ||
+   bastava non avere motivi di esclusione per entrare, e un autista escluso con categoria
+   non riconosciuta spariva. Ora la regola è una sola, usata da entrambe le viste. */
+var CAT_OPERATIVE=['fisso','extra','tuk-tuk','emergenza'];
+function isOperativo(a){
+  var c=String(a.categoria||'').toLowerCase().trim();
+  return c?CAT_OPERATIVE.indexOf(c)>=0:true;
+}
+
+/* ---------- vista flotta ----------
+   Prima ogni mezzo aveva lo stesso bordo grigio: occupato e libero si somigliavano.
+   Ora lo stato guida colore, bordo, sfondo e ordine, e per ogni mezzo si vede
+   CHI lo sta usando e QUANDO si libera. */
+var FFILT='';
+function setFFilt(k){FFILT=(FFILT===k?'':k);render();}
+
+function statoDi(st,isDriver){
+  var a=st.item,now=DATA.nowMin;
+  if(isDriver&&a.esclusoMotivo)   return {k:'off',col:'#8a8f96',bg:'#f1f3f5',badge:'🚫 '+esc(a.esclusoMotivo)};
+  if(!isDriver&&a.inRent)         return {k:'off',col:'#e37400',bg:'#fff6e8',badge:'🔑 A NOLEGGIO'};
+  if(!isDriver&&a.fuoriServizio)  return {k:'off',col:'#8a8f96',bg:'#f1f3f5',badge:'🚫 FUORI SERVIZIO'};
+  if(now<0)return st.n?{k:'prog',col:'#0b3d66',bg:'#edf2f7',badge:'📋 '+st.n+' serviz'+(st.n===1?'io':'i')}
+                      :{k:'lib', col:'#1e8e3e',bg:'#eef8f1',badge:'🟢 NESSUN SERVIZIO'};
+  if(st.cur)                      return {k:'occ',col:'#c5221f',bg:'#fdeded',badge:'🔴 OCCUPATO'};
+  return {k:'lib',col:'#1e8e3e',bg:'#eef8f1',badge:'🟢 LIBERO'};
+}
+
+/* elenco dei servizi con, riga per riga, la controparte:
+   su un mezzo si vede l'autista, su un autista si vede il mezzo */
+function scheduleHtml(mine,colore,contro){
+  if(!mine.length)return '';
+  var h='<div style="margin-top:8px;font-size:12.5px;line-height:1.65">';
+  for(var i=0;i<mine.length;i++){
+    var sv=mine[i];
+    var c=contro?String(sv[contro]||'').trim():'';
+    h+='<div><span style="color:'+colore+';font-weight:700">'+fmtMin(sv.startMin)+'–'+fmtMin(sv.endMin)+'</span> '
+      +esc(sv.da)+' → '+esc(sv.per)
+      +(c?'<span style="color:var(--grigio)"> · '+(contro==='autista'?'🚹 ':'🚗 ')+esc(c)+'</span>'
+         :'<span style="color:var(--rosso)"> · ⚠️ '+(contro==='autista'?'senza autista':'senza mezzo')+'</span>')
+      +'</div>';
+    if(i<mine.length-1){
+      var nx=mine[i+1],t=trf(sv.id,nx.id);
+      var gap=nx.startMin-sv.endMin-t.min,cls,txt;
+      if(t.min===0&&gap>=0){cls='verde';txt='📍 stesso posto, '+fmtDur(gap)+' di attesa';}
+      else if(gap>=30){cls='verde';txt='🕳 buco utile '+fmtDur(gap)+' ('+fmtMin(sv.endMin)+'–'+fmtMin(nx.startMin)+', trasf. '+t.min+'m)';}
+      else if(gap>=0){cls='ambra';txt='⏱ stretto: solo '+fmtDur(gap)+' liberi (trasf. '+t.min+'m)';}
+      else{cls='rosso';txt='⛔ incastro impossibile: mancano '+fmtDur(-gap)+' (trasf. '+t.min+'m)';}
+      h+='<div style="margin:3px 0"><span class="chip '+cls+'">'+txt+'</span></div>';
+    }
+  }
+  return h+'</div>';
+}
+
+function renderFlotta(){
+  var m=document.getElementById('main');
+  var oggi=DATA.nowMin>=0;
+  var A=statusOf(DATA.autisti.filter(isOperativo),function(sv){return sv.autista;});
+  var V=statusOf(DATA.veicoli,function(sv){return sv.veicolo;});
+  A.forEach(function(st){st.stato=statoDi(st,true);});
+  V.forEach(function(st){st.stato=statoDi(st,false);});
+  var n={occ:0,lib:0,prog:0,off:0};
+  A.concat(V).forEach(function(st){n[st.stato.k]++;});
+
+  function fchip(k,label,num,col,bg){
+    if(!num)return '';
+    var att=FFILT===k;
+    return '<button class="chip" style="border:none;white-space:nowrap;'
+      +(att?'background:'+col+';color:#fff;font-weight:700':'background:'+bg+';color:'+col+';font-weight:600')
+      +'" onclick="setFFilt(\''+k+'\')">'+label+' <b>'+num+'</b></button>';
+  }
+  var h='';
+  if(!oggi)h+='<div class="sommario" style="background:#edf2f7"><span>📅 Programma di <b>'+esc(fmtDataLunga(DATA.date))+'</b> — non è oggi, niente countdown</span></div>';
+  h+='<div class="sommario">'
+    +fchip('occ','🔴 Impegnati ora',n.occ,'#c5221f','#fdeded')
+    +fchip('lib',oggi?'🟢 Liberi ora':'🟢 Senza servizi',n.lib,'#1e8e3e','#eef8f1')
+    +fchip('prog','📋 Con servizi',n.prog,'#0b3d66','#edf2f7')
+    +fchip('off','🚫 Non disponibili',n.off,'#8a8f96','#f1f3f5')
+    +(FFILT?'<button class="chip" style="border:none;margin-left:auto" onclick="setFFilt(\''+FFILT+'\')">✕ mostra tutti</button>':'')
+    +'</div>';
+
+  var ORDINE=[['occ','🔴 Impegnati ora'],['lib',oggi?'🟢 Liberi ora':'🟢 Senza servizi'],
+              ['prog','📋 Con servizi programmati'],['off','🚫 Non disponibili']];
+  function blocco(list,isDriver){
+    var out='',vuoto=true;
+    ORDINE.forEach(function(g){
+      if(FFILT&&FFILT!==g[0])return;
+      var righe=list.filter(function(st){return st.stato.k===g[0];})
+                    .sort(function(x,y){return x.item.nome.localeCompare(y.item.nome);});
+      if(!righe.length)return;
+      vuoto=false;
+      out+='<div class="sez sub">'+g[1]+' <span style="opacity:.6">('+righe.length+')</span></div>';
+      righe.forEach(function(st){out+=flRow(st,isDriver);});
+    });
+    return vuoto?'<div class="vuoto" style="padding:14px">Nessuno in questo stato</div>':out;
+  }
+  h+='<div class="sez">🚹 Autisti</div>'+blocco(A,true);
+  h+='<div class="sez">🚗 Mezzi</div>'+blocco(V,false);
+  m.innerHTML=h;
+}
+
+function flRow(st,isDriver){
+  var a=st.item,now=DATA.nowMin,S=st.stato;
+  var tinta=isDriver?colorOf(a.nome):colorOfVeicolo(a.nome);
+  var contro=isDriver?'veicolo':'autista';           // cosa mostrare come controparte
+  var etichetta=isDriver?'🚗 ':'🚹 ';
+  var dot=isDriver
+    ?'<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:'+tinta+';margin-right:6px;vertical-align:middle"></span>'
+    :'<span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:'+tinta+';margin-right:6px;vertical-align:middle"></span>';
+
+  // riga di stato: cosa sta facendo adesso, con chi, e quando si libera
+  var corpo='';
+  if(S.k==='occ'&&st.cur){
+    var pct=Math.max(2,Math.min(100,Math.round((now-st.cur.startMin)/Math.max(1,st.cur.durMin)*100)));
+    var conChi=String(st.cur[contro]||'').trim();
+    corpo+='<div class="bar" style="display:block;margin-top:9px"><i style="width:'+pct+'%"></i></div>'
+      +'<div style="font-size:13px;margin-top:6px;color:#202124"><b>'+esc(st.cur.da)+' → '+esc(st.cur.per)+'</b>'
+      +(conChi?'<span style="color:var(--grigio)"> · '+etichetta+esc(conChi)+'</span>':'')+'</div>'
+      +'<div style="font-size:12.5px;color:var(--rosso);font-weight:600;margin-top:3px">'
+      +'si libera alle '+fmtMin(st.cur.endMin)+' a '+esc(st.cur.per)+' · fra '+fmtDur(st.cur.endMin-now)+'</div>';
+    if(st.next)corpo+='<div style="font-size:12px;color:var(--grigio);margin-top:2px">poi '+st.next.time+' '+esc(st.next.da)+' → '+esc(st.next.per)+'</div>';
+  } else if(S.k==='lib'&&st.next&&now>=0){
+    var conP=String(st.next[contro]||'').trim();
+    corpo+='<div style="font-size:12.5px;margin-top:7px;color:var(--verde);font-weight:600">libero per '+fmtDur(st.next.startMin-now)+'</div>'
+      +'<div style="font-size:12.5px;color:var(--grigio);margin-top:2px">poi alle '+st.next.time+': '+esc(st.next.da)+' → '+esc(st.next.per)
+      +(conP?' · '+etichetta+esc(conP):'')+'</div>';
+  } else if(S.k==='lib'&&!st.n){
+    corpo+='<div style="font-size:12.5px;margin-top:7px;color:var(--grigio)">nessun servizio in giornata</div>';
+  }
+
+  var sotto=esc(a.categoria||a.tipo||'')+(a.pax?' · '+a.pax+' posti':'')+(st.n?' · '+st.n+' serviz'+(st.n===1?'io':'i')+' oggi':'');
+  return '<div class="fl" style="border-left:5px solid '+S.col+';background:'+S.bg+'">'
+    +'<div class="riga"><div><div class="nome">'+dot+esc(a.nome)+'</div><div class="cat">'+sotto+'</div></div>'
+    +'<div class="st"><span class="chip" style="background:'+S.col+';color:#fff;font-weight:700;white-space:nowrap">'+S.badge+'</span></div></div>'
+    +corpo
+    +(S.k==='off'?'':scheduleHtml(st.mine,tinta,contro)+garageHtml(st.mine))
+    +'</div>';
+}
+
+/* ---------- vista timeline ---------- */
+function renderTimeline(){
+  var m=document.getElementById('main');
+  var withSrv=DATA.services.filter(function(s){return s.startMin>=0&&!isCanc(s);});
+  if(!withSrv.length){m.innerHTML='<div class="vuoto">Nessun servizio con orario per '+DATA.date+'</div>';return;}
+  var minS=1440,maxS=0;
+  // la scala arriva fino al rientro in base, altrimenti l'ultimo tratto resta tagliato fuori
+  withSrv.forEach(function(s){if(s.startMin<minS)minS=s.startMin;var e=s.endMin+(s.rientroMin||0);if(e>maxS)maxS=e;});
+  var h0=Math.min(6,Math.floor(minS/60)),h1=Math.max(22,Math.min(24,Math.ceil((maxS+60)/60)));
+  var span=(h1-h0)*60;
+  function pct(min){return Math.max(0,Math.min(100,(min-h0*60)/span*100));}
+  function assi(){
+    var t='<div class="tlassi">',step=(h1-h0)>12?4:2;
+    for(var hh=h0;hh<=h1;hh+=step)t+='<span>'+('0'+hh).slice(-2)+'</span>';
+    return t+'</div>';
+  }
+  var h='<div class="legenda">'
+    +'<span><span class="sw" style="background:#4363d8"></span>servizio</span>'
+    +'<span><span class="sw" style="background:#4363d877"></span>trasferimento</span>'
+    +'<span><span class="sw" style="background:#c9ccd1"></span>attesa</span>'
+    +'<span><span class="sw" style="background:repeating-linear-gradient(45deg,#4363d8aa,#4363d8aa 3px,transparent 3px,transparent 6px)"></span>rientro in garage</span>'
+    +'<span><span class="sw" style="background:var(--rosso);width:3px;height:14px"></span>adesso</span>'
+    +'</div>';
+
+  function bars(mine,colore){
+    var b='<div class="tlbar">';
+    for(var i=0;i<mine.length;i++){
+      var sv=mine[i];
+      b+='<div class="tlseg" style="left:'+pct(sv.startMin)+'%;width:'+Math.max(1.2,pct(sv.endMin)-pct(sv.startMin))+'%;background:'+colore+';border-radius:4px" title="'+esc(sv.da)+' → '+esc(sv.per)+'"></div>';
+      if(i<mine.length-1){
+        var nx=mine[i+1],t=trf(sv.id,nx.id);
+        var tEnd=Math.min(sv.endMin+t.min,nx.startMin);
+        if(tEnd>sv.endMin)b+='<div class="tlseg" style="left:'+pct(sv.endMin)+'%;width:'+(pct(tEnd)-pct(sv.endMin))+'%;background:'+colore+'77;border-radius:0"></div>';
+        if(nx.startMin>tEnd)b+='<div class="tlseg" style="left:'+pct(tEnd)+'%;width:'+(pct(nx.startMin)-pct(tEnd))+'%;background:#c9ccd1;top:8px;bottom:8px;border-radius:2px"></div>';
+      }
+    }
+    // tratta di rientro alla base dopo l'ultimo servizio
+    var g=garageInfo(mine);
+    if(g&&g.min>0)b+='<div class="tlseg" style="left:'+pct(g.last.endMin)+'%;width:'+Math.max(0.6,pct(g.at)-pct(g.last.endMin))+'%;background:repeating-linear-gradient(45deg,'+colore+'aa,'+colore+'aa 3px,transparent 3px,transparent 6px);border-radius:0 4px 4px 0" title="rientro in garage — in sede alle '+fmtMin(g.at)+'"></div>';
+    if(DATA.nowMin>=h0*60&&DATA.nowMin<=h1*60)b+='<div class="tlnow" style="left:'+pct(DATA.nowMin)+'%"></div>';
+    return b+'</div>'+assi();
+  }
+  function riepilogo(mine){
+    var parts=[];
+    for(var i=0;i<mine.length;i++){
+      var sv=mine[i];
+      parts.push('<b>'+fmtMin(sv.startMin)+'–'+fmtMin(sv.endMin)+'</b> '+esc(sv.da)+'→'+esc(sv.per));
+      if(i<mine.length-1){
+        var nx=mine[i+1],t=trf(sv.id,nx.id);
+        var gap=nx.startMin-sv.endMin-t.min;
+        var col=gap>=30?'var(--verde)':(gap>=0?'var(--ambra)':'var(--rosso)');
+        parts.push('<span style="color:'+col+'">trasf. '+t.min+'m + attesa '+(gap>=0?fmtDur(gap):'⛔ -'+fmtDur(-gap))+'</span>');
+      }
+    }
+    var g=garageInfo(mine);
+    if(g&&g.min>0)parts.push('<span style="color:var(--blu)">🏠 rientro '+g.min+'m → in garage <b>'+fmtMin(g.at)+'</b></span>');
+    return '<div class="tltesto">'+parts.join(' · ')+'</div>';
+  }
+
+  var liberi=[];
+  h+='<div class="sez">Autisti</div>';
+  statusOf(DATA.autisti,function(sv){return sv.autista;}).forEach(function(st){
+    if(!st.mine.length){
+      if(!st.item.esclusoMotivo&&isOperativo(st.item))liberi.push(st.item.nome);
+      return;
+    }
+    var c=colorOf(st.item.nome);
+    h+='<div class="tl" style="border-left:4px solid '+c+'">'
+      +'<div class="riga"><div class="nome"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:'+c+';margin-right:5px"></span>'+esc(st.item.nome)+'</div><div class="st">'+statusChip(st)+'</div></div>'
+      +bars(st.mine,c)+riepilogo(st.mine)+'</div>';
+  });
+  if(liberi.length)h+='<div class="tl" style="font-size:13px;color:var(--grigio)">🟢 Senza servizi oggi: '+liberi.map(esc).join(', ')+'</div>';
+
+  var liberiV=[],inRentV=[];
+  h+='<div class="sez">Mezzi</div>';
+  statusOf(DATA.veicoli,function(sv){return sv.veicolo;}).forEach(function(st){
+    if(!st.mine.length){
+      if(st.item.inRent)inRentV.push(st.item.nome);
+      else if(!st.item.fuoriServizio)liberiV.push(st.item.nome);
+      return;
+    }
+    h+='<div class="tl" style="border-left:4px solid #7d93a8">'
+      +'<div class="riga"><div class="nome">🚗 '+esc(st.item.nome)+'</div><div class="st">'+statusChip(st)+'</div></div>'
+      +bars(st.mine,'#7d93a8')+riepilogo(st.mine)+'</div>';
+  });
+  if(inRentV.length)h+='<div class="tl" style="font-size:13px;color:var(--ambra)">🔑 A noleggio: '+inRentV.map(esc).join(', ')+'</div>';
+  if(liberiV.length)h+='<div class="tl" style="font-size:13px;color:var(--grigio)">🟢 Liberi: '+liberiV.map(esc).join(', ')+'</div>';
+
+  m.innerHTML=h;
+}
+
+/* ---------- vista rent ---------- */
+function renderRent(){
+  var m=document.getElementById('main');
+  var rents=DATA.rents||[];
+  if(!rents.length){m.innerHTML='<div class="vuoto">Nessun noleggio attivo il '+DATA.date+'</div>';return;}
+  var h='<div class="sommario"><span><b>'+rents.length+'</b> noleggi attivi</span></div>';
+  rents.forEach(function(r){
+    h+='<div class="card" style="border-left-color:var(--oro)">'
+      +'<div class="top"><span style="font-size:16px;font-weight:700;color:var(--blu)">🔑 '+esc(r.veicolo||'—')+'</span>'
+      +'<span class="chip">'+r.durata+' gg</span></div>'
+      +'<div class="info">'+(r.nome?'👤 '+esc(r.nome):'')+(r.fornitore?' · 🏨 '+esc(r.fornitore):'')+'</div>'
+      +'<div class="meta">'
+      +'<span class="chip">dal '+fmtData(r.inizio)+' al '+fmtData(r.fine)+'</span>'
+      +(r.prezzo?'<span class="chip">'+esc(r.prezzo)+'/giorno</span>':'')
+      +(r.totale?'<span class="chip verde">tot '+esc(r.totale)+'</span>':'')
+      +'</div></div>';
+  });
+  m.innerHTML=h;
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(function(){e.style.display='none';},3500);}
+
+/* avvio veloce: prima i dati incorporati nella pagina, poi l'ultima schermata
+   salvata sul telefono, e solo come ultima spiaggia la chiamata classica */
+document.getElementById('datePick').value=oggiLocal();
+(function(){
+  if(BOOT&&BOOT.services){
+    DATA=BOOT;
+    PLANS[BOOT.date]=BOOT;
+    document.getElementById('datePick').value=BOOT.date;
+    render();
+    load(true); // riallinea in sottofondo e avvia il timer
+    return;
+  }
+  var cached=null;
+  try{cached=JSON.parse(localStorage.getItem('te_plan')||'null');}catch(e){}
+  if(cached&&cached.services){
+    DATA=cached;
+    document.getElementById('datePick').value=cached.date;
+    render();
+    toast('📡 Aggiorno i dati…');
+    load(true);
+    return;
+  }
+  load();
+})();
+</script>
+</body>
+</html>

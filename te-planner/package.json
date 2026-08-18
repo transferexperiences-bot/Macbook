@@ -1,0 +1,13 @@
+{
+  "name": "te-planner",
+  "private": true,
+  "description": "TE Planner — web app Google Apps Script per i transfer di Transfer Experience",
+  "scripts": {
+    "test": "./run-tests.sh",
+    "preview": "python3 tools/build-preview.py",
+    "shots": "node tools/screenshot.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

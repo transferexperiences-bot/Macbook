@@ -67,3 +67,7 @@ una sintesi in un messaggio.
 | Gestionale `Prenotazioni NCC 3.0` | `1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw` |
 
 Backup dei workflow: `backups/n8n/` (token sempre redatti).
+
+La web app **TE Planner** (Apps Script, scheda Servizi / Assegna / Flotta / Timeline / Rent)
+sta in `te-planner/`: ha regole sue, in `te-planner/CLAUDE.md`. Anche lì vale la regola di
+sopra — il codice vero gira su script.google.com, quella cartella è la copia di lavoro.

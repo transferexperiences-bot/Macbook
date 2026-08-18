@@ -1,5 +1,51 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## 🟢 SCOPERTO — gli Apps Script si leggono da qui, senza incollare (18/08)
+
+Avevo detto ad Agostino che i progetti Apps Script non erano raggiungibili dalla sessione.
+**Era falso, non avevo provato la strada giusta.** L'export di Drive restituisce il sorgente
+completo di un progetto:
+
+```
+mcp__Google_Drive__download_file_content
+  fileId          = <id del progetto Apps Script>
+  exportMimeType  = application/vnd.google-apps.script+json
+```
+
+Torna base64 di `{files:[{name, type, source}]}`. Se il risultato è grosso l'MCP lo salva su
+file e si decodifica con python; se è piccolo arriva inline. Così ho letto per intero
+`TransferLib`, il `TRANSFER QUEUE PROCESSOR v3` e il `GESTIONALE BARCHE V4.4` senza che
+Agostino incollasse una riga.
+
+**Limite trovato.** La ricerca Drive per `mimeType = 'application/vnd.google-apps.script'`
+restituisce solo cinque progetti: `TransferLib`, il queue processor (legato a Strutture),
+`GESTIONALE BARCHE V4.4`, `TE Planner`, `Invio Notifiche Telegram`. **Gli script legati ai
+singoli fogli struttura non compaiono** — quello di Pietra Blu (`Logica incasso.gs` +
+`Webhook.gs`) non è in elenco, e neanche `parentId = <id del foglio>` lo tira fuori.
+
+Quindi per leggerli serve il loro id di progetto, che sta nell'indirizzo dell'editor:
+*foglio → Estensioni → Apps Script → copiare l'URL*. Un URL a struttura, niente codice da
+incollare. Da lì in poi li leggo, li confronto e li verso nel repo da solo.
+
+## 🔴 APERTO — tre risolutori di colonne per la stessa idea
+
+Il `GESTIONALE BARCHE V4.4` (istantanea in `backups/apps-script/gestionale-barche-v44_20260818.gs`)
+ha già risolto due cose che sui fogli struttura non lo sono:
+
+- `_parseDataFlessibile_` — accetta `dd/mm/yyyy`, `yyyy-mm-dd` e la data testuale, invece di
+  fidarsi del formato della cella;
+- `_inviaTransferWebhook_` — manda il transfer a n8n risolvendo le colonne per nome, con l'ora
+  di pickup calcolata (inizio − 20 minuti).
+
+Ma per risolvere le colonne usa `cercaCol_`, che è la **terza** implementazione della stessa
+idea: `TransferLib.buildColMap()`, `teBuildColMap_()` nel queue processor, e questa. Tre
+tabelle di alias diverse, tre ripieghi diversi. Una correzione va incollata tre volte, e alla
+terza ce ne si dimentica una.
+
+Lavoro di convergenza, in tre passi: censire (servono gli URL dei progetti), confrontare
+funzione per funzione con un banco, e tenere **una sola** versione in `TransferLib` lasciando
+sui fogli il guscio che la chiama.
+
 ## 🔴 APERTO — lo Stato cancellato sotto il naso (18/08)
 
 **Il guasto.** Su un foglio struttura, se una riga ha **Modalità = «Incassare»** (col. R) e la

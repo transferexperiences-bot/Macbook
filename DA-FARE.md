@@ -19,6 +19,25 @@ di `Smart Write Struttura`, esecuzioni `729824`/`729828`). Solo Id, mai confront
 (regola di Agostino: «una struttura può inserire transfer identici, comanda l'Id»).
 **Backup:** `backups/n8n/TW_pre_dedup_20260814.json`.
 
+## 1-bis. Bozze che tornano a chiedere conferma — **FATTO il 18/08**
+**Prova:** esecuzione `760661` (18/08, 23:21). Tre transfer del 19/08 per Tedi tour operator
+confermati insieme; `Parse transfer` li ha scritti tutti e tre (righe **1135, 1136, 1137** del
+gestionale, verificate rileggendo il foglio). Subito dopo il promemoria ha scritto «⏳ Resta 1
+bozza aperta — sul gestionale non c'è» e ha rimesso il bottone *Salva* su
+`TR/18082026/G5HWU5BMPTIVTWY1`, già salvato.
+**Causa:** in `Aggiorna Bozze` (sezione 3) la ricevuta di `Parse transfer` (campo `rows`)
+conteneva **due righe su tre** — mancava proprio quella che aveva già la tariffa (380) — e il
+codice leggeva `payload_schede` **solo se la ricevuta era vuota** (`if (!provati.size)`).
+Ricevuta non vuota ma incompleta → il terzo non usciva dal registro.
+**Correzione (v5):** `provati` è l'**unione** di ricevuta e `payload_schede`. Resta la
+protezione del 14/08 (`730335`): una citazione di un Id in prosa non è mai una prova.
+**Pubblicato:** `Prenotazioni Transfer 6.0` versione `69e9744a-85e4-43a9-9e06-62532bd0e7ab`
+(indietro: `481223f5-16e3-40e4-8ad4-48f61390117c`).
+**Banco:** `banchi/te/banco-bozze.js` — 9/9, con la v4 ricostruita che riproduce il guasto.
+**Da tenere d'occhio:** perché la ricevuta di `Parse transfer` arriva incompleta. Il campo
+`rows` nasce da `Get row(s) in sheet` (`returnFirstMatch: true`) e nel turno del 760661 ha
+riportato solo i due transfer arrivati **senza** tariffa. Non è stato toccato.
+
 ## 2. Codice del rientro — `f3Y46avI5O8dEnYn` — **FATTO il 18/08**
 Pubblicato: `Tool - Rientro` versione `9edb3fd9-2a14-44b9-a52a-0bd22c247188`
 (per tornare indietro: `restore_workflow_version` alla `cef25980-839e-4130-b975-37a32e9fa611`).

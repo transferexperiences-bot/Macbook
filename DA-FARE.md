@@ -1,5 +1,69 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## 🔴 LA CAUSA VERA — la corsa sull'Id fra i tre `onEdit` (18/08, ore 16:35)
+
+La diagnosi di Pietra Blu, lanciata da Agostino:
+
+```
+── TRIGGER INSTALLATI ──
+  onEdit_completo  —  ON_EDIT
+  onEdit           —  ON_EDIT
+libreria TransferLib importata: no
+```
+
+Due trigger installabili, più il trigger semplice `onEdit` che Google fa partire da solo perché
+la funzione si chiama così: **tre esecuzioni per ogni modifica**, come già si vedeva nella
+pagina Esecuzioni del 17/08 — 24 esecuzioni in 37 secondi.
+
+### Il difetto
+
+`onEdit` legge la riga — Stato e Id compresi — **prima** di prendere il lock:
+
+```js
+const rangeData = sheet.getRange(...).getValues();   // <-- legge qui
+...
+queueLock.waitLock(10000);                           // <-- si sincronizza qui
+```
+
+Il lock non protegge niente. Quando la seconda esecuzione entra ha in mano una fotografia
+vecchia: se lì l'Id era vuoto, ne conia uno nuovo e **sovrascrive quello appena scritto
+dall'altra**. L'Id finito in coda non esiste più nella colonna Id, e un minuto dopo:
+
+```
+Id TR-… non trovato nella colonna Id di Pietra Blu — non mando niente
+```
+
+che è **l'errore più frequente di tutta la coda**. Il transfer non parte, e nessuno lo sa.
+
+### E combacia con quello che vede Agostino
+
+«Ho rimesso io Pronto ed è arrivato.» La prima volta — riga nuova, cella Id vuota — le tre
+esecuzioni si rubano l'Id a vicenda. La seconda volta l'Id nella cella **c'è già**: nessuno lo
+conia, nessuna corsa, il transfer parte.
+
+Banco: `node banchi/te/banco-corsa-id.js`, verde su 7 prove, con il codice vero di `onEdit` e
+il diario delle operazioni in ordine — si legge nero su bianco che la lettura precede il lock.
+
+### ⚠️ Correzione a quello che avevo scritto stamattina
+
+Avevo detto che il colpevole più probabile era la guardia incasso che svuota lo Stato. È un
+guasto vero e la correzione serve, **ma non è questo il caso di Agostino**: la corsa sull'Id
+lo spiega meglio e spiega anche perché la seconda volta funziona.
+
+E soprattutto: **`transferlib-recupero.gs` non protegge Pietra Blu.** Lì `sweepCheck` non è
+installato e `TransferLib` non è nemmeno importata — la rete di sicurezza che ho riscritto su
+quel foglio non esiste proprio. Va prima installata.
+
+### Cosa fare, in ordine
+
+1. **rileggere Stato e Id dentro il lock**, non prima — tre righe spostate;
+2. **togliere il trigger doppio**: da tre esecuzioni per modifica a una;
+3. **installare `TransferLib` + `sweepCheck`** sui fogli che non ce l'hanno, così esiste una
+   rete di sicurezza anche lì.
+
+E prima di decidere dove: **lanciare `diagnosticaFoglio` su ogni foglio**. Pietra Blu era il
+primo referto; senza gli altri non si sa chi ha cosa.
+
 ## 🔎 DA LANCIARE FOGLIO PER FOGLIO — la diagnosi che dice quali sono i «determinati fogli»
 
 Agostino, 18/08 pomeriggio: «penso che sia su determinati fogli, ad esempio ho rimesso io

@@ -107,10 +107,10 @@ function ambiente(foglio, coda) {
 // ---------------------------------------------------------------------
 // Carica il codice vero: libreria + pezzo nuovo
 // ---------------------------------------------------------------------
-const SRC_LIB = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'TransferLib.gs'), 'utf8');
-// Si carica il file UNITO, quello che Agostino incolla davvero in TransferLib:
-// provare i due pezzi separati proverebbe una cosa che sul foglio non esiste.
-const SRC_NEW = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'transferlib-nuovo.gs'), 'utf8');
+// Si carica il file COMPLETO: è esattamente quello che finisce dentro
+// TransferLib. Provare i pezzi separati proverebbe una cosa che non esiste.
+const SRC_LIB = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'TransferLib-COMPLETO.gs'), 'utf8');
+const SRC_NEW = '';
 const SRC_EDIT = '';
 
 function carica(amb) {

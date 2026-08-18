@@ -118,6 +118,14 @@ function onEditStruttura(e) {
       Logger.log("correzione cella: " + err);
     }
 
+    // 1-bis) la Data: si converte quello che si capisce, si butta il resto
+    if (col.data && e.range.getColumn() <= col.data &&
+        col.data <= e.range.getColumn() + e.range.getNumColumns() - 1) {
+      try { controllaData(sheet, e.range.getRow(), col); } catch (err) {
+        Logger.log("controllo data: " + err);
+      }
+    }
+
     // 2) la tendina, se hai toccato Modalità
     var da = e.range.getColumn();
     var a = da + e.range.getNumColumns() - 1;

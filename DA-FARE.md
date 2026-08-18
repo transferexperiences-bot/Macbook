@@ -1,5 +1,36 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## ✅ PRONTA — la colonna Data: si converte quello che si capisce, si butta il resto
+
+18/08 sera. Agostino scrive «mercoledì 3 settem» nella colonna Data e Google risponde
+*«Non valido: questo valore non corrisponde al tipo di colonna data»*. Quel rifiuto è di
+Google — sulla colonna c'è il tipo «data» — e blocca il valore **prima** che qualunque script
+veda qualcosa: comodo, ma cieco. Non dice cosa scrivere e non lascia traccia.
+
+Agostino: «devi fare in modo che lo script cancelli la cella se l'input è testuale».
+
+`normalizzaData` + `controllaData` in `apps-script/transferlib-data.gs` fanno due cose che
+Google non fa: **capiscono** quello che la struttura ha scritto davvero — `3/9`, `3-9-26`,
+`2026-09-03`, `3 settembre`, `mercoledì 3 settembre 2026`, e anche il troncato `3 settem` —
+e **spiegano** quando non ci riescono: cella svuotata, sfondo rosso, nota che dice come
+scriverla. La nota se ne va da sola quando la data è giusta.
+
+L'anno quando manca: si prende quello corrente, e se la data cadrebbe più di **60 giorni** nel
+passato si passa all'anno dopo — a dicembre «3 gennaio» è quasi sempre l'anno nuovo. Sessanta
+giorni perché una prenotazione inserita con una settimana di ritardo capita, una di dieci mesi no.
+
+Si butta: «domani», «la prossima settimana», «3 pippo», «settembre» senza giorno, «31 febbraio»,
+«45/9/2026», mese 13. Una data vera di Google non si tocca, e la cella vuota non è un errore.
+
+⚠️ **Non funziona finché sulla colonna Data resta il «tipo di colonna» di Google**: quello blocca
+prima e la libreria non viene nemmeno chiamata. Va tolto sul foglio: *Dati → Tipo di colonna →
+Nessuno*.
+
+Banco verde su 40 prove: `node banchi/te/banco-data.js`, con istante fisso così non dipende da
+che giorno è oggi. Gira sul **file completo**, quello che finisce dentro TransferLib.
+
+🔴 Non pubblicata.
+
 ## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
 
 Referto di `teSetup`:

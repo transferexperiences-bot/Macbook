@@ -58,8 +58,11 @@ partire un trigger semplice **per conto suo**, e il codice vecchio continua a gi
 parallelo. Va **rinominata `onEdit_VECCHIO`** — non cancellata, così si torna indietro in un
 secondo. `teSetup()` controlla e si arrabbia se la trova ancora.
 
-File: `apps-script/transferlib-accoda.gs` + `apps-script/transferlib-onedit.gs` (libreria) ·
-`apps-script/struttura-guscio.gs`
+File da incollare: **`apps-script/transferlib-nuovo.gs`** — i due pezzi uniti, un'incollata
+sola in fondo a TransferLib — e **`apps-script/struttura-guscio.gs`** sul foglio.
+(`transferlib-accoda.gs` e `transferlib-onedit.gs` restano nel repo come sorgenti separati:
+il file unito nasce da quelli, e il banco carica **il file unito**, cioè quello che finisce
+davvero sul foglio.)
 (foglio, con `teSetup` che installa i trigger e toglie i vecchi da solo).
 Banco verde su 40 prove: `node banchi/te/banco-accoda.js` — gira il codice vero della libreria,
 con il caso di controllo della riga 255 di stamattina.

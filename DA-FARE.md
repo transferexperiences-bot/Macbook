@@ -1,5 +1,70 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## 🔴 APERTO — due varianti divergenti dello stesso script struttura (18/08)
+
+Suite 10 e Pietra Blu **non hanno lo stesso codice**. Sono due rami dello stesso pezzo, e
+ognuno ha qualcosa che manca all'altro. La funzione si chiama pure diversamente:
+`enqueueTransfer` su Suite 10, `onEdit` su Pietra Blu.
+
+| | Suite 10 | Pietra Blu |
+|---|---|---|
+| shim `TransferLib` (`onChangeHandler`, `sweepCheck`) | ✅ | da verificare |
+| **GUARD PRONTO** (fornitore / modalità / tariffa 0) | ✅ | ❌ |
+| dedup sulle righe PENDING già in coda | ❌ | ✅ (v4) |
+| correzione Ora e Telefono | ❌ | ✅ |
+| logica «Incassare» (e la sua trappola) | ❌ | ✅ |
+| colonne per numero fisso 22 / 24 / 9 | ✅ | ✅ |
+| chiamata webhook per il prezzo | ❌ | ❌ |
+| data testuale accettata | ❌ | ❌ |
+
+Le ultime due righe stanno **solo** nel `GESTIONALE BARCHE V4.4`
+(`_inviaTransferWebhook_`, `_parseDataFlessibile_`): sui fogli struttura non ci sono mai
+arrivate.
+
+### La GUARD PRONTO è quella che Agostino voleva ovunque
+
+```js
+if (!fornitoreG)              problemi.push("Fornitore");
+if (!modalitaG)               problemi.push("Modalita/Pagamento");
+if (tariffaZero && !isFree)   problemi.push("Tariffa a 0");
+```
+
+Con un'eccezione ben pensata: `isFree` riconosce i transfer di cortesia
+(`compliment`, `free shuttle`, `navetta gratu`, `omaggio`…) e li lascia passare con tariffa 0.
+
+### Ma svuota lo Stato anche lei
+
+```js
+sheet.getRange(currentRow, TRIGGER_COL).setValue("");
+```
+
+Qui almeno la riga **non entra in coda** — il `continue` arriva prima dell'`appendRow` — quindi
+non lascia una riga orfana come fa `incassare_` su Pietra Blu. Però l'avviso è un `alert`
+dentro un `try/catch` vuoto: in un trigger senza interfaccia non compare, e allora «Pronto»
+sparisce e basta.
+
+⚠️ **Questo indebolisce una diagnosi di stamattina.** Avevo attribuito lo `Stato ora è ""`
+della riga 69 di 6 Stelle Mama a `incassare_`. Ma anche questa guardia produce uno Stato
+vuoto, e **non so quale variante giri su 6 Stelle Mama**. Il banco dimostra che `incassare_`
+*può* produrre quel guasto, non che l'abbia prodotto quella volta. Due candidati, uno solo
+colpevole: si chiude leggendo lo script di 6 Stelle Mama.
+
+Il tasso di righe di coda doppie **non** distingue le due varianti — Pietra Blu, che il dedup
+ce l'ha, sta al 18% e Covo dei Saraceni al 62%. Il grosso dei doppioni lo fa
+`recoverMissedStateEvents` in `TransferLib`, che accoda per conto suo. Quindi niente
+scorciatoie: per sapere cosa gira su un foglio bisogna leggerlo.
+
+### Dove si va a parare
+
+Non «sistemare diciotto script», ma **una sola versione in `TransferLib`** — che tutti e
+diciotto già importano — e sui fogli il guscio che la chiama. Dentro la libreria vanno:
+la GUARD PRONTO di Suite 10, il dedup di Pietra Blu, la correzione Ora/Telefono, la logica
+incasso corretta, `_parseDataFlessibile_` del gestionale barche, e **un solo** risolutore di
+colonne (oggi sono tre: `buildColMap`, `teBuildColMap_`, `cercaCol_`).
+
+Copie di lavoro: `apps-script/struttura-suite10.gs`, `apps-script/struttura-onedit.gs`.
+Istantanee datate in `backups/apps-script/`.
+
 ## 🟢 SCOPERTO — gli Apps Script si leggono da qui, senza incollare (18/08)
 
 Avevo detto ad Agostino che i progetti Apps Script non erano raggiungibili dalla sessione.

@@ -1,35 +1,38 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
-## ✅ PRONTA — la colonna Data: si converte quello che si capisce, si butta il resto
+## ✅ PRONTA — la colonna Data: o è una data, o si cancella
 
-18/08 sera. Agostino scrive «mercoledì 3 settem» nella colonna Data e Google risponde
-*«Non valido: questo valore non corrisponde al tipo di colonna data»*. Quel rifiuto è di
-Google — sulla colonna c'è il tipo «data» — e blocca il valore **prima** che qualunque script
-veda qualcosa: comodo, ma cieco. Non dice cosa scrivere e non lascia traccia.
+18/08 sera. Agostino scrive «mercoledì 3 settem» nella colonna Data e Google risponde *«Non
+valido: questo valore non corrisponde al tipo di colonna data»*. Quel rifiuto è di Google — sulla
+colonna c'è il tipo «data» — e blocca il valore **prima** che qualunque script lo veda: non dice
+cosa scrivere e non lascia traccia.
 
-Agostino: «devi fare in modo che lo script cancelli la cella se l'input è testuale».
+Agostino: «se io scrivo un testo, tu lo cancelli, finché non la scrive in formato data».
 
-`normalizzaData` + `controllaData` in `apps-script/transferlib-data.gs` fanno due cose che
-Google non fa: **capiscono** quello che la struttura ha scritto davvero — `3/9`, `3-9-26`,
-`2026-09-03`, `3 settembre`, `mercoledì 3 settembre 2026`, e anche il troncato `3 settem` —
-e **spiegano** quando non ci riescono: cella svuotata, sfondo rosso, nota che dice come
-scriverla. La nota se ne va da sola quando la data è giusta.
+Una regola sola, in `apps-script/transferlib-data.gs`:
 
-L'anno quando manca: si prende quello corrente, e se la data cadrebbe più di **60 giorni** nel
-passato si passa all'anno dopo — a dicembre «3 gennaio» è quasi sempre l'anno nuovo. Sessanta
-giorni perché una prenotazione inserita con una settimana di ritardo capita, una di dieci mesi no.
+| cosa c'è nella cella | cosa si fa |
+|---|---|
+| Google l'ha capita come data | si lascia stare |
+| vuota | non è un errore, si lascia stare |
+| qualunque altra cosa | **si cancella**, e la cella dice perché |
 
-Si butta: «domani», «la prossima settimana», «3 pippo», «settembre» senza giorno, «31 febbraio»,
-«45/9/2026», mese 13. Una data vera di Google non si tocca, e la cella vuota non è un errore.
+**Avevo cominciato a scriverla più complicata** — provare a convertire «3 settembre» in
+`03/09/2026`, indovinare l'anno mancante — e Agostino mi ha fermato: «non capisco perché tu la
+faccia così complicata». Aveva ragione, e non solo per semplicità: su un transfer una data
+indovinata male è peggio di una cella vuota. Se il codice legge «3 settembre» e sbaglia l'anno,
+l'autista si presenta fra dodici mesi e non se ne accorge nessuno finché il cliente non resta a
+terra. Una cella vuota e rossa si vede subito.
+
+Come si riconosce una data, senza indovinare niente: quando quello che scrivi **è** una data,
+Google nella cella non mette il testo — mette un valore data, e `getValue()` restituisce un
+oggetto `Date`. Se torna una stringa, dentro c'è testo. Basta questo.
 
 ⚠️ **Non funziona finché sulla colonna Data resta il «tipo di colonna» di Google**: quello blocca
 prima e la libreria non viene nemmeno chiamata. Va tolto sul foglio: *Dati → Tipo di colonna →
 Nessuno*.
 
-Banco verde su 40 prove: `node banchi/te/banco-data.js`, con istante fisso così non dipende da
-che giorno è oggi. Gira sul **file completo**, quello che finisce dentro TransferLib.
-
-🔴 Non pubblicata.
+Banco verde: `node banchi/te/banco-data.js`. 🔴 Non pubblicata.
 
 ## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
 

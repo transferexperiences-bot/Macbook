@@ -32,6 +32,25 @@ e Agostino lo vuole immediato.)*
 - **Tipologia incasso** (era solo su Pietra Blu, e cancellava lo Stato): **non blocca più**.
   Segnala e lascia partire. In dubbio si tiene.
 
+### La tendina della Tipologia incasso viene anche lei in libreria
+
+Agostino la vuole. Invece di riaccendere il vecchio trigger su qualche foglio, `onEditStruttura`
+in `apps-script/transferlib-onedit.gs` diventa **l'unico punto d'ingresso** di una modifica e fa
+tre cose in ordine:
+
+1. corregge Ora e Telefono **nella cella appena scritta** — immediato come prima, ma senza il
+   giro su tutto il foglio che faceva durare le esecuzioni 7-20 secondi (quello resta a `teSweep`);
+2. se hai toccato Modalità, apre la tendina della Tipologia incasso;
+3. se hai toccato Stato, accoda.
+
+Due differenze volute rispetto al vecchio `incassare_`: niente più finestra modale
+(`getUi().alert()` in un trigger senza interfaccia lancia, e il `catch` vuoto si mangiava il
+resto della funzione) — al suo posto la cella gialla col segnaposto; e **non si cancella più
+quello che hai scritto**. Una tipologia vera già scelta non viene toccata quando cambi Modalità:
+si toglie solo il segnaposto.
+
+Così la tendina ce l'hanno **tutti e diciotto** i fogli, non i pochi che avevano `incassare_`.
+
 ### ⚠️ Il passo che non si può saltare
 
 Sui fogli resta la vecchia funzione chiamata `onEdit`. Finché si chiama così, Google le fa
@@ -39,9 +58,10 @@ partire un trigger semplice **per conto suo**, e il codice vecchio continua a gi
 parallelo. Va **rinominata `onEdit_VECCHIO`** — non cancellata, così si torna indietro in un
 secondo. `teSetup()` controlla e si arrabbia se la trova ancora.
 
-File: `apps-script/transferlib-accoda.gs` (libreria) · `apps-script/struttura-guscio.gs`
+File: `apps-script/transferlib-accoda.gs` + `apps-script/transferlib-onedit.gs` (libreria) ·
+`apps-script/struttura-guscio.gs`
 (foglio, con `teSetup` che installa i trigger e toglie i vecchi da solo).
-Banco verde su 27 prove: `node banchi/te/banco-accoda.js` — gira il codice vero della libreria,
+Banco verde su 40 prove: `node banchi/te/banco-accoda.js` — gira il codice vero della libreria,
 con il caso di controllo della riga 255 di stamattina.
 
 🔴 Non pubblicata.

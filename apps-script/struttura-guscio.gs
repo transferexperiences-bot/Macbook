@@ -41,9 +41,13 @@
  */
 
 
-/** Una modifica sul foglio. Unico punto d'ingresso. */
+/**
+ * Una modifica sul foglio. Unico punto d'ingresso: la libreria fa tutto —
+ * corregge Ora e Telefono nella cella appena scritta, apre la tendina della
+ * Tipologia incasso quando metti «Incassare», e accoda quando metti lo Stato.
+ */
 function teOnEdit(e) {
-  TransferLib.enqueueFromEdit(e);
+  TransferLib.onEditStruttura(e);
 }
 
 
@@ -67,9 +71,9 @@ function teSetup() {
 
   // --- la libreria c'è? senza, non parte niente ---
   try {
-    if (typeof TransferLib === 'undefined' || typeof TransferLib.enqueueFromEdit !== 'function') {
+    if (typeof TransferLib === 'undefined' || typeof TransferLib.onEditStruttura !== 'function') {
       dì('❌ FERMO QUI: la libreria TransferLib non è importata, o è a una versione');
-      dì('   vecchia che non ha `enqueueFromEdit`. Aggiungila (punto 2 delle');
+      dì('   vecchia che non ha `onEditStruttura`. Aggiungila (punto 2 delle');
       dì('   istruzioni in cima) e rilancia. Non ho installato niente.');
       Logger.log(righe.join('\n'));
       return righe.join('\n');

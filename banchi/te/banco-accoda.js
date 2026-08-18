@@ -29,6 +29,7 @@ function FintoFoglio(intestazioni, righe) {
   const celle = new Map();          // "r,c" -> valore
   const note = new Map();
   const sfondi = new Map();
+  const tendine = new Map();
   const k = (r, c) => r + ',' + c;
 
   intestazioni.forEach((h, i) => celle.set(k(1, i + 1), h));
@@ -37,7 +38,7 @@ function FintoFoglio(intestazioni, righe) {
   });
 
   const api = {
-    _celle: celle, _note: note, _sfondi: sfondi,
+    _celle: celle, _note: note, _sfondi: sfondi, _tendine: tendine,
     getName: () => 'Prenotazioni',
     getLastRow: () => 400,
     getLastColumn: () => intestazioni.length,
@@ -62,6 +63,11 @@ function FintoFoglio(intestazioni, righe) {
         getNote: () => note.get(k(r, c)) || null,
         setNote(v) { if (v === null) note.delete(k(r, c)); else note.set(k(r, c), v); return this; },
         setBackground(v) { if (v === null) sfondi.delete(k(r, c)); else sfondi.set(k(r, c), v); return this; },
+        setNumberFormat() { return this; },
+        clearContent() { celle.set(k(r, c), ''); return this; },
+        getDataValidation: () => tendine.get(k(r, c)) || null,
+        setDataValidation(v) { tendine.set(k(r, c), v); return this; },
+        clearDataValidations() { tendine.delete(k(r, c)); return this; },
       };
     },
   };
@@ -80,6 +86,13 @@ function ambiente(foglio, coda) {
       openById: () => ({ getSheetByName: () => Queue }),
       getActiveSpreadsheet: () => foglio,
       flush: () => {},
+      newDataValidation: () => {
+        const b = { _lista: null };
+        b.requireValueInList = (l) => { b._lista = l; return b; };
+        b.setAllowInvalid = () => b;
+        b.build = () => ({ lista: b._lista });
+        return b;
+      },
     },
     LockService: { getScriptLock: () => ({
       waitLock() { diario.push('LOCK preso'); },
@@ -96,14 +109,17 @@ function ambiente(foglio, coda) {
 // ---------------------------------------------------------------------
 const SRC_LIB = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'TransferLib.gs'), 'utf8');
 const SRC_NEW = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'transferlib-accoda.gs'), 'utf8');
+const SRC_EDIT = fs.readFileSync(path.join(__dirname, '..', '..', 'apps-script', 'transferlib-onedit.gs'), 'utf8');
 
 function carica(amb) {
   const box = {};
   new Function('exports', 'SpreadsheetApp', 'LockService', 'Utilities', 'Logger',
-    SRC_LIB + '\n' + SRC_NEW + `
-exports.enqueueFromEdit = enqueueFromEdit;
-exports.motiviBlocco    = motiviBlocco;
-exports.buildColMap     = buildColMap;
+    SRC_LIB + '\n' + SRC_NEW + '\n' + SRC_EDIT + `
+exports.enqueueFromEdit          = enqueueFromEdit;
+exports.onEditStruttura          = onEditStruttura;
+exports.preparaTipologiaIncasso  = preparaTipologiaIncasso;
+exports.motiviBlocco             = motiviBlocco;
+exports.buildColMap              = buildColMap;
 `)(box, amb.SpreadsheetApp, amb.LockService, amb.Utilities, amb.Logger);
   return box;
 }
@@ -232,6 +248,73 @@ console.log('\n-- (6) quello che va lasciato stare --');
   carica(ambiente(f, q)).enqueueFromEdit(modifica(f, 60));
   prova('«' + c[0] + '» non si accoda', 0, q.length);
 });
+
+// ---------------------------------------------------------------------
+console.log('\n-- (7) la tendina della Tipologia incasso, ora in libreria --');
+
+const PH = '⬇️ Scegli tipologia';
+const suModalita = (f, r) => ({
+  range: f.getRange(r, 18, 1, 1),
+  source: { getId: () => 'x', getName: () => 'Pietra Blu' },
+});
+
+// Metti «Incassare» in Modalità → deve comparire la tendina.
+const fTe = FintoFoglio(H, { 70: riga255({ 17: 'Incassare', 18: '' }) });
+carica(ambiente(fTe, [])).onEditStruttura(suModalita(fTe, 70));
+prova('compare il segnaposto nella colonna S', PH, fTe._celle.get('70,19'));
+prova('la cella diventa gialla', '#fff2cc', fTe._sfondi.get('70,19'));
+const tend = fTe._tendine.get('70,19');
+prova('la tendina ha segnaposto + tre tipologie', 4, tend && tend.lista.length);
+prova('   fra cui «Incassa SOLO NETTO»', true,
+  !!(tend && tend.lista.join('|').indexOf('SOLO NETTO') !== -1));
+
+// Cambi Modalità in altro → via tendina e via segnaposto.
+fTe._celle.set('70,18', 'Fattura');
+carica(ambiente(fTe, [])).onEditStruttura(suModalita(fTe, 70));
+prova('cambiata Modalità: il segnaposto sparisce', '', fTe._celle.get('70,19'));
+prova('   e la tendina pure', undefined, fTe._tendine.get('70,19'));
+
+// Ma una tipologia VERA scelta da qualcuno non si butta.
+const fTv = FintoFoglio(H, { 71: riga255({ 17: 'Fattura', 18: 'Incassa PREZZO PIENO (commissione: nessuna)' }) });
+carica(ambiente(fTv, [])).onEditStruttura(suModalita(fTv, 71));
+prova('una tipologia vera NON viene cancellata',
+  'Incassa PREZZO PIENO (commissione: nessuna)', fTv._celle.get('71,19'));
+
+// ---------------------------------------------------------------------
+console.log('\n-- (8) Ora e Telefono corretti subito, nella cella toccata --');
+
+const fO = FintoFoglio(H, { 80: riga255() });
+fO._celle.set('80,4', '9.30');
+carica(ambiente(fO, [])).onEditStruttura({
+  range: fO.getRange(80, 4, 1, 1),
+  source: { getId: () => 'x', getName: () => 'Pietra Blu' },
+});
+prova('«9.30» diventa «09:30»', '09:30', fO._celle.get('80,4'));
+
+const fP = FintoFoglio(H, { 81: riga255() });
+fP._celle.set('81,11', '39 346 5389493');
+carica(ambiente(fP, [])).onEditStruttura({
+  range: fP.getRange(81, 11, 1, 1),
+  source: { getId: () => 'x', getName: () => 'Pietra Blu' },
+});
+prova('«39 346 5389493» diventa «393465389493»', '393465389493', fP._celle.get('81,11'));
+
+// ---------------------------------------------------------------------
+console.log('\n-- (9) il punto d\'ingresso unico accoda come prima --');
+
+const fU = FintoFoglio(H, { 90: riga255() });
+const qU = [];
+carica(ambiente(fU, qU)).onEditStruttura(modifica(fU, 90));
+prova('modifica sullo Stato → accodata', 1, qU.length);
+prova('   con un Id solo nella cella', true, !!fU._celle.get('90,24'));
+
+const fN = FintoFoglio(H, { 91: riga255() });
+const qN = [];
+carica(ambiente(fN, qN)).onEditStruttura({
+  range: fN.getRange(91, 8, 1, 1),      // colonna Nome: non c'entra con lo Stato
+  source: { getId: () => 'x', getName: () => 'Pietra Blu' },
+});
+prova('modifica su un\'altra colonna → non accoda niente', 0, qN.length);
 
 console.log(`\n${ko} prove rosse.`);
 process.exit(ko > 0 ? 1 : 0);

@@ -238,6 +238,30 @@ const SEED=`(function(){
   await p.evaluate(()=>setTab('assegna'));await p.waitForTimeout(150);
 
 
+  console.log('\n=== 8bis. ASSEGNA sul telefono: una colonna per volta ===');
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(()=>setTab('assegna'));await p.waitForTimeout(250);
+  const visibile=sel=>p.evaluate(s=>{var e=document.querySelector(s);return !!e&&e.offsetParent!==null;},sel);
+  t('si apre sulla coda', await visibile('.coda')&&!(await visibile('.giri')), null);
+  t('i due bottoni ci sono', await visibile('.assswitch'), null);
+  await p.evaluate(()=>{var s=DATA.services.filter(x=>!isCanc(x)&&!x.autista&&x.startMin>=0)[0];
+    selezionaSrv(DATA.services.indexOf(s));});
+  await p.waitForTimeout(220);
+  t('toccando un servizio si passa ai giri', (await visibile('.giri'))&&!(await visibile('.coda')), null);
+  t('e in cima resta scritto quale servizio si sta piazzando', await visibile('.selBanner'), null);
+  const m1=await p.evaluate(()=>{
+    var el=document.querySelector('.autbox [onclick^="assegnaDa"]');el.click();
+    return {vista:ASS_VISTA,pend:Object.keys(PEND).length};});
+  t('assegnato, torna alla coda per il prossimo', m1.vista==='coda'&&m1.pend>0, m1);
+  await p.waitForTimeout(200);
+  t('e la coda è di nuovo quella visibile', await visibile('.coda')&&!(await visibile('.giri')), null);
+  await p.evaluate(()=>setAssVista('giri'));await p.waitForTimeout(200);
+  t('il bottone "Giri autisti" da solo funziona', await visibile('.giri'), null);
+  await p.evaluate(()=>{document.querySelector('.tornaCoda').click();});await p.waitForTimeout(200);
+  t('"◀ Coda" riporta indietro', await visibile('.coda')&&!(await visibile('.giri')), null);
+  const m2=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  t('nessuno scroll orizzontale a 390px', m2<=2, m2);
+
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();
   for(const [w,h] of [[1920,1080],[1440,900],[1024,768],[768,900],[390,844]]){
@@ -250,6 +274,15 @@ const SEED=`(function(){
     for(const tab of ['assegna','flotta','timeline','rent','servizi']){await q.evaluate(x=>setTab(x),tab);await q.waitForTimeout(90);
       const ov=await q.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       if(ov>2)errs.push(`[${w}px] overflow ${ov}px (tab=${tab})`);}
+    for(const vista of ['coda','giri']){
+      await q.evaluate(v=>{setTab('assegna');setAssVista(v);},vista);await q.waitForTimeout(90);
+      const ov=await q.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+      if(ov>2)errs.push(`[${w}px] overflow ${ov}px (assegna=${vista})`);
+      const vuoto=await q.evaluate(()=>{
+        var c=document.querySelector('.coda'),g=document.querySelector('.giri');
+        return !(c&&c.offsetParent!==null)&&!(g&&g.offsetParent!==null);});
+      if(vuoto)errs.push(`[${w}px] nessuna delle due colonne visibile (assegna=${vista})`);
+    }
     await q.evaluate(()=>{setTab('servizi');openModal(0);});await q.waitForTimeout(150);
     const md=await q.evaluate(()=>document.getElementById('modal').style.display);
     if(md!=='block')errs.push(`[${w}px] la modale non si apre`);

@@ -82,8 +82,21 @@ main{padding:12px;}
 /* su telefono prima la coda (è quella su cui si agisce), i giri sotto */
 .assegna{display:flex;flex-direction:column;gap:14px;}
 .assegna .coda{order:-1;}
+/* i due bottoni per passare da una colonna all'altra sul telefono */
+.assswitch{display:flex;gap:6px;margin-bottom:10px;}
+.assswitch button{flex:1;border:1px solid #dbe2e9;background:#fff;color:var(--grigio);
+     border-radius:10px;padding:10px 6px;font-size:13px;font-weight:600;}
+.assswitch button.att{background:var(--blu);border-color:var(--blu);color:#fff;}
+.assswitch button b{background:rgba(255,255,255,.25);border-radius:20px;padding:0 7px;}
+.assswitch button:not(.att) b{background:#fce8e6;color:var(--rosso);}
+.tornaCoda{border:none;background:var(--blu);color:#fff;border-radius:20px;
+     padding:3px 10px;font-size:11.5px;font-weight:700;margin-right:2px;}
+/* niente sticky: sotto l'intestazione blu sparirebbe a metà */
+.selBanner{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+     background:#fffbe9;border:1px solid var(--oro);color:#8a6d0b;border-radius:9px;
+     padding:7px 10px;margin-bottom:9px;font-size:12.5px;}
 .pane{min-width:0;}
-.paneT{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--blu);
+.paneT{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--blu);
        background:#e8eef4;border-radius:8px;padding:7px 11px;margin-bottom:9px;}
 .paneT.sub{margin-top:14px;background:#f2f0e6;color:#7a6a1f;}
 .paneN{background:var(--blu);color:#fff;border-radius:20px;padding:0 8px;font-size:11px;line-height:18px;}
@@ -133,7 +146,15 @@ main{padding:12px;}
 .ccPie{display:flex;align-items:center;gap:8px;font-size:11px;color:#9aa0a6;margin-top:6px;
        border-top:1px solid #f0f2f5;padding-top:5px;}
 
+/* telefono e tablet stretto: una colonna per volta, quella scelta con i due bottoni */
+@media(max-width:979px){
+  body[data-tab="assegna"][data-ass="coda"] .assegna .giri{display:none;}
+  body[data-tab="assegna"][data-ass="giri"] .assegna .coda{display:none;}
+  /* il servizio scelto è già ripetuto per intero nella striscia gialla sotto */
+  .giri .paneT .paneSel{display:none;}
+}
 @media(min-width:980px){
+  .assswitch,.tornaCoda{display:none;}
   body[data-tab="assegna"] .assegna{display:grid;grid-template-columns:1.15fr 1fr;gap:0 18px;align-items:start;}
   body[data-tab="assegna"] .giri{grid-column:1;grid-row:1;}
   body[data-tab="assegna"] .coda{grid-column:2;grid-row:1;position:sticky;top:104px;
@@ -998,7 +1019,13 @@ function connettoreHtml(A,B,chiave){
    e a sinistra ogni autista dice se ci arriva, con quanta attesa e dove si incastra:
    il servizio compare come riga tratteggiata dentro il giro, al suo posto d'orario. */
 var SEL_ID=null, ASS_SOLO=true;
+/* Su telefono le due colonne non ci stanno affiancate: si vede una per volta e si passa
+   dall'altra con i due bottoni in alto (su schermo largo restano tutte e due, i bottoni
+   spariscono). Toccando un servizio nella coda si va da soli sui giri: è il gesto vero,
+   "questo a chi lo do". */
+var ASS_VISTA='coda';
 try{if(localStorage.getItem('te_ass_solo')==='0')ASS_SOLO=false;}catch(e){}
+function setAssVista(v){ASS_VISTA=v;render();}
 function toggleAssSolo(){
   ASS_SOLO=!ASS_SOLO;
   try{localStorage.setItem('te_ass_solo',ASS_SOLO?'1':'0');}catch(e){}
@@ -1007,7 +1034,8 @@ function toggleAssSolo(){
 function selezionaSrv(i){
   var s=DATA.services[i];
   if(!s)return;
-  SEL_ID=(SEL_ID===s.id)?null:s.id;
+  if(SEL_ID===s.id){SEL_ID=null;ASS_VISTA='coda';}
+  else {SEL_ID=s.id;ASS_VISTA='giri';}
   render();
 }
 function idxAut(nome){
@@ -1029,6 +1057,7 @@ function assegnaDa(i,ai,forza){
   PEND[s.id]={autista:a.nome,veicolo:s.veicolo};
   s.autista=a.nome;
   if(SEL_ID===s.id)SEL_ID=null;
+  ASS_VISTA='coda';   // sul telefono: assegnato uno, si torna alla coda per il prossimo
   render();
   toast((v.k==='no'?'⚡ forzato: ':'🕐 ')+a.nome+' in sospeso — salva dalla barra in alto');
 }
@@ -1044,7 +1073,15 @@ function renderAssegna(){
     else if(!s.veicolo)senzaMezzo.push(s);
   });
   var inServizio=autistiInServizio().length;
+  document.body.setAttribute('data-ass',ASS_VISTA);
   var h=barraPend();
+  // i due bottoni: solo su telefono, il CSS li nasconde quando le colonne stanno affiancate
+  h+='<div class="assswitch">'
+    +'<button class="'+(ASS_VISTA==='coda'?'att':'')+'" onclick="setAssVista(\'coda\')">🕐 Da assegnare'
+    +(scoperti.length?' <b>'+scoperti.length+'</b>':'')+'</button>'
+    +'<button class="'+(ASS_VISTA==='giri'?'att':'')+'" onclick="setAssVista(\'giri\')">🚹 Giri autisti'
+    +'</button>'
+    +'</div>';
   h+='<div class="sommario">'
     +(scoperti.length?'<span class="chip rosso">'+scoperti.length+' senza autista</span>'
                      :'<span class="chip verde">tutti assegnati</span>')
@@ -1116,8 +1153,15 @@ function cardCoda(s,soloMezzo){
 /* ---- colonna sinistra: i giri, un blocco per autista ---- */
 function pannelloGiri(){
   var S=SEL_ID?srvById(SEL_ID):null;
-  var h='<section class="pane giri"><div class="paneT">🚹 Giri degli autisti'
+  var h='<section class="pane giri"><div class="paneT">'
+    +'<button class="tornaCoda" onclick="setAssVista(\'coda\')">◀ Coda</button>'
+    +'🚹 Giri degli autisti'
     +(S?'<span class="paneSel">per le '+S.time+' '+esc(S.da)+' → '+esc(S.per)+'</span>':'')
+    +'</div>';
+  // su telefono l'intestazione scorre via: il servizio scelto va ripetuto qui, fisso in alto
+  if(S)h+='<div class="selBanner">🧩 <b>'+S.time+'</b> '+esc(S.da)+' → '+esc(S.per)
+    +' · '+(S.pax||'?')+' pax'
+    +'<button class="chip" style="border:none;margin-left:auto" onclick="selezionaSrv('+idxSrv(S)+')">✕ togli</button>'
     +'</div>';
   var lista=ordineAutisti(S),nascosti=0,corpo='';
   lista.forEach(function(o){

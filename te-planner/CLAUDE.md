@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati autista/mezzo       (51 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (48 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (57 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -228,7 +228,8 @@ zone, leggi `docs/REVISIONE_v5.md`.
   (min-width: 820px)` in fondo al CSS. Ogni modifica va guardata a **390px e 1440px**.
 - **Funzioni private del backend** con l'underscore finale (`stessoLuogo_`), come già fatto.
 - **`localStorage` si può usare**: è una web app Apps Script, non un artifact.
-- Le preferenze dell'utente (`te_due`, `te_ass_solo`) stanno in `localStorage`; i filtri di sessione
+- Le preferenze dell'utente (`te_due`, `te_ass_solo`) stanno in `localStorage`; i filtri e la
+  colonna scelta sul telefono (`ASS_VISTA`) no, e va bene così: la sessione riparte dalla coda
   (`AUT_HIDE`, `VEI_HIDE`, `FFILT`) no, e va bene così.
 - **Aggiungi un test** per ogni comportamento nuovo o corretto. La batteria end-to-end ha
   già trovato due difetti che sarebbero arrivati in produzione.
@@ -259,7 +260,10 @@ ordine di ora, ognuno con i tre autisti consigliati assegnabili con un tocco; so
 che hanno l'autista ma non il mezzo. Toccando un servizio a destra, a sinistra ogni autista
 dice se ci arriva e il servizio compare **dentro il suo giro** come riga tratteggiata, al
 posto d'orario che avrebbe, con attesa prima e margine dopo. Il pulsante `👥 Solo chi lavora`
-tiene fuori chi oggi non ha servizi. Su telefono le due colonne si impilano, prima la coda.
+tiene fuori chi oggi non ha servizi. **Sul telefono** le colonne non ci stanno affiancate:
+si vede una per volta, con i due bottoni in alto (🕐 Da assegnare · 🚹 Giri autisti). Toccando
+un servizio nella coda si passa da soli ai giri, con una striscia gialla che ricorda quale
+servizio si sta piazzando; assegnato, si torna alla coda per il prossimo.
 
 **⏳ Flotta** — autisti e mezzi raggruppati per stato (*Impegnati ora / Liberi ora / Non
 disponibili*) con contatori cliccabili. Un mezzo occupato è rosso, con barra di
@@ -278,7 +282,7 @@ Fatto: revisione completa v4→v5 (12 bug), rientro in garage, layout desktop, v
 filtri autisti e mezzi, Flotta ridisegnata, ordinamento per mezzo, candidato mezzo,
 bug delle catene "stesso luogo". Poi (18/08): **scheda 🧩 Assegna** (giri a sinistra, coda per
 ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non stava lavorando.
-**142 controlli automatici, tutti verdi.**
+**151 controlli automatici, tutti verdi.**
 
 Da fare fuori dal codice:
 

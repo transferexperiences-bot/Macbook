@@ -97,8 +97,23 @@ Dove si vede:
 Le assegnazioni **non** scrivono sul foglio da sole: finiscono in `PEND` come in Servizi, e si
 salvano dalla barra gialla in alto (`💾 Salva tutto`).
 
-Su telefono le due colonne si impilano, **prima la coda** (è quella su cui si agisce); da
-980px in su sono affiancate e la coda resta ferma mentre si scorrono i giri.
+### Sul telefono
+
+Due colonne affiancate a 390px non si leggono, e impilate la coda finisce sotto i giri: non
+si vede più. Quindi sotto i 980px si vede **una colonna per volta**, scelta con due bottoni
+in cima (`🕐 Da assegnare 3` · `🚹 Giri autisti`) — nessun JS che misura la larghezza, sono
+due media query su `body[data-ass]`.
+
+Il giro è quello vero del lavoro:
+
+1. si apre sulla **coda** (è lì che si guarda «cosa manca»);
+2. si tocca un servizio → si passa da soli ai **giri**, con una striscia gialla in cima che
+   ricorda quale servizio si sta piazzando (`✕ togli` per lasciar perdere);
+3. si tocca `➕ Assegna` sull'autista → **si torna alla coda**, pronta per il prossimo.
+
+`◀ Coda` nell'intestazione dei giri torna indietro in qualsiasi momento. Da 980px in su i due
+bottoni spariscono, le colonne tornano affiancate e la coda resta ferma mentre si scorrono i
+giri.
 
 ### Limiti dichiarati
 
@@ -114,6 +129,7 @@ Su telefono le due colonne si impilano, **prima la coda** (è quella su cui si a
 servizio per servizio (`ok`/`libero`/`off`), stacco lungo, conflitto, incastro dentro un buco,
 attesa prima contro lato più stretto.
 
-`test/app.test.js` sezione 8 — le due colonne, l'ordine per ora, la riga tratteggiata dentro il
+`test/app.test.js` sezione 8 (desktop) e 8bis (390px: si apre sulla coda, il tocco porta ai
+giri, l'assegnazione riporta alla coda, `◀ Coda`, nessuno scroll orizzontale) — le due colonne, l'ordine per ora, la riga tratteggiata dentro il
 giro, il tocco che assegna, la coerenza dell'ordine fra sinistra e destra, i gruppi del menù
 del dettaglio, e un nome con l'apostrofo (`Nicola D'Amico`) che non deve rompere la scheda.

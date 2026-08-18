@@ -26,9 +26,15 @@ soldi** e finisce per mangiare **il salvataggio**, perché non distingue la colo
 E l'unico avviso è un toast di quattro secondi in un angolo del foglio: se non stai guardando in
 quel momento, il transfer è sparito e nessuno te lo dice.
 
-**La correzione** (🔴 tocca il salvataggio, non si incolla senza un sì di Agostino): togliere la
-colonna Stato dal raggio della guardia, e far arrivare l'avviso dove si vede davvero. Il metro è
-già scritto: blocco 2 del banco, oggi rosso, deve diventare verde.
+**La correzione — scritta e provata, da incollare.** `apps-script/struttura-incassare-corretto.gs`
+sostituisce `incassare_` in `Logica incasso.gs`, su ogni foglio struttura. Se la modifica tocca lo
+Stato (V) o l'Id (X) non si cancella niente: la cella della tipologia si colora e prende una
+**nota** che resta finché non la sistemi, il toast passa da 4 a 10 secondi, e **il transfer parte
+lo stesso** — la tariffa la controlli sulla scheda Telegram prima di premere ✅. Sulle altre
+colonne il blocco resta com'era; per toglierlo ovunque basta allargare `TE_COL_PROTETTE`.
+
+Banco verde su tutte e due i blocchi: `node banchi/te/banco-stato-cancellato.js`.
+🔴 Verde sul banco non vuol dire pubblicata: Agostino la incolla quando decide lui.
 
 ### Quello che questo guasto NON spiega
 

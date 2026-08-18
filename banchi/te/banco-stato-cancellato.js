@@ -32,10 +32,12 @@
 // per la decisione dello sweeper. Niente parafrasi: le regole si provano su
 // quello che gira in produzione.
 //
-//   BLOCCO 1 — com'è adesso. Riproduce il guasto. Deve passare: se smette di
-//              passare, il guasto è cambiato e questo file va riscritto.
-//   BLOCCO 2 — come deve diventare. **Adesso fallisce**, ed è giusto così:
-//              è il metro della correzione, scritto prima della correzione.
+//   BLOCCO 1 — com'è adesso, su `struttura-onedit.gs`. Riproduce il guasto.
+//              Deve passare: se smette, il guasto è cambiato e va riletto tutto.
+//   BLOCCO 2 — con `struttura-incassare-corretto.gs` incollato in coda, cioè
+//              esattamente quello che succede quando Agostino sostituisce la
+//              funzione sul foglio. Scritto rosso PRIMA della correzione, oggi
+//              verde. Verde qui non vuol dire pubblicata.
 //
 //   node banchi/te/banco-stato-cancellato.js
 //
@@ -54,11 +56,13 @@ const COL = { D_ORA: 4, I_FORNITORE: 9, K_TEL: 11, R_MODALITA: 18, S_TIPO: 19, V
 
 function FintoFoglio(nome, righe) {
   const celle = new Map();                       // "riga,colonna" -> valore
+  const note = new Map();                        // "riga,colonna" -> nota appiccicata
   const diario = [];                             // cosa è stato scritto, e da dove
   const chiave = (r, c) => r + ',' + c;
 
   const api = {
     _celle: celle,
+    _note: note,
     _diario: diario,
     getName: () => nome,
     getLastRow: () => righe,
@@ -72,6 +76,7 @@ function FintoFoglio(nome, righe) {
 }
 
 function FintoIntervallo(foglio, riga, colonna, numRighe, numColonne) {
+  const note = foglio._note;
   return {
     getRow: () => riga,
     getColumn: () => colonna,
@@ -102,6 +107,7 @@ function FintoIntervallo(foglio, riga, colonna, numRighe, numColonne) {
     },
     setNumberFormat() { return this; },
     setBackground() { return this; },
+    setNote(v) { note.set(riga + ',' + colonna, v); return this; },
     getDataValidation: () => null,
     clearDataValidations() { return this; },
     setDataValidation() { return this; },
@@ -137,6 +143,17 @@ exports.onEdit_completo = onEdit_completo;
 exports.incassare_      = incassare_;
 `)(struttura, FintoSpreadsheetApp, console);
 
+// La versione CORRETTA: stesso file, con `incassare_` sostituita in coda.
+// In JavaScript vince l'ultima dichiarazione, quindi è esattamente quello che
+// succederà sul foglio quando Agostino incollerà la funzione al posto di quella vecchia.
+const SRC_CORRETTO = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'apps-script', 'struttura-incassare-corretto.gs'), 'utf8');
+
+const corretto = {};
+new Function('exports', 'SpreadsheetApp', 'console', SRC_STRUTTURA + '\n' + SRC_CORRETTO + `
+exports.onEdit_completo = onEdit_completo;
+`)(corretto, FintoSpreadsheetApp, console);
+
 // Lo sweeper: la funzione vera che decide se n8n accetterebbe la riga.
 const SRC_CODA = fs.readFileSync(
   path.join(__dirname, '..', '..', 'apps-script', 'transfer-queue-processor.gs'), 'utf8');
@@ -163,7 +180,7 @@ function prova(nome, atteso, effettivo, deveFallireAdesso) {
  * riga, poi fai girare `onEdit_completo` esattamente come fa il trigger.
  * Restituisce cosa è rimasto nella cella dello Stato e cosa deciderebbe lo sweeper.
  */
-function rigioca({ modalita, tipologia, colonna, valore, riga = 69 }) {
+function rigioca({ modalita, tipologia, colonna, valore, riga = 69, versione = struttura }) {
   const foglio = FintoFoglio('Prenotazioni', 400);
   foglio.scrivi(riga, COL.R_MODALITA, modalita, 'setup');
   foglio.scrivi(riga, COL.S_TIPO, tipologia, 'setup');
@@ -171,7 +188,7 @@ function rigioca({ modalita, tipologia, colonna, valore, riga = 69 }) {
   toasts.length = 0;
 
   const e = { range: FintoIntervallo(foglio, riga, colonna, 1, 1), value: valore, oldValue: '' };
-  struttura.onEdit_completo(e);
+  versione.onEdit_completo(e);
 
   const statoDopo = foglio.leggi(riga, COL.V_STATO);
   return {
@@ -179,6 +196,7 @@ function rigioca({ modalita, tipologia, colonna, valore, riga = 69 }) {
     cancellata: foglio._diario.some(d => d.chi === 'clearContent' && d.c === COL.V_STATO),
     sweeperManda: coda.teN8nAccetta_(statoDopo),
     toast: toasts.length ? toasts[0] : null,
+    notaSuS: foglio._note.get(riga + ',' + COL.S_TIPO) || null,
   };
 }
 
@@ -230,26 +248,72 @@ prova('anche il nome del cliente viene cancellato', '', nome);
 // =====================================================================
 // BLOCCO 2 — come deve diventare. Adesso fallisce. È il metro.
 // =====================================================================
-console.log('\n-- BLOCCO 2: come deve diventare (adesso fallisce, è previsto) --');
+console.log('\n-- BLOCCO 2: con la correzione (deve passare) --');
 
-prova('lo Stato non si cancella MAI: «Pronto» deve restare',
-  'Pronto', guasto.statoDopo, true);
-prova('e la riga deve partire lo stesso — in dubbio si tiene',
-  true, guasto.sweeperManda, true);
-prova('la tipologia mancante si segnala, non si punisce: niente clearContent sulla V',
-  false, guasto.cancellata, true);
+// Stessa identica scena della riga 69, ma col codice corretto.
+const curato = rigioca({ modalita: 'Incassare', tipologia: '', colonna: COL.V_STATO, valore: 'Pronto', versione: corretto });
+prova('lo Stato non si cancella MAI: «Pronto» resta', 'Pronto', curato.statoDopo);
+prova('niente clearContent sulla colonna V', false, curato.cancellata);
+prova('la riga parte lo stesso — in dubbio si tiene', true, curato.sweeperManda);
+prova('la tipologia mancante lascia una NOTA sulla colonna S',
+  true, !!(curato.notaSuS && curato.notaSuS.indexOf('Tipologia incasso da scegliere') !== -1));
+prova('il toast dura 10 secondi, non 4', 10, curato.toast && curato.toast.sec);
 
-console.log(`
-La correzione dovrà: lasciare la guardia dov'è per le colonne dei soldi, ma
-togliere la colonna Stato (V) dal suo raggio; e far arrivare l'avviso dove lo
-vedi davvero, non in un toast da quattro secondi.
+// L'Id è protetto quanto lo Stato: senza, la coda non ritrova più la riga.
+const idProtetto = (() => {
+  const f = FintoFoglio('Prenotazioni', 400);
+  f.scrivi(69, COL.R_MODALITA, 'Incassare', 'setup');
+  f.scrivi(69, COL.S_TIPO, '', 'setup');
+  f.scrivi(69, COL.X_ID, 'TR-20260818-abc', 'utente');
+  corretto.onEdit_completo({ range: FintoIntervallo(f, 69, COL.X_ID, 1, 1), value: 'TR-20260818-abc', oldValue: '' });
+  return f.leggi(69, COL.X_ID);
+})();
+prova('anche l\'Id sopravvive', 'TR-20260818-abc', idProtetto);
 
-🔴 Tocca il salvataggio: si scrive, si riprova qui, e si incolla solo dopo un sì.
-`);
+// Un incollaggio largo che comprende lo Stato non deve cancellare NIENTE.
+const incollaggio = (() => {
+  const f = FintoFoglio('Prenotazioni', 400);
+  f.scrivi(69, COL.R_MODALITA, 'Incassare', 'setup');
+  f.scrivi(69, COL.S_TIPO, '', 'setup');
+  f.scrivi(69, 21, 'Addebitato', 'utente');
+  f.scrivi(69, COL.V_STATO, 'Pronto', 'utente');
+  corretto.onEdit_completo({ range: FintoIntervallo(f, 69, 21, 1, 2), value: 'Pronto', oldValue: '' });
+  return [f.leggi(69, 21), f.leggi(69, COL.V_STATO)];
+})();
+prova('incollaggio largo che tocca V: non si cancella niente', ['Addebitato', 'Pronto'], incollaggio);
 
-console.log(`\n${ko} prove rosse, di cui ${koAttesi} attese (il blocco 2).`);
-const inatteso = ko - koAttesi;
-if (inatteso > 0) {
-  console.log(`ATTENZIONE: ${inatteso} rosse NON previste — il guasto è cambiato, rileggi il banco.`);
-}
-process.exit(inatteso > 0 ? 1 : 0);
+// E la guardia vecchia resta dov'era per le colonne non protette.
+const nomeAncoraBloccato = (() => {
+  const f = FintoFoglio('Prenotazioni', 400);
+  f.scrivi(70, COL.R_MODALITA, 'Incassare', 'setup');
+  f.scrivi(70, COL.S_TIPO, '', 'setup');
+  f.scrivi(70, 8, 'Costa Maria', 'utente');
+  corretto.onEdit_completo({ range: FintoIntervallo(f, 70, 8, 1, 1), value: 'Costa Maria', oldValue: '' });
+  return f.leggi(70, 8);
+})();
+prova('il blocco resta sulle altre colonne (allargabile con TE_COL_PROTETTE)', '', nomeAncoraBloccato);
+
+// Scelta la tipologia, la nota se ne va.
+const notaVia = (() => {
+  const f = FintoFoglio('Prenotazioni', 400);
+  f.scrivi(69, COL.R_MODALITA, 'Incassare', 'setup');
+  f.scrivi(69, COL.S_TIPO, TIPO_SCELTA, 'setup');
+  f._note.set('69,' + COL.S_TIPO, 'vecchia nota');
+  corretto.onEdit_completo({ range: FintoIntervallo(f, 69, COL.S_TIPO, 1, 1), value: TIPO_SCELTA, oldValue: '' });
+  return f._note.get('69,' + COL.S_TIPO);
+})();
+prova('scelta la tipologia, la nota sparisce', null, notaVia);
+
+console.log([
+  '',
+  "Il blocco 1 gira su apps-script/struttura-onedit.gs (com'è oggi sul foglio).",
+  'Il blocco 2 gira sullo stesso file con apps-script/struttura-incassare-corretto.gs',
+  'incollato in coda — cioè esattamente quello che succederà quando Agostino',
+  'sostituirà la funzione.',
+  '',
+  '🔴 Tocca il salvataggio: verde qui non vuol dire pubblicata. Si incolla solo dopo un sì.',
+  '',
+].join('\n'));
+
+console.log(`${ko} prove rosse.`);
+process.exit(ko > 0 ? 1 : 0);

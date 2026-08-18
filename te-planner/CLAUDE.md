@@ -228,9 +228,9 @@ zone, leggi `docs/REVISIONE_v5.md`.
   (min-width: 820px)` in fondo al CSS. Ogni modifica va guardata a **390px e 1440px**.
 - **Funzioni private del backend** con l'underscore finale (`stessoLuogo_`), come già fatto.
 - **`localStorage` si può usare**: è una web app Apps Script, non un artifact.
-- Le preferenze dell'utente (`te_due`, `te_ass_solo`) stanno in `localStorage`; i filtri e la
-  colonna scelta sul telefono (`ASS_VISTA`) no, e va bene così: la sessione riparte dalla coda
-  (`AUT_HIDE`, `VEI_HIDE`, `FFILT`) no, e va bene così.
+- Le preferenze dell'utente (`te_due`, `te_ass_solo`) stanno in `localStorage`; i filtri di
+  sessione (`AUT_HIDE`, `VEI_HIDE`, `FFILT`) e la colonna scelta sul telefono (`ASS_VISTA`)
+  no, e va bene così: si riparte sempre dalla coda.
 - **Aggiungi un test** per ogni comportamento nuovo o corretto. La batteria end-to-end ha
   già trovato due difetti che sarebbero arrivati in produzione.
 

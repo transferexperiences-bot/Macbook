@@ -129,7 +129,12 @@ giri.
 servizio per servizio (`ok`/`libero`/`off`), stacco lungo, conflitto, incastro dentro un buco,
 attesa prima contro lato più stretto.
 
-`test/app.test.js` sezione 8 (desktop) e 8bis (390px: si apre sulla coda, il tocco porta ai
-giri, l'assegnazione riporta alla coda, `◀ Coda`, nessuno scroll orizzontale) — le due colonne, l'ordine per ora, la riga tratteggiata dentro il
-giro, il tocco che assegna, la coerenza dell'ordine fra sinistra e destra, i gruppi del menù
-del dettaglio, e un nome con l'apostrofo (`Nicola D'Amico`) che non deve rompere la scheda.
+`test/app.test.js` sezione 8 (desktop) — le due colonne, l'ordine per ora, la riga
+tratteggiata dentro il giro, il tocco che assegna, la coerenza dell'ordine fra sinistra e
+destra, i gruppi del menù del dettaglio, e un nome con l'apostrofo (`Nicola D'Amico`) che non
+deve rompere la scheda.
+
+`test/app.test.js` sezione 8bis (390px) — si apre sulla coda, il tocco su un servizio porta ai
+giri, l'assegnazione riporta alla coda, `◀ Coda`, nessuno scroll orizzontale. Più le due viste
+aggiunte al giro delle cinque larghezze: a nessuna larghezza deve capitare che **nessuna**
+delle due colonne sia visibile.

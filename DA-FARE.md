@@ -1,5 +1,29 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## 🔎 DA LANCIARE FOGLIO PER FOGLIO — la diagnosi che dice quali sono i «determinati fogli»
+
+Agostino, 18/08 pomeriggio: «penso che sia su determinati fogli, ad esempio ho rimesso io
+Pronto ed è arrivato». Ha ragione a sospettarlo, e c'è un meccanismo che lo spiega:
+
+**la struttura mette `Pronto` mentre la riga è ancora incompleta** — manca la modalità, o la
+tipologia incasso, o la tariffa non è ancora calcolata. Scatta la guardia (`incassare_` su
+Pietra Blu, `GUARD PRONTO` su Suite 10), **lo Stato viene svuotato in silenzio**, niente entra
+in coda. Più tardi arriva Agostino, la riga ormai è completa, rimette `Pronto` → passa.
+
+Da fuori sembra «a volte sì a volte no». È invece: riga incompleta = cancellata di nascosto,
+riga completa = passa. E cambia da foglio a foglio perché **i fogli hanno guardie diverse**.
+
+Ma «quasi certamente» non basta. `apps-script/diagnostica-foglio.gs` risponde, per il foglio su
+cui gira: quali trigger sono **davvero** installati; quali funzioni ci sono (cioè quale
+variante è); dove cadono Stato e Id e se si risolvono per nome; quante righe hanno uno Stato
+aperto adesso e **quante senza Id** — quelle che la rete di sicurezza non ripesca.
+
+Sola lettura, verificato: nessun `setValue`, nessun `appendRow`, nessun `UrlFetchApp`. Si può
+lanciare in piena giornata.
+
+Estensioni → Apps Script → incolla in fondo → scegli `diagnosticaFoglio` → ▶ Esegui →
+Registro esecuzioni. Un foglio alla volta, dieci secondi l'uno.
+
 ## ✅ PRONTA DA INCOLLARE — la rete di sicurezza che non ripescava niente (18/08)
 
 **Il guasto di Agostino, parole sue:** «righe che seppure c'è il Pronto non arrivano».

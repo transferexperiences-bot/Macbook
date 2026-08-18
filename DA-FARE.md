@@ -1,5 +1,61 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## ✅ PRONTA DA INCOLLARE — la rete di sicurezza che non ripescava niente (18/08)
+
+**Il guasto di Agostino, parole sue:** «righe che seppure c'è il Pronto non arrivano».
+
+La rete per quelle **esiste già**: `sweepCheck` gira ogni minuto su ogni foglio e chiama
+`recoverMissedStateEvents` dentro `TransferLib`. Ma fa la domanda sbagliata:
+
+```js
+if (!id) continue;                              // buco 1
+if (queueOpenIds.has(id)) continue;
+if (f1IdToStato.get(id) === stato) continue;    // buco 2
+```
+
+- **Buco 2 — è il suo caso.** Confronta lo Stato del foglio struttura con quello scritto in
+  `Strutture/Foglio1`. Se combaciano decide «già in sync» e salta. Ma combaciare non vuol dire
+  essere arrivato: una riga `Pronto` di qua e `Pronto` di là, con la scheda mai partita, viene
+  saltata **per sempre**, ogni minuto, in silenzio.
+- **Buco 1.** Riga con lo Stato messo e la cella Id vuota: mai ripescata, perché gli Id li
+  genera solo `onEdit`. Se `onEdit` è saltato — lock occupato, trigger triplo, errore ingoiato
+  dal `catch` — quella riga è invisibile a tutti e due i meccanismi.
+- **Buco 3.** Quando salta non lo dice a nessuno.
+
+### La domanda giusta
+
+Non «lo Stato combacia con Foglio1?», ma **«questa riga l'ha presa n8n?»**. La risposta è già
+nella cella, perché lo Stato *è* la ricevuta:
+
+| Stato | vuol dire | cosa si fa |
+|---|---|---|
+| `Pronto` / `Modificato` / `Cancellato` | nessuno l'ha presa | si rimanda |
+| `Pronto: Pending` | n8n ce l'ha in mano | si lascia stare |
+| `Confermato` | chiusa | si lascia stare |
+| vuoto | non è una richiesta | si lascia stare |
+
+Tutti i casi da lasciar stare cadono fuori da soli: nessuno di quei valori sta in
+`VALID_STATES`. Foglio1 non si legge più — e il giro diventa anche più leggero, che con
+`sweepCheck` andato in timeout **11 volte il 16/08** non guasta.
+
+Due frenate, perché «rimanda sempre» sarebbe una valanga: si aspettano **5 minuti** fra un
+tentativo e l'altro, e dopo **5 tentativi a vuoto si grida** invece di ritentare all'infinito.
+La memoria dei tentativi è la coda stessa — nessuno stato nuovo da mantenere.
+
+Il grido finisce in coda come `ERROR` col motivo, e su Telegram **se** in Proprietà script ci
+sono `TE_TELEGRAM_TOKEN` e `TE_TELEGRAM_CHAT`. Il token non sta nel codice: così il file si
+committa senza pulire niente.
+
+`apps-script/transferlib-recupero.gs` · banco verde su 23 prove:
+`node banchi/te/banco-recupero.js`. Il banco fa girare **le due versioni sugli stessi casi** e
+mostra i due verdetti a confronto.
+
+⚠️ Va insieme a una riga in `processFile`: passare `colId: col.id` nella chiamata, perché ora
+il recupero deve poter scrivere l'Id sul foglio. Dettaglio in fondo al file.
+
+🔴 **`TransferLib` gira a Head: appena salvi è viva su tutti e diciotto i fogli.** È il pezzo
+più delicato dei tre — si incolla per ultimo, e da solo, non insieme agli altri.
+
 ## 🔴 APERTO — due varianti divergenti dello stesso script struttura (18/08)
 
 Suite 10 e Pietra Blu **non hanno lo stesso codice**. Sono due rami dello stesso pezzo, e

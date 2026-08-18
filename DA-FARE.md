@@ -1,5 +1,51 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
+## ✅ PRONTA — un posto solo: la parte che accoda passa in `TransferLib`
+
+Agostino, 18/08: «uno script generale che poi va ad agire su tutti i fogli struttura, così per
+eventuali modifiche ci basterà modificare una sola cosa». E: **immediato**, non a intervalli.
+
+Quindi: logica tutta in libreria, e su ogni foglio un **guscio di dieci righe** incollato una
+volta sola. `enqueueFromEdit` in `apps-script/transferlib-accoda.gs` sostituisce la funzione
+che oggi è copiata su ogni foglio — quella dove stanno tutti i guasti di questi due giorni.
+
+*(Scartata l'alternativa «un progetto, un trigger a tempo, tutti i fogli»: sarebbe stata più
+pulita ancora — un trigger invece di 54, e il limite Google di 20 trigger per progetto rende
+impossibile installarne due per foglio da un punto solo — ma costa un minuto o due di ritardo,
+e Agostino lo vuole immediato.)*
+
+### I quattro guasti che chiude
+
+1. **La corsa sull'Id.** Si legge **dentro** il lock, non prima. Chi entra dopo vede l'Id già
+   scritto e non ne conia un altro: sparisce «Id … non trovato», l'errore più frequente della coda.
+2. **Il trigger triplo.** Il guscio si chiama `teOnEdit`, non `onEdit`: niente nome magico,
+   niente trigger semplice, una esecuzione per modifica invece di tre.
+3. **Il `catch` che ingoia.** Ogni guasto lascia una **nota rossa sulla cella dello Stato**, e
+   non solo una riga di log che non legge nessuno.
+4. **Le colonne per numero.** Si risolvono per nome con `buildColMap`, che era già in libreria
+   e per accodare non veniva usato.
+
+### Le due guardie, unificate
+
+- **GUARD PRONTO** (era solo su Suite 10): senza Fornitore, senza Modalità o con Tariffa 0 non
+  si manda, eccezione cortesia compresa. Blocca davvero, ma **lascia la nota**.
+- **Tipologia incasso** (era solo su Pietra Blu, e cancellava lo Stato): **non blocca più**.
+  Segnala e lascia partire. In dubbio si tiene.
+
+### ⚠️ Il passo che non si può saltare
+
+Sui fogli resta la vecchia funzione chiamata `onEdit`. Finché si chiama così, Google le fa
+partire un trigger semplice **per conto suo**, e il codice vecchio continua a girare in
+parallelo. Va **rinominata `onEdit_VECCHIO`** — non cancellata, così si torna indietro in un
+secondo. `teSetup()` controlla e si arrabbia se la trova ancora.
+
+File: `apps-script/transferlib-accoda.gs` (libreria) · `apps-script/struttura-guscio.gs`
+(foglio, con `teSetup` che installa i trigger e toglie i vecchi da solo).
+Banco verde su 27 prove: `node banchi/te/banco-accoda.js` — gira il codice vero della libreria,
+con il caso di controllo della riga 255 di stamattina.
+
+🔴 Non pubblicata.
+
 ## 🔴 LA CAUSA VERA — la corsa sull'Id fra i tre `onEdit` (18/08, ore 16:35)
 
 La diagnosi di Pietra Blu, lanciata da Agostino:

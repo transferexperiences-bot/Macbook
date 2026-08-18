@@ -1,6 +1,38 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
-## ✅ PRONTA — un posto solo: la parte che accoda passa in `TransferLib`
+## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
+
+Referto di `teSetup`:
+
+```
+FOGLIO: Pietra Blu
+✓ TransferLib presente
+── tolti ──   onEdit_completo, onEdit
+── messi ──   teOnEdit (a ogni modifica), teSweep (ogni minuto)
+✓ nessuna funzione `onEdit`: una esecuzione sola per modifica
+```
+
+Da tre esecuzioni per modifica a una, e `teSweep` — la rete di sicurezza che su questo foglio
+**non esisteva** — adesso c'è.
+
+**Un incidente durante l'installazione, da ricordare.** Le mie istruzioni dicevano
+«Ctrl+A → Canc → incolla» per il guscio, e Agostino l'ha applicato anche alla libreria:
+`COL_ALIASES is not defined` a `Codice.gs:12`, cioè TransferLib svuotata — e gira a **Head**,
+quindi su tutti e diciotto i fogli insieme. Rimessa a posto con
+`apps-script/TransferLib-COMPLETO.gs`, che è il contenuto intero di `Codice.gs`: libreria
+com'era (letta da Drive stamattina) + aggiunta in fondo.
+
+⚠️ **Regola per la prossima volta:** per un file che si AGGIUNGE non si dice mai «Ctrl+A, Canc».
+Si dice «Ctrl+Fine, poi incolla». E per le cose che girano a Head si dà sempre il file intero,
+non il pezzo: così non c'è modo di sbagliare.
+
+### Da fare ancora
+
+- la prova sul campo su Pietra Blu (riga vera, Id unico, scheda partita) — **da verificare sui dati**
+- gli altri diciassette fogli, uno alla volta
+- `diagnosticaFoglio` sugli altri, per sapere chi ha cosa prima di toccarli
+
+## Cos'è, e perché — un posto solo: la parte che accoda passa in `TransferLib`
 
 Agostino, 18/08: «uno script generale che poi va ad agire su tutti i fogli struttura, così per
 eventuali modifiche ci basterà modificare una sola cosa». E: **immediato**, non a intervalli.

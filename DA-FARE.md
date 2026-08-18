@@ -1,4 +1,74 @@
-# Da fare — aggiornato 17/08/2026, 13:20
+# Da fare — aggiornato 18/08/2026, mattina
+
+## 🔴 APERTO — lo Stato cancellato sotto il naso (18/08)
+
+**Il guasto.** Su un foglio struttura, se una riga ha **Modalità = «Incassare»** (col. R) e la
+**Tipologia incasso** (col. S) non è ancora scelta, allora `incassare_` — dentro
+`onEdit_completo` — cancella **qualunque cosa scrivi su quella riga**:
+
+```js
+const tipologiaNonScelta = (modalita === "incassare") && (!tipoVal || tipoVal === PLACEHOLDER);
+if (tipologiaNonScelta && !editToccaS) {
+  e.range.clearContent();          // <-- anche la colonna V, anche il nome del cliente
+  ...toast 4 secondi, "Bloccato"
+}
+```
+
+Compreso `Pronto` nella colonna V. E `onEdit` intanto ha già messo la riga in coda: un minuto
+dopo lo sweeper rilegge lo Stato, lo trova vuoto e scarta.
+
+**Prova sul campo — 6 Stelle Mama riga 69, 17/08 17:48.** In coda:
+`ERROR 17.48.35 Id … non trovato`, poi `IGNORATO 17.48.43 — Stato ora è "": n8n la scarta`.
+Rigiocato offline in `banchi/te/banco-stato-cancellato.js`: stesso esito, dal codice vero.
+
+La guardia serve — senza tipologia la tariffa esce sbagliata — ma è scritta per proteggere **i
+soldi** e finisce per mangiare **il salvataggio**, perché non distingue la colonna V dalle altre.
+E l'unico avviso è un toast di quattro secondi in un angolo del foglio: se non stai guardando in
+quel momento, il transfer è sparito e nessuno te lo dice.
+
+**La correzione** (🔴 tocca il salvataggio, non si incolla senza un sì di Agostino): togliere la
+colonna Stato dal raggio della guardia, e far arrivare l'avviso dove si vede davvero. Il metro è
+già scritto: blocco 2 del banco, oggi rosso, deve diventare verde.
+
+### Quello che questo guasto NON spiega
+
+`Stato ora è "Confermato"` è tutt'altra cosa, ed è **quasi sempre corretta**: è la scia di una
+riga di coda residua, scartata *dopo* che il transfer era già stato consegnato e confermato.
+
+**Pietra Blu riga 255, 18/08.** Sembrava persa, non lo era. 07:55:30 la coda manda; la scheda
+arriva su Telegram (Costa Maria, 08:25, Pietra Blu → Polignano, «alla stazione di polignano»);
+07:56:02 Agostino conferma e assegna Giovanni Vito Antonio (esec. `754716`, `decision: YES`);
+07:56:05 `Smart Write Struttura` scrive `Stato = Confermato` sulla riga 255, trovata **per Id**
+(`mode: "update"`, non il ripiego sulla riga vuota); 07:56:34 la coda rilegge, trova
+`Confermato` e marca IGNORATO. Il transfer è sul gestionale con l'autista. Nessun recupero a mano.
+
+⚠️ **Da qui una regola:** la coda da sola non sa cosa è arrivato su Telegram. Contare le perdite
+guardando solo IGNORATO/ERROR **sovrastima**. Ogni riga sospetta va incrociata con le esecuzioni
+n8n prima di chiamarla persa.
+
+### Difetti trovati strada facendo, non ancora affrontati
+
+1. **Tre esecuzioni per ogni modifica** — `onEdit_completo` e `onEdit` installabili, più `onEdit`
+   come trigger semplice. Si contendono lo stesso `LockService.getScriptLock()`. Il trigger
+   semplice per giunta non ha i permessi per aprire il foglio Strutture: fallisce sempre.
+   Il 17/08 alle 18:10-18:11: **24 esecuzioni in 37 secondi**, una durata **88 s**.
+2. **Il `catch` di `onEdit` ingoia tutto** e l'esecuzione risulta «Completata» lo stesso.
+   *«Completata» non vuol dire che la riga è in coda.* Ogni fallimento deve diventare ERROR
+   + messaggio Telegram.
+3. **Il dedup guarda solo le PENDING**: se la stessa riga era già in coda come SENT o ERROR ne
+   appende un'altra. Sono le righe doppie con lo stesso RowNumber.
+4. **Colonne per numero in `onEdit`** (22/24/9) mentre `processQueue` risolve per nome.
+   `TransferLib.buildColMap()` esiste già: `onEdit` deve chiamare quella, non riscriverne una.
+   Il ripiego per posizione **sta già girando**: Covo dei Saraceni riga 115, 17/08 10:05,
+   `data → colonna 3 (per posizione)`.
+5. **`Smart Write Struttura`, ripiego sulla riga vuota.** Se non trova l'Id scrive sulla prima
+   riga vuota che incontra, e riscrive **l'intera riga** (A→Z). Su un foglio dove si stanno
+   compilando prenotazioni nuove è una mina.
+6. **`Code - Parse Callback` crasha sui bottoni del controllo incrociato**: esec. `752902`,
+   17/08 21:38, `"TENO|8" [line 51]`, poi `Write Target Row` → 404. Quel ✅ non ha fatto niente.
+
+**Backup del codice attuale prima di toccarlo:** `backups/apps-script/struttura-onedit_20260818.gs`.
+
 
 ## Cosa è stato chiuso oggi (17/08)
 

@@ -65,7 +65,9 @@ function estraiSchede(testo) {
 // di essere scritta. Se ne trovo una, non mi fido del ritaglio.
 function schedaCompleta(scheda) {
   const s = String(scheda || '');
-  const c = (nomi) => new RegExp('(^|\\n)[^\\p{L}\\n]*\\s*(?:' + nomi + ')\\s*:\\s*\\S', 'iu').test(s);
+  // \s comprende il newline: con \s*\S un campo vuoto («Data:» e a capo) risultava pieno
+  // perché il controllo saltava alla riga successiva. Dopo i due punti si guarda solo la RIGA.
+  const c = (nomi) => new RegExp('(^|\\n)[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*\\S', 'iu').test(s);
   return c('Data|Date') && c('Da|From') && c('Per|To');
 }
 

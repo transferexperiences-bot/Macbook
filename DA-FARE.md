@@ -29,6 +29,23 @@ domani su un foglio il tipo di colonna non ci fosse il codice è già provato.
 toglie niente a nessuno, e prende anche le righe che entrano per altre strade — incollate,
 importate, ripescate dalla rete di sicurezza. Da valutare domani.
 
+### 19/08, sera — il buco che questa decisione lascia scoperto
+
+Agostino: *«se nella cella digito merc 8 questa non viene cancellata o sistemata»*. È il
+comportamento atteso — `controllaData` non è installato — ma dice anche una cosa che prima non
+sapevamo: **su quella cella il tipo di colonna non sta bloccando niente**. Il 18/08 uno screenshot
+mostrava Google che rifiutava «merc 8 agosto»; adesso lo stesso testo entra e resta.
+
+Quindi oggi la colonna Data non è guardata da nessuno: né da Google (dove il tipo di colonna non
+arriva — tipicamente le righe più in basso del range su cui è stato applicato) né da noi.
+Rimettere il controllo nel foglio costerebbe il calendario, che è la cosa che non si tocca.
+**La strada è quella che ha proposto lui: il controllo in n8n, all'arrivo della riga.** Là dentro
+la data arriva come stringa e si vede subito se è testo; e vale per tutti e diciotto i fogli
+senza incollare niente da nessuna parte.
+
+⚠️ È 🔴 rossa (punto 4: cambia come funziona un salvataggio) — si fa solo con l'ok di Agostino,
+prima su banco offline, poi `update_workflow` + `publish_workflow` + rilettura del nodo.
+
 ## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
 
 Referto di `teSetup`:

@@ -9,13 +9,22 @@ cosa scrivere e non lascia traccia.
 
 Agostino: «se io scrivo un testo, tu lo cancelli, finché non la scrive in formato data».
 
-Una regola sola, in `apps-script/transferlib-data.gs`:
+E poi, tolta la convalida, la seconda metà del problema: «se scrivo `7/8` resta in formato
+numerico, non viene convertito nel formato attuale data, tipo mercoledì 7 agosto, e non mi va
+bene». Giusto — e la convalida non c'entrava: **come si vede** una data è il formato di
+visualizzazione della cella, un'altra cosa ancora.
+
+Le due cose insieme, in `apps-script/transferlib-data.gs`:
 
 | cosa c'è nella cella | cosa si fa |
 |---|---|
-| Google l'ha capita come data | si lascia stare |
+| Google l'ha capita come data | si tiene, e si mette il **formato esteso** «ven 7 agosto 2026» |
 | vuota | non è un errore, si lascia stare |
 | qualunque altra cosa | **si cancella**, e la cella dice perché |
+
+Il formato lo mette il codice (`TE_FORMATO_DATA = "ddd d MMMM yyyy"`), non Agostino a mano su
+diciotto colonne. E lo **rimette ogni volta**: se qualcuno riformatta la colonna, alla prima
+data scritta torna com'era.
 
 **Avevo cominciato a scriverla più complicata** — provare a convertire «3 settembre» in
 `03/09/2026`, indovinare l'anno mancante — e Agostino mi ha fermato: «non capisco perché tu la

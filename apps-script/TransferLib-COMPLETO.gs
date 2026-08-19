@@ -769,8 +769,18 @@ function onEditStruttura(e) {
 
 
 /**
+ * Come si vedono le date sui fogli struttura: «ven 7 agosto 2026».
+ * È il formato che c'è già sulle righe vecchie — qui si scrive una volta sola,
+ * e da qui vale per tutti i fogli.
+ *
+ * `dddd` invece di `ddd` darebbe «venerdì» per esteso: si cambia qui.
+ */
+var TE_FORMATO_DATA = "ddd d MMMM yyyy";
+
+
+/**
  * Controlla la cella Data della riga toccata.
- * @return {string} 'svuotata' | 'niente'
+ * @return {string} 'formattata' | 'svuotata' | 'niente'
  */
 function controllaData(sheet, riga, col) {
   if (!col.data) return 'niente';
@@ -778,10 +788,12 @@ function controllaData(sheet, riga, col) {
   var cella = sheet.getRange(riga, col.data);
   var v = cella.getValue();
 
-  // È una data vera: a posto. Se c'era un avviso vecchio, via.
+  // È una data vera: si tiene il valore e si mette il formato esteso, così
+  // «7/8» scritto di fretta si vede come «ven 7 agosto 2026» come tutte le altre.
   if (Object.prototype.toString.call(v) === "[object Date]") {
+    cella.setNumberFormat(TE_FORMATO_DATA);
     if (cella.getNote()) { cella.setNote(null); cella.setBackground(null); }
-    return 'niente';
+    return 'formattata';
   }
 
   // Vuota: non è un errore, magari la stanno ancora scrivendo.

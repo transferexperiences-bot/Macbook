@@ -119,6 +119,9 @@ function onEditStruttura(e) {
     var lastCol = Math.max(24, sheet.getLastColumn());
     var col = buildColMap(sheet.getRange(1, 1, 1, lastCol).getValues()[0]).col;
 
+    // Censimento: «qui si modifica, e passa di qui». Accessorio.
+    teSegnalaPresenza(e.source.getId(), e.source.getName(), 'onEdit');
+
     // 1) la cella che hai appena scritto
     try { correggiCellaToccata(e, col); } catch (err) {
       Logger.log("correzione cella: " + err);

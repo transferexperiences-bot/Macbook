@@ -165,6 +165,9 @@ function diagnosticaIntestazioni(spreadsheetId, fileName) {
 function processFile(spreadsheetId, fileName) {
   const t0 = Date.now();
   try {
+    // Censimento: «questo foglio è vivo e gira con questa libreria». Accessorio.
+    teSegnalaPresenza(spreadsheetId, fileName, 'sweep');
+
     const ss = SpreadsheetApp.openById(spreadsheetId);
     if (!ss) return { error: "spreadsheet not found", spreadsheetId };
 
@@ -333,6 +336,80 @@ function recoverMissedStateEvents(args) {
     lock.releaseLock();
   }
   return queued;
+}
+
+
+// ==========================================================================
+// PRESENZE  (19/08 — vedi apps-script/transferlib-presenze.gs)
+// ==========================================================================
+//
+// Una riga per foglio dentro Strutture, foglio «Presenze»: chi sta girando
+// col codice nuovo e da quando. È l'unico modo di saperlo da fuori — gli
+// script legati ai fogli non si vedono nemmeno in Drive.
+// Accessorio: tutto dentro try/catch, non può far fallire un salvataggio.
+
+
+var TE_PRESENZE = "Presenze";
+
+/** Si cambia a ogni aggiornamento della libreria: è quello che si legge nel censimento. */
+var TE_VERSIONE = "19/08/2026 — data + tendina";
+
+/** Ogni quanto si riscrive, per foglio. */
+var TE_PRESENZE_OGNI_MS = 5 * 60 * 1000;
+
+
+/**
+ * Segna che questo foglio è vivo e sta girando con questa libreria.
+ * @param {string} quale 'sweep' (il giro ogni minuto) | 'onEdit' (una modifica)
+ */
+function teSegnalaPresenza(spreadsheetId, fileName, quale) {
+  try {
+    var colonna = (quale === 'onEdit') ? 4 : 3;
+
+    // Il freno: si scrive al massimo una volta ogni 5 minuti per tipo.
+    // La cache è del progetto che chiama, cioè del singolo foglio.
+    var cache = null;
+    try { cache = CacheService.getScriptCache(); } catch (e) {}
+    var chiave = 'te_presenza_' + quale;
+    if (cache && cache.get(chiave)) return;
+
+    var sh = SpreadsheetApp.openById(STRUTTURE_ID).getSheetByName(TE_PRESENZE);
+    if (!sh) {
+      sh = SpreadsheetApp.openById(STRUTTURE_ID).insertSheet(TE_PRESENZE);
+      sh.appendRow(["Foglio", "SpreadsheetId", "Ultimo giro", "Ultima modifica",
+                    "Versione libreria"]);
+      sh.setFrozenRows(1);
+    }
+
+    var adesso = new Date();
+    var n = sh.getLastRow();
+    var dati = n > 1 ? sh.getRange(2, 1, n - 1, 5).getValues() : [];
+
+    var riga = -1;
+    for (var i = 0; i < dati.length; i++) {
+      if ((dati[i][1] || "").toString() === spreadsheetId) { riga = i + 2; break; }
+    }
+
+    if (riga === -1) {
+      // Riga nuova. L'id sta in B ed è la chiave: il nome del file cambia, l'id no.
+      sh.appendRow([fileName, spreadsheetId,
+                    quale === 'onEdit' ? "" : adesso,
+                    quale === 'onEdit' ? adesso : "",
+                    TE_VERSIONE]);
+    } else {
+      sh.getRange(riga, colonna).setValue(adesso);
+      sh.getRange(riga, 5).setValue(TE_VERSIONE);
+      if ((dati[riga - 2][0] || "").toString() !== fileName) {
+        sh.getRange(riga, 1).setValue(fileName);
+      }
+    }
+
+    if (cache) cache.put(chiave, '1', Math.round(TE_PRESENZE_OGNI_MS / 1000));
+
+  } catch (err) {
+    // Accessorio: non deve poter far fallire niente, mai.
+    try { Logger.log("presenza (ignorato): " + err); } catch (e) {}
+  }
 }
 
 
@@ -852,6 +929,9 @@ function onEditStruttura(e) {
 
     var lastCol = Math.max(24, sheet.getLastColumn());
     var col = buildColMap(sheet.getRange(1, 1, 1, lastCol).getValues()[0]).col;
+
+    // Censimento: «qui si modifica, e passa di qui». Accessorio.
+    teSegnalaPresenza(e.source.getId(), e.source.getName(), 'onEdit');
 
     // 1) la cella che hai appena scritto
     try { correggiCellaToccata(e, col); } catch (err) {

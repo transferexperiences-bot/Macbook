@@ -1,5 +1,50 @@
 # Da fare — aggiornato 19/08/2026, sera
 
+## 🔍 «Ho fatto tutti i fogli?» — il censimento Presenze (19/08 sera)
+
+Domanda di Agostino: *«hai modo di verificare se l'ho fatto per tutti?»*. **No, non da fuori.**
+Gli script legati ai fogli non si vedono in Drive (prova in `backups/apps-script/INVENTARIO.md`),
+e la Queue dice solo chi ha lavorato, non con quale codice.
+
+Quello che la Queue dice davvero, letta oggi 19/08 (export xlsx di Strutture):
+
+| struttura | ultima riga | righe oggi | ERRORI «Id non trovato» oggi |
+|---|---|---|---|
+| Suite 10/Giovì | 17:29 | 4 | 0 |
+| Puglia Mare_ AGOSTINO | 17:27 | 3 | 0 |
+| Auraterrae | 17:26 | 9 | 0 |
+| La Peschiera | 17:21 | 1 | 0 |
+| Covo dei Saraceni | 16:48 | 2 | 0 |
+| Pietra Blu | 16:19 | 4 | 0 |
+| **Melograno** | 16:12 | 12 | **4** (06:54, 12:46, 13:18, 15:19) |
+| **Antico Mondo** | 13:24 | 5 | **1** (11:08) |
+| Musae Relais & SPA | 11:26 | 1 | 0 |
+| Dorino gite in barca | 18/08 22:07 | 0 | 0 |
+| 6 Stelle Mama | 18/08 17:34 | 0 | 0 |
+| Bayit | 17/08 10:30 | 0 | 0 |
+| Puglia Mare | 17/08 10:23 | 0 | 0 |
+| Uliveus | 07/07 19:44 | 0 | 0 |
+| Musae al Mare | 12/06 17:14 | 0 | 0 |
+
+Nella Queue compaiono **15 strutture su 18**. `Id … non trovato` è il sintomo della corsa
+sull'Id, cioè del codice vecchio: **Melograno** e **Antico Mondo** lo hanno prodotto oggi. Non è
+una prova (l'ora dell'installazione conta), ma è il posto da guardare per primo.
+
+**La risposta vera: `Presenze`.** Il codice nuovo lo dice da sé. Ogni foglio, mentre gira,
+aggiorna la sua riga in un foglio `Presenze` dentro Strutture: nome, id, ultimo giro, ultima
+modifica, versione della libreria. Una riga per foglio, riscritta al massimo ogni 5 minuti
+(freno su `CacheService`, quindi negli altri giri non apre nemmeno Strutture).
+
+Serve anche dopo: il 19/08 alle 16:08 su Pietra Blu il file `Guscio` è sparito, e ce ne siamo
+accorti per caso. Con `Presenze` un foglio che smette di farsi vivo si vede da solo.
+
+⚠️ È un **accessorio**: tutto dentro `try/catch`, non restituisce niente, non può far fallire un
+salvataggio. È l'unico posto della libreria dove ingoiare un errore è la cosa giusta.
+
+Codice: `apps-script/transferlib-presenze.gs`, dentro `TransferLib-COMPLETO.gs`.
+Banco: `banchi/te/banco-presenze.js` — verde, compresi i casi «Strutture irraggiungibile» e
+«cache non disponibile», dove il transfer deve partire lo stesso.
+
 ## ✅ FATTA — la correzione della colonna Data (19/08 sera)
 
 _Sotto c'è la storia: era stata scartata il 18/08, ed è stato giusto scartarla allora.

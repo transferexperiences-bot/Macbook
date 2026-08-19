@@ -506,6 +506,16 @@ if (!autistaR) {
 
 if (c.dt && c.dt.__annoDedotto) avvisi.push('⚠️ Sull\'andata la Data è scritta senza anno («' + String(r['Data'] || '') + '»): ho dato per buono il ' + fmtIT(c.dt) + '. Controlla.');
 if (!perRientro) avvisi.push('⛔ Non so dove far tornare il cliente: sull\'andata manca il luogo di partenza e tu non hai detto la destinazione.');
+// (E) 19/08/2026 — trovato rigiocando le esecuzioni vere dentro questo codice.
+// Sull'esecuzione 758387 il rientro veniva fuori «Pietra Blu → Pietra Blu»: l'andata da cui
+// partiva era la riga 1112, che il guasto del 18/08 aveva trasformato nel rientro stesso.
+// Un transfer che parte e arriva nello stesso posto non è mai giusto, qualunque sia la causa:
+// qui si ferma e si chiede, invece di preparare una riga senza senso.
+if (perRientro && daRientro && norm(daRientro) === norm(perRientro)) {
+  avvisi.push('⛔ Partenza e destinazione sono lo stesso posto («' + daRientro + '»): così il rientro non ha senso. ' +
+    'Vuol dire che l\'andata da cui l\'ho ricavato non torna (può essere una riga sbagliata sul gestionale). ' +
+    'Dimmi tu da dove parte e dove torna, e NON salvare niente.');
+}
 
 // rientro già presente?
 let giaPresente = null;

@@ -198,6 +198,20 @@ titolo('7) destinazione spazzatura nell\'input: si butta, non si salva');
   prova('lo dice negli avvisi', (out.avvisi || []).some(a => /avratere/.test(a)));
 }
 
+// --- 7-bis. partenza e destinazione uguali: si ferma
+titolo('7-bis) andata rovinata: partenza e destinazione coincidono → si blocca');
+{
+  // la riga 1112 dopo il guasto del 18/08: l'Id dell'andata addosso ai dati del rientro
+  const righe = OGGI.concat([riga({ Time: '18:32', 'Transfer > Da': 'Città di Bari', 'Transfer < Per': 'Pietra Blu',
+    Pax: '3', Nome: 'LADANOV IGOR', Fornitori: 'Pietra Blu', Tariffa: '250,00€', Modalità: 'Al ritorno',
+    Autista: 'Claudio Moccia', Id: 'TR-20260818-ROVINATA-0000' })]);
+  const out = esegui({ luogo: 'Bari', ora: '18:32', data: dataIT(0), id: 'TR-20260818-ROVINATA-0000',
+    query: 'rientro da Bari per Pietrablu', destinazione: 'Pietra Blu', autista: '', veicolo: '' }, righe);
+  prova('non dice «pronto»', out.esito === 'da_completare', out.esito);
+  prova('lo dice chiaro con un ⛔', (out.avvisi || []).some(a => /Partenza e destinazione sono lo stesso posto/.test(a)),
+    JSON.stringify(out.avvisi));
+}
+
 // --- 8. quello che già funzionava deve continuare a funzionare
 titolo('8) regressioni: modalità, tariffa, doppione, dati mancanti');
 {

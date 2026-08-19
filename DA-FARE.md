@@ -166,3 +166,52 @@ registro delle bozze legge un intent vecchio.
 **Quanto vale.** Sulle chat vere (gen-mag, 1.897 schede) il prezzo mancava nel 53% dei casi e
 433 schede non sono mai più ricomparse con un prezzo. Quei numeri sono del vecchio formato —
 l'export finisce il 09/05 — ma `760628` dice che il buco c'è ancora.
+
+## 4 — Una tariffa inventata a quattro cifre su una riga vera  🔴 da approvare
+
+**Prova.** Esecuzione `760628` → `760632` (Parse transfer) → `760644` (listino), 18/08 21:20.
+Transfer `TR/18082026/RT03SZHEGW3YORCP`: **Savelletri → Polignano a Mare**, una trentina di
+chilometri. Sul gestionale è finito a **1.080 €**. Il calcolo, parola per parola:
+
+```
+dettaglio.da = { prezzo: 1080, mode: 'comune+raggio', dest: 'Roma APT' }
+kmGaragePickup: 520.1   kmCorsa: 519.8   kmTot: 1040.1   matchEsatto: false
+```
+
+**La catena.** La partenza era scritta come link corto di Maps (`maps.app.goo.gl/…`).
+
+1. `Prepara Ricerche`: se il link non si risolve, ripiega su una ricerca con l'indirizzo
+   ripulito — che di un link è la **stringa vuota** — più `, Italia`. Si geocodifica l'Italia
+   e la partenza diventa il centro del Paese.
+2. `Calcola Tariffa`: il comune viene cercato nel listino con un confronto morbido
+   (`l.includes(key) || key.includes(l)`). «roma» entra dentro «roma apt» → risponde il
+   prezzo dell'**aeroporto di Roma**.
+3. `Applica Tariffa` (Parse transfer) segna `_route: 'conferma'` perché `matchEsatto: false`,
+   ma **scrive lo stesso** la tariffa sulla riga: il `_route` serve solo a mandare un
+   messaggio dopo. La riga nasce con un prezzo che non ha scelto nessuno.
+
+Non è «tariffa mancante»: è peggio. Una tariffa mancante si vede; una tariffa inventata a
+quattro cifre sembra una tariffa.
+
+**Rimedio, pronto e provato, non pubblicato.**
+`backups/n8n/calcola-tariffa/guardia-luogo.js` — tre domande prima di dare un prezzo:
+il luogo si è risolto davvero; la corsa sta entro 300 km da casa; il listino ha risposto per
+la tratta giusta (un comune non prende il prezzo di un posto particolare dentro quel comune:
+«Roma» non è «Roma APT», «Bari» non è «Bari Airport» — il contrario sì, «Polignano a Mare»
+può prendere la riga «Polignano»). Se una risponde male non esce un prezzo, esce un
+`warning`: la strada che il sistema già conosce (`_route: 'zero'` → `Parcheggia Tariffa0` →
+si chiede ad Agostino).
+
+Banco `banchi/te/banco-guardia-luogo.js`, 15 casi verdi, fra cui i prezzi giusti che non si
+devono muovere (Bar Rotolo → Cala Ponte 60 €) e le corse lunghe vere (Polignano → Amalfi
+800 € di listino esatto: non si tocca).
+
+**Da decidere insieme, ed è la domanda vera:** una stima non esatta deve finire sulla riga?
+Oggi ci finisce e il messaggio arriva dopo. Le alternative sono parcheggiarla come si fa già
+con la tariffa a zero, oppure scriverla marcata (Nota `⚠️ stima`) perché non venga scambiata
+per un prezzo deciso.
+
+**Nota su quanto è frequente.** Nel gestionale di agosto (916 righe scritte dal bot) le
+tariffe vuote o a zero sono 10, l'1%: `Calcola Tariffa Gate` dentro Parse transfer il buco lo
+tappa quasi sempre. Il problema non è la quantità, è che quando sbaglia sbaglia in grande e
+in silenzio.

@@ -130,3 +130,39 @@ se un bot non riceve niente da troppo tempo.
 sta nel nodo `Auth Check` del workflow `0DVJEFcjGb8eTUmj`, **non** va committato).
 Operazioni utili: `sheets_read` (`sheet_id` + `sheet_name`), `sheets_upsert` (match sull'**Id**),
 `sheets_append`, `sheets_batch_append`.
+
+## 3 — Tariffa: il prezzo lo mette il listino, non le parole del prompt  🔴 da approvare
+
+**Prova.** Esecuzione `760628` del 18/08 alle 21:20 (Tedi tour operator, tre transfer in un
+colpo): TRANSFER 1 con `Tariffa: 380`, TRANSFER 2 e TRANSFER 3 **senza nessuna riga
+Tariffa**, `intent: conferma` — salvati a prezzo vuoto. In quell'esecuzione `calcola_tariffa`
+non è mai stato chiamato. L'obbligo di chiamarlo vive solo nella descrizione del tool
+(«Chiamalo SEMPRE prima di mostrare la scheda»): parole, e le parole il modello le salta.
+Stesso guasto già in CLAUDE.md fra i verificati (`730883`).
+
+**Rimedio, pronto e provato, non pubblicato.** Tre nodi fra `Guardia Data` e `Switch (intent)`:
+
+```
+Guardia Data → Schede senza tariffa → IF ci sono tariffe da calcolare?
+                   ├─ sì → Calcola tariffa mancante (APv3ZqEizY1HnPia) → Rimetti le tariffe
+                   └─ no ────────────────────────────────────────────→ Rimetti le tariffe
+                                                                          → Switch (intent)
+```
+
+* `backups/n8n/prenotazioni/schede-senza-tariffa.js`
+* `backups/n8n/prenotazioni/rimetti-le-tariffe.js`
+* banco `banchi/te/banco-tariffe.js` — 56 casi verdi, costruiti su `760628`, `769329`,
+  `769098`, `768734`.
+
+Il prezzo entra in **tutti e tre i testi** (mostrato, Telegram, `recap_verificato`): scriverlo
+solo nel messaggio vorrebbe dire mostrarlo e non salvarlo. Se il listino non copre la tratta,
+la scheda resta senza prezzo e **il salvataggio si ferma**: si chiede quel prezzo e basta.
+
+**Perché serve il via libera.** Zona rossa n. 1 (un prezzo calcolato finisce su una riga vera
+del gestionale) e n. 4 (cambia come funziona un salvataggio). Da fare insieme: puntare
+`Aggiorna Bozze` su `Rimetti le tariffe` invece che su `Code in JavaScript`, altrimenti il
+registro delle bozze legge un intent vecchio.
+
+**Quanto vale.** Sulle chat vere (gen-mag, 1.897 schede) il prezzo mancava nel 53% dei casi e
+433 schede non sono mai più ricomparse con un prezzo. Quei numeri sono del vecchio formato —
+l'export finisce il 09/05 — ma `760628` dice che il buco c'è ancora.

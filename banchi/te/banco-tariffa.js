@@ -92,17 +92,17 @@ const trova = (n) => R.find((x) => x.c.nome === n);
 
 console.log('\n-- 1) Pietra Blu, dopo la rinomina delle colonne (19/08 sera) --');
 {
-  // Le colonne del listino Pietra Blu erano «≤ 2 pax» e «> 3 pax»: il codice
-  // non le riconosceva e rispondeva 0 su ogni corsa. Agostino le ha rinominate
-  // «2» e «3». Il banco è stato rifatto sul listino riletto da Drive.
+  // Le colonne del listino Pietra Blu erano «≤ 2 pax» e «> 3 pax»: il codice non
+  // le riconosceva e rispondeva 0 su ogni corsa. Ora sono «2» e «7» (la seconda
+  // l'ho scritta io da n8n, esecuzione 769083: leggi C1 → era 3 → scrivi 7).
   const due = trova('Pietra Blu → Alberobello');
-  prova('2 pax: ora un prezzo c\'è', 'ok', due.a.status);
-
-  // Ma «3» è una soglia CHIUSA: da 4 pax in su non c'è più nessuna colonna.
   const quattro = trova('Pietra Blu → Alberobello (4 pax)');
-  prova('4 pax: ancora nessun prezzo', 'warning', quattro.a.status);
-  prova('   motivo', 'pax-oltre-listino', quattro.a.motivo);
-  // Si chiude rinominando la seconda colonna con la capienza vera (es. «9»).
+  prova('2 pax: un prezzo c\'è', 'ok', due.a.status);
+  prova('4 pax: un prezzo c\'è (prima era pax-oltre-listino)', 'ok', quattro.a.status);
+
+  // Ma il listino ha 11 destinazioni: Alberobello non c'è, e si ripiega sul
+  // prezzo del comune (Polignano). Da qui lo scarto col davvero incassato.
+  prova('   e viene dal comune, non dalla destinazione', 'comune+raggio', quattro.a.dettaglio.da.mode);
 }
 
 console.log('\n-- 2) il ripescaggio su Generico: oggi il foglio si legge e si butta --');

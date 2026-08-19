@@ -1,5 +1,5 @@
 {
- "_fonte": "Programma Autisti 2.0 (1nqmt8_…), riletto il 19/08/2026 dopo la rinomina delle colonne Pietra Blu",
+ "_fonte": "Programma Autisti 2.0 (1nqmt8_…), 19/08/2026 — listino Pietra Blu con le colonne 2 e 7",
  "fornitori": [
   {
    "Fornitori": "Auraterrae",
@@ -509,68 +509,68 @@
    {
     "Destinazione": "Polignano a Mare",
     "2": 30.0,
-    "3": 40.0,
-    "row_number": 2
+    "row_number": 2,
+    "7": 40.0
    },
    {
     "Destinazione": "Aeroporto di Bari",
     "2": 100.0,
-    "3": 125.0,
-    "row_number": 3
+    "row_number": 3,
+    "7": 125.0
    },
    {
     "Destinazione": "Stazione di Bari",
     "2": 100.0,
-    "3": 125.0,
-    "row_number": 4
+    "row_number": 4,
+    "7": 125.0
    },
    {
     "Destinazione": "Città di Bari",
     "2": 100.0,
-    "3": 125.0,
-    "row_number": 5
+    "row_number": 5,
+    "7": 125.0
    },
    {
     "Destinazione": "Aeroporto di Brindisi",
     "2": 125.0,
-    "3": 150.0,
-    "row_number": 6
+    "row_number": 6,
+    "7": 150.0
    },
    {
     "Destinazione": "Stazione di Brindisi",
     "2": 125.0,
-    "3": 150.0,
-    "row_number": 7
+    "row_number": 7,
+    "7": 150.0
    },
    {
     "Destinazione": "Città di Brindisi",
     "2": 125.0,
-    "3": 150.0,
-    "row_number": 8
+    "row_number": 8,
+    "7": 150.0
    },
    {
     "Destinazione": "Monopoli città",
     "2": 45.0,
-    "3": 50.0,
-    "row_number": 9
+    "row_number": 9,
+    "7": 50.0
    },
    {
     "Destinazione": "Mola di Bari",
     "2": 45.0,
-    "3": 50.0,
-    "row_number": 10
+    "row_number": 10,
+    "7": 50.0
    },
    {
     "Destinazione": "APT di Bari",
     "2": 100.0,
-    "3": 125.0,
-    "row_number": 11
+    "row_number": 11,
+    "7": 125.0
    },
    {
     "Destinazione": "Monopoli",
     "2": 45.0,
-    "3": 50.0,
-    "row_number": 12
+    "row_number": 12,
+    "7": 50.0
    }
   ],
   "Melograno": [

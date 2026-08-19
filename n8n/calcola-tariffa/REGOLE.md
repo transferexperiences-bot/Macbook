@@ -148,10 +148,12 @@ struttura è un errore che non si vede.
 
 ### 7. Pietra Blu: tariffa 0 su ogni corsa — ✅ **RISOLTO IN PARTE il 19/08 sera**
 
-Agostino ha rinominato le due colonne del listino Pietra Blu in `2` e `3`. Riletto il foglio da
-Drive e rifatto il banco: **fino a 3 pax adesso un prezzo c'è**. Sopra i 3 no: `3` è una soglia
-chiusa, e da 4 pax in su torna `pax-oltre-listino` → 0 €. Si chiude rinominando la seconda
-colonna con la capienza vera del veicolo (es. `9`).
+Le colonne erano `≤ 2 pax` e `> 3 pax`. Agostino le ha rinominate `2` e `3`; poi la seconda è
+diventata `7` — quella l'ho scritta io da n8n su sua richiesta («usa il bridge n8n»), con un
+workflow una tantum che **prima legge** la cella e scrive solo se ci trova `3`
+(esecuzione `769083`: letto `3` → scritto `7` → riletto `7`, una cella aggiornata). Il workflow
+è stato archiviato subito dopo. Ora il listino Pietra Blu ha colonne `2` e `7`, e **un prezzo
+c'è per qualunque numero di passeggeri fino a 7**.
 
 Resta vero che con 11 sole destinazioni in listino quasi tutto cade sul prezzo del comune
 (Polignano, 30 €): `Pietra Blu → Alberobello` oggi dà **30 €** contro i **100 €** incassati.
@@ -233,6 +235,6 @@ listino ha 11 destinazioni e tutto il resto cade sul prezzo del comune.
 | corsa | oggi | col ripescaggio | incassato |
 |---|---|---|---|
 | Pietra Blu → Alberobello, 2 pax | 30 € | 95 € | 100 € |
-| Pietra Blu → Alberobello, 4 pax | 0 € | 110 € | 125 € |
+| Pietra Blu → Alberobello, 4 pax | 40 € | 110 € | 125 € |
 
 Sulle altre strutture, che hanno listini pieni, non cambia niente.

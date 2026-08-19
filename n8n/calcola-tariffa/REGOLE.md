@@ -146,8 +146,74 @@ Match esatto, poi `includes` nei due sensi: `«Musae»` aggancia il primo fra «
 «Musae Relais & SPA» che capita nell'ordine del foglio. Sui listini, prendere quello dell'altra
 struttura è un errore che non si vede.
 
-### 7. Il nome del file in n8n è vecchio
+### 7. Pietra Blu: il calcolatore non risponde mai — **tariffa 0 su ogni corsa**
 
-Il nodo punta a `1nqmt8_…` chiamandolo **«Programma Autisti 2.0»**; in `CLAUDE.md` lo stesso id è
-**«Prenotazioni NCC 3.0»**. È solo il nome in cache di n8n — l'id è giusto — ma cercare il file
-col nome sbagliato fa perdere tempo.
+Il più grosso, e si vede solo mettendo insieme codice e dati. Le colonne di prezzo vengono
+riconosciute solo se l'intestazione è **un numero secco** (`/^\d+$/`). Le intestazioni vere:
+
+| listino | intestazioni | il codice le vede? |
+|---|---|---|
+| Generico, Melograno, Cala Ponte, Puglia Mare, La Peschiera, Antico Mondo… | `2` `7` `9` | sì |
+| Auraterrae | `7` `9` | sì (un 1 pax paga la colonna 7) |
+| Tuo Hotel, Longo, Sparano, De Napoli | `2` `7` | sì |
+| Viator | `8` | sì |
+| **Pietra Blu** | **`≤ 2 pax`  `> 3 pax`** | **NO → `no-colonne-prezzo` → tariffa 0** |
+
+Provato sul banco con le corse vere di Pietra Blu: `status: warning`, `tariffa: 0`, sempre.
+Si sistema in due modi — o si rinominano le due colonne del listino in `2` e `3`, oppure il
+codice impara a leggere il numero dentro l'intestazione (è la correzione provata in
+`calcola-tariffa-CORRETTO.js`, che tiene anche il senso di «>»: da lì in su).
+
+### 8. La colonna «Listini Tuk-tuk» non contiene listini
+
+Su 1028 righe di `Fornitori e strutture`, la colonna C contiene **numeri** (1.0, 1.3, 0.8, 0.59)
+per 98 fornitori, ed è vuota per 916. **Un solo fornitore ha un nome di listino: Puglia Mare**
+(«Puglia Mare Tuk-tuk»). Il codice usa quel valore **come nome di foglio**: per chiunque altro
+chieda un tuk-tuk cercherebbe un foglio chiamato «1.3» → non lo trova → nessun listino.
+
+Stessa cosa per due righe (Ave Italia Tours, Gtours) che come **listino auto/minivan** hanno il
+numero `1291`.
+
+### 9. La colonna «€/min» è vuota per tutti
+
+Vuota su 992 righe, `0` su 35, e vale `1.0` solo per Puglia Mare. Quindi anche riparando la
+tubatura del punto 2, le ore extra resterebbero a zero finché la colonna non si riempie.
+
+### 10. Il nome del file in `CLAUDE.md` era sbagliato — corretto
+
+Il file `1nqmt8_…` si chiama davvero **«Programma Autisti 2.0»** (verificato su Drive il 19/08);
+`Prenotazioni NCC 3.0` è il nome della **scheda** dentro. n8n aveva ragione, `CLAUDE.md` no:
+l'ho corretto lì.
+
+
+---
+
+# Il banco: cosa dice il calcolatore sulle corse vere
+
+`node banchi/te/banco-tariffa.js` — gira il **codice vero** dei due nodi
+(`calcola-tariffa.js`, `trova-listino.js`, copiati verbatim) sui **listini veri** del gestionale
+e su **corse vere** prese dal foglio Strutture, ognuna con la tariffa incassata davvero.
+
+| corsa | pax | incassato | calcolatore oggi |
+|---|---|---|---|
+| Auraterrae → Ostuni | 2 | 120 € | 120 € |
+| Monopoli → Melograno | 2 | 35 € | 30 € |
+| Auraterrae → Monopoli | 4 | 60 € | 60 € |
+| **Pietra Blu → Alberobello** | 2 | 100 € | **0 € — non risponde** |
+| Polignano → APT di Bari | 2 | 110 € | 120 € |
+| Melograno → Polignano | 7 | 70 € | 55 € |
+| Auraterrae → APT di Bari (07:00) | 1 | 130 € | 130 € |
+| Grotte di Castellana → Polignano | 2 | 60 € | 60 € |
+| Polignano → Sabbiadoro | 4 | 50 € | 65 € |
+| Stazione di Bari → Melograno | 2 | 150 € | 115 € |
+| Peschiera → Monopoli | 1 | 50 € | 40 € |
+| Auraterrae → San Vito | 2 | 40 € | 40 € |
+| **Pietra Blu → San Vito** | 2 | 0 € | **0 € — non risponde** |
+
+Le differenze fra «incassato» e «calcolatore» non sono tutte errori del calcolatore: molte sono
+prezzi decisi a mano, sconti, accordi. Ma **cinque casi su tredici** hanno uno scarto, e su due
+il calcolatore non risponde affatto: è il conto che vale la pena guardare riga per riga insieme.
+
+**Una nota onesta sul ripescaggio (punto 1):** sulle tredici corse vere del banco non cambia mai
+il prezzo finale. È un guasto vero — il Generico si legge e si butta, provato — ma morde solo
+quando **nessuno** dei due capi è nel listino del fornitore. Non è quindi urgente come il punto 7.

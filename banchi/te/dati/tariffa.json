@@ -1,0 +1,2784 @@
+{
+ "_fonte": "Programma Autisti 2.0 (1nqmt8_…), letto il 19/08/2026",
+ "fornitori": [
+  {
+   "Fornitori": "Auraterrae",
+   "Listino auto/minivan": "Auraterrae",
+   "Listini Tuk-tuk": 1.3,
+   "% fee": 0.26,
+   "Modalità": "Sconto in fattura",
+   "mail": 0.0,
+   "3706": 3755.0,
+   "min": 15.0,
+   "row_number": 3
+  },
+  {
+   "Fornitori": "Antico Mondo",
+   "Listino auto/minivan": "Antico Mondo",
+   "Listini Tuk-tuk": 1.0,
+   "% fee": 0.2,
+   "Modalità": "Incassare",
+   "mail": 3914.0,
+   "Allert": 1.0,
+   "3706": 3919.0,
+   "min": 135.0,
+   "row_number": 11
+  },
+  {
+   "Fornitori": "Puglia Mare",
+   "Listino auto/minivan": "Puglia Mare",
+   "Listini Tuk-tuk": "Puglia Mare Tuk-tuk",
+   "€/min": 1.0,
+   "% fee": 0.0,
+   "Modalità": "Fattura",
+   "mail": 0.0,
+   "row_number": 75
+  },
+  {
+   "Fornitori": "Melograno",
+   "Listino auto/minivan": "Melograno",
+   "Listini Tuk-tuk": 1.0,
+   "% fee": 0.07,
+   "Modalità": "Fattura",
+   "mail": 0.0,
+   "row_number": 95
+  },
+  {
+   "Fornitori": "Talea Group La Peschiera",
+   "Listino auto/minivan": "Talea Group La Peschiera",
+   "Listini Tuk-tuk": 1.0,
+   "% fee": 0.07,
+   "Modalità": "Fattura",
+   "mail": "info@peschierahotel.com, frontoffice@peschierahotel.com, francesca.desario@taleacollection.com",
+   "cell": 0.0,
+   "row_number": 96
+  },
+  {
+   "Fornitori": "Pietra Blu",
+   "Listino auto/minivan": "Pietra Blu",
+   "Listini Tuk-tuk": 1.0,
+   "% fee": 0.2,
+   "Modalità": "Incassare",
+   "mail": 0.0,
+   "row_number": 99
+  },
+  {
+   "Fornitori": "Generico",
+   "€/min": 0.0,
+   "row_number": 1001
+  }
+ ],
+ "listini": {
+  "Generico": [
+   {
+    "Destinazione": "Cala Ponte",
+    "2": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Polignano a Mare",
+    "2": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "San Vito",
+    "2": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Borgobianco",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Monopoli",
+    "2": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Conversano",
+    "2": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Cozze",
+    "2": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Le Palme",
+    "2": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "2": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Peschiera Hotel",
+    "2": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "2": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Fasano",
+    "2": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Grotte di Castellana",
+    "2": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Pezze di Greco",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Savelletri",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Speziale",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Putignano",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Turi",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Alberobello",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Montalbano",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "2": 105.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Bari",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "Cisternino",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Noci",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Bari Airport",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "Bari Centro",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "Ostuni",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "2": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Carovigno",
+    "2": 140.0,
+    "7": 160.0,
+    "9": 205.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "2": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Brindisi",
+    "2": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "Ceglie Messapica",
+    "2": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "2": 175.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "2": 175.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Dispo Alberobello 3h",
+    "2": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Dispo Locorotondo 3h",
+    "2": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Dispo Martina Franca 3h",
+    "2": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Matera",
+    "2": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Dispo Ostuni 3h",
+    "2": 270.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Lecce",
+    "2": 270.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Otranto",
+    "2": 380.0,
+    "7": 410.0,
+    "9": 515.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Dispo Matera 5h",
+    "2": 475.0,
+    "7": 520.0,
+    "9": 650.0,
+    "row_number": 52
+   },
+   {
+    "Destinazione": "Tour Castellana Alberobello",
+    "2": 485.0,
+    "7": 540.0,
+    "9": 675.0,
+    "row_number": 53
+   },
+   {
+    "Destinazione": "Dispo Lecce 4h",
+    "2": 495.0,
+    "7": 540.0,
+    "9": 675.0,
+    "row_number": 54
+   },
+   {
+    "Destinazione": "Tour Locorotondo Cisternino Martina",
+    "2": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 55
+   },
+   {
+    "Destinazione": "Tour Matera Gravina",
+    "2": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 56
+   },
+   {
+    "Destinazione": "Tour Monopoli Ostuni",
+    "2": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 57
+   },
+   {
+    "Destinazione": "Tour Taranto Grottaglie",
+    "2": 595.0,
+    "7": 625.0,
+    "9": 785.0,
+    "row_number": 58
+   },
+   {
+    "Destinazione": "Napoli",
+    "2": 700.0,
+    "7": 700.0,
+    "9": 880.0,
+    "row_number": 59
+   },
+   {
+    "Destinazione": "Amalfi",
+    "2": 810.0,
+    "7": 810.0,
+    "9": 1015.0,
+    "row_number": 60
+   },
+   {
+    "Destinazione": "Sorrento",
+    "2": 810.0,
+    "7": 810.0,
+    "9": 1015.0,
+    "row_number": 61
+   },
+   {
+    "Destinazione": "Positano",
+    "2": 865.0,
+    "7": 865.0,
+    "9": 1080.0,
+    "row_number": 62
+   },
+   {
+    "Destinazione": "Roma APT",
+    "2": 1080.0,
+    "7": 1080.0,
+    "9": 1350.0,
+    "row_number": 63
+   }
+  ],
+  "Pietra Blu": [
+   {
+    "Destinazione": "Polignano a Mare",
+    "≤ 2 pax": 30.0,
+    "> 3 pax": 40.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Aeroporto di Bari",
+    "≤ 2 pax": 100.0,
+    "> 3 pax": 125.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "≤ 2 pax": 100.0,
+    "> 3 pax": 125.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Città di Bari",
+    "≤ 2 pax": 100.0,
+    "> 3 pax": 125.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Aeroporto di Brindisi",
+    "≤ 2 pax": 125.0,
+    "> 3 pax": 150.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "≤ 2 pax": 125.0,
+    "> 3 pax": 150.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Città di Brindisi",
+    "≤ 2 pax": 125.0,
+    "> 3 pax": 150.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Monopoli città",
+    "≤ 2 pax": 45.0,
+    "> 3 pax": 50.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "≤ 2 pax": 45.0,
+    "> 3 pax": 50.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "≤ 2 pax": 100.0,
+    "> 3 pax": 125.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Monopoli",
+    "≤ 2 pax": 45.0,
+    "> 3 pax": 50.0,
+    "row_number": 12
+   }
+  ],
+  "Melograno": [
+   {
+    "Destinazione": "Alberobello",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 90.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Amalfi",
+    "2": 550.0,
+    "7": 600.0,
+    "9": 750.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "2": 115.0,
+    "7": 135.0,
+    "9": 170.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "2": 125.0,
+    "7": 130.0,
+    "9": 160.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Bari",
+    "2": 115.0,
+    "7": 135.0,
+    "9": 170.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Bari Airport",
+    "2": 115.0,
+    "7": 135.0,
+    "9": 170.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "2": 45.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Brindisi",
+    "2": 125.0,
+    "7": 130.0,
+    "9": 160.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Cala Ponte Hotel",
+    "2": 45.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Cala Ponte Marina",
+    "2": 45.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Carovigno",
+    "2": 95.0,
+    "7": 105.0,
+    "9": 130.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "2": 50.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Ceglie Messapica",
+    "2": 80.0,
+    "7": 100.0,
+    "9": 130.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Cisternino",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Conversano",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Cozze",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Dispo Max 4h",
+    "2": 175.0,
+    "7": 195.0,
+    "9": 240.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Dispo Max 7h",
+    "2": 350.0,
+    "7": 385.0,
+    "9": 480.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Fasano",
+    "2": 45.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Grotte di Castellana",
+    "2": 50.0,
+    "7": 60.0,
+    "9": 70.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Lecce",
+    "2": 210.0,
+    "7": 230.0,
+    "9": 290.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 90.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Matera",
+    "2": 210.0,
+    "7": 230.0,
+    "9": 290.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Monopoli",
+    "2": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 60.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Montalbano",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Napoli",
+    "2": 460.0,
+    "7": 520.0,
+    "9": 650.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "Noci",
+    "2": 75.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Noicattaro",
+    "2": 85.0,
+    "7": 95.0,
+    "9": 120.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Ostuni",
+    "2": 90.0,
+    "7": 100.0,
+    "9": 110.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "Otranto",
+    "2": 290.0,
+    "7": 315.0,
+    "9": 390.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Peschiera Hotel",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 60.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "Pezze di Greco",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "Polignano a Mare",
+    "2": 45.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "Positano",
+    "2": 620.0,
+    "7": 670.0,
+    "9": 840.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Putignano",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 90.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "Roma APT",
+    "2": 750.0,
+    "7": 830.0,
+    "9": 1040.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 60.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "2": 95.0,
+    "7": 105.0,
+    "9": 130.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Savelletri",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 60.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Sorrento",
+    "2": 580.0,
+    "7": 640.0,
+    "9": 800.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Speziale",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "2": 115.0,
+    "7": 135.0,
+    "9": 170.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "2": 125.0,
+    "7": 130.0,
+    "9": 160.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Tour FD 7h e mezza VALLE D’ITRIA",
+    "2": 350.0,
+    "7": 385.0,
+    "9": 480.0,
+    "row_number": 52
+   },
+   {
+    "Destinazione": "Tour FD Lecce Max 6h",
+    "2": 390.0,
+    "7": 430.0,
+    "9": 540.0,
+    "row_number": 53
+   },
+   {
+    "Destinazione": "Tour FD Matera Max 6h",
+    "2": 390.0,
+    "7": 430.0,
+    "9": 540.0,
+    "row_number": 54
+   },
+   {
+    "Destinazione": "Tour HD 3h e mezza VALLE D’ITRIA",
+    "2": 265.0,
+    "7": 290.0,
+    "9": 360.0,
+    "row_number": 55
+   },
+   {
+    "Destinazione": "Tour HD Bari Max 4h",
+    "2": 320.0,
+    "7": 345.0,
+    "9": 430.0,
+    "row_number": 56
+   },
+   {
+    "Destinazione": "Tour HD Lecce Max 4h",
+    "2": 320.0,
+    "7": 345.0,
+    "9": 430.0,
+    "row_number": 57
+   },
+   {
+    "Destinazione": "Turi",
+    "2": 65.0,
+    "7": 75.0,
+    "9": 90.0,
+    "row_number": 58
+   }
+  ],
+  "Auraterrae": [
+   {
+    "Destinazione": "Auraterrae",
+    "7": 0.0,
+    "9": 0.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Polignano a mare",
+    "7": 35.0,
+    "9": 45.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "Stazione",
+    "7": 35.0,
+    "9": 45.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Calaponte",
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "San Vito",
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Tour guidato in Tuk tuk",
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Conversano",
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Cozze",
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Monopoli",
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Peschiera Hotel",
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Fasano",
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Grotte di Castellana",
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Pezze di Greco",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Savelletri",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Speziale",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Putignano",
+    "7": 95.0,
+    "9": 120.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Alberobello",
+    "7": 100.0,
+    "9": 125.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "7": 100.0,
+    "9": 125.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Montalbano",
+    "7": 100.0,
+    "9": 125.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "7": 100.0,
+    "9": 125.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Turi",
+    "7": 100.0,
+    "9": 125.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "7": 110.0,
+    "9": 140.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "Cisternino",
+    "7": 115.0,
+    "9": 145.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "7": 115.0,
+    "9": 145.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Noci",
+    "7": 115.0,
+    "9": 145.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "Ostuni",
+    "7": 120.0,
+    "9": 150.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "7": 120.0,
+    "9": 150.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "7": 130.0,
+    "9": 150.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "Bari",
+    "7": 130.0,
+    "9": 150.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "Bari Airport",
+    "7": 130.0,
+    "9": 150.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Carovigno",
+    "7": 150.0,
+    "9": 190.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "7": 170.0,
+    "9": 215.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Brindisi",
+    "7": 170.0,
+    "9": 215.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "Ceglie Messapica",
+    "7": 170.0,
+    "9": 215.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "7": 170.0,
+    "9": 215.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "7": 180.0,
+    "9": 225.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Dispo Alberobello 3h",
+    "7": 250.0,
+    "9": 315.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Dispo Locorotondo 3h",
+    "7": 250.0,
+    "9": 315.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Dispo Martina Franca 3h",
+    "7": 250.0,
+    "9": 315.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Dispo Ostuni 3h",
+    "7": 250.0,
+    "9": 315.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Matera",
+    "7": 250.0,
+    "9": 315.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Lecce",
+    "7": 280.0,
+    "9": 350.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Otranto",
+    "7": 400.0,
+    "9": 500.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Dispo Matera 5h",
+    "7": 500.0,
+    "9": 625.0,
+    "row_number": 52
+   },
+   {
+    "Destinazione": "Tour Castellana Alberobello",
+    "7": 510.0,
+    "9": 640.0,
+    "row_number": 53
+   },
+   {
+    "Destinazione": "Dispo Lecce 4h",
+    "7": 530.0,
+    "9": 665.0,
+    "row_number": 54
+   },
+   {
+    "Destinazione": "Tour Matera Gravina",
+    "7": 550.0,
+    "9": 690.0,
+    "row_number": 55
+   },
+   {
+    "Destinazione": "Tour Locorotondo Cisternino Martina",
+    "7": 570.0,
+    "9": 715.0,
+    "row_number": 56
+   },
+   {
+    "Destinazione": "Tour Monopoli Ostuni",
+    "7": 570.0,
+    "9": 715.0,
+    "row_number": 57
+   },
+   {
+    "Destinazione": "Tour Taranto Grottaglie",
+    "7": 630.0,
+    "9": 790.0,
+    "row_number": 58
+   },
+   {
+    "Destinazione": "Napoli",
+    "7": 740.0,
+    "9": 925.0,
+    "row_number": 59
+   },
+   {
+    "Destinazione": "Amalfi",
+    "7": 850.0,
+    "9": 1065.0,
+    "row_number": 60
+   },
+   {
+    "Destinazione": "Sorrento",
+    "7": 850.0,
+    "9": 1065.0,
+    "row_number": 61
+   },
+   {
+    "Destinazione": "Positano",
+    "7": 900.0,
+    "9": 1125.0,
+    "row_number": 62
+   },
+   {
+    "Destinazione": "Roma APT",
+    "7": 1100.0,
+    "9": 1375.0,
+    "row_number": 63
+   }
+  ],
+  "Antico Mondo": [
+   {
+    "Destinazione": "Cala Ponte",
+    "3": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Polignano a Mare",
+    "3": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "San Vito",
+    "3": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Borgobianco",
+    "3": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Monopoli",
+    "3": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Conversano",
+    "3": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Cozze",
+    "3": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Le Palme",
+    "3": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "3": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Peschiera Hotel",
+    "3": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "3": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "3": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "3": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Fasano",
+    "3": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Grotte di Castellana",
+    "3": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Pezze di Greco",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Savelletri",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Speziale",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Putignano",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Turi",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Alberobello",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Montalbano",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "3": 95.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "3": 105.0,
+    "7": 110.0,
+    "9": 135.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Bari",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "Cisternino",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Noci",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Bari Airport",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "Bari Centro",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "Ostuni",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "3": 120.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Carovigno",
+    "3": 140.0,
+    "7": 160.0,
+    "9": 205.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "3": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Brindisi",
+    "3": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "Ceglie Messapica",
+    "3": 160.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "3": 175.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "3": 175.0,
+    "7": 185.0,
+    "9": 230.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Dispo Alberobello 3h",
+    "3": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Dispo Locorotondo 3h",
+    "3": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Dispo Martina Franca 3h",
+    "3": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Matera",
+    "3": 240.0,
+    "7": 270.0,
+    "9": 340.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Dispo Ostuni 3h",
+    "3": 270.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Lecce",
+    "3": 270.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Otranto",
+    "3": 380.0,
+    "7": 410.0,
+    "9": 515.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Dispo Matera 5h",
+    "3": 475.0,
+    "7": 520.0,
+    "9": 650.0,
+    "row_number": 52
+   },
+   {
+    "Destinazione": "Tour Castellana Alberobello",
+    "3": 485.0,
+    "7": 540.0,
+    "9": 675.0,
+    "row_number": 53
+   },
+   {
+    "Destinazione": "Dispo Lecce 4h",
+    "3": 495.0,
+    "7": 540.0,
+    "9": 675.0,
+    "row_number": 54
+   },
+   {
+    "Destinazione": "Tour Locorotondo Cisternino Martina",
+    "3": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 55
+   },
+   {
+    "Destinazione": "Tour Matera Gravina",
+    "3": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 56
+   },
+   {
+    "Destinazione": "Tour Monopoli Ostuni",
+    "3": 540.0,
+    "7": 595.0,
+    "9": 745.0,
+    "row_number": 57
+   },
+   {
+    "Destinazione": "Tour Taranto Grottaglie",
+    "3": 595.0,
+    "7": 625.0,
+    "9": 785.0,
+    "row_number": 58
+   },
+   {
+    "Destinazione": "Napoli",
+    "3": 700.0,
+    "7": 700.0,
+    "9": 880.0,
+    "row_number": 59
+   },
+   {
+    "Destinazione": "Amalfi",
+    "3": 810.0,
+    "7": 810.0,
+    "9": 1015.0,
+    "row_number": 60
+   },
+   {
+    "Destinazione": "Sorrento",
+    "3": 810.0,
+    "7": 810.0,
+    "9": 1015.0,
+    "row_number": 61
+   },
+   {
+    "Destinazione": "Positano",
+    "3": 865.0,
+    "7": 865.0,
+    "9": 1080.0,
+    "row_number": 62
+   },
+   {
+    "Destinazione": "Roma APT",
+    "3": 1080.0,
+    "7": 1080.0,
+    "9": 1350.0,
+    "row_number": 63
+   }
+  ],
+  "Puglia Mare": [
+   {
+    "Destinazione": "Cala Ponte",
+    "2": 25.0,
+    "7": 35.0,
+    "9": 40.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "San Vito",
+    "2": 25.0,
+    "7": 35.0,
+    "9": 40.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "Borgobianco",
+    "2": 30.0,
+    "7": 40.0,
+    "9": 50.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Monopoli",
+    "2": 40.0,
+    "7": 50.0,
+    "9": 60.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Conversano",
+    "2": 40.0,
+    "7": 50.0,
+    "9": 60.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Cozze",
+    "2": 40.0,
+    "7": 50.0,
+    "9": 60.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Le Palme",
+    "2": 50.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "2": 50.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Peschiera Hotel",
+    "2": 50.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "2": 50.0,
+    "7": 55.0,
+    "9": 70.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "2": 60.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Fasano",
+    "2": 70.0,
+    "7": 70.0,
+    "9": 90.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "2": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Savelletri",
+    "2": 80.0,
+    "7": 85.0,
+    "9": 110.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Speziale",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Putignano",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Turi",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Alberobello",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Montalbano",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 110.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "2": 85.0,
+    "7": 95.0,
+    "9": 120.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Bari",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Cisternino",
+    "2": 95.0,
+    "7": 120.0,
+    "9": 150.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "2": 95.0,
+    "7": 120.0,
+    "9": 150.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Noci",
+    "2": 95.0,
+    "7": 120.0,
+    "9": 150.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Bari Airport",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Bari Centro",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "Ostuni",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "2": 95.0,
+    "7": 110.0,
+    "9": 150.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "Carovigno",
+    "2": 115.0,
+    "7": 140.0,
+    "9": 180.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "2": 130.0,
+    "7": 150.0,
+    "9": 190.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "2": 140.0,
+    "7": 155.0,
+    "9": 190.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Matera",
+    "2": 180.0,
+    "7": 220.0,
+    "9": 300.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "Lecce",
+    "2": 200.0,
+    "7": 220.0,
+    "9": 330.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Dispo Alberobello 3h",
+    "2": 250.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "Dispo Locorotondo 3h",
+    "2": 250.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Otranto",
+    "2": 250.0,
+    "7": 300.0,
+    "9": 380.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "Dispo Martina Franca 3h",
+    "2": 280.0,
+    "7": 330.0,
+    "9": 410.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Dispo Ostuni 3h",
+    "2": 280.0,
+    "7": 330.0,
+    "9": 410.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Dispo Lecce 4h",
+    "2": 350.0,
+    "7": 400.0,
+    "9": 500.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Dispo Matera 5h",
+    "2": 400.0,
+    "7": 450.0,
+    "9": 560.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Napoli",
+    "2": 500.0,
+    "7": 550.0,
+    "9": 690.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Amalfi",
+    "2": 600.0,
+    "7": 700.0,
+    "9": 880.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Sorrento",
+    "2": 600.0,
+    "7": 700.0,
+    "9": 880.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Positano",
+    "2": 600.0,
+    "7": 700.0,
+    "9": 880.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Roma APT",
+    "2": 750.0,
+    "7": 850.0,
+    "9": 1060.0,
+    "row_number": 52
+   }
+  ],
+  "Talea Group La Peschiera": [
+   {
+    "Destinazione": "Alberobello",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Amalfi",
+    "2": 600.0,
+    "7": 650.0,
+    "9": 800.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "APT di Bari",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "APT di Brindisi",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 5
+   },
+   {
+    "Destinazione": "Bari",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 6
+   },
+   {
+    "Destinazione": "Borgo Egnazia",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 7
+   },
+   {
+    "Destinazione": "Brindisi",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 8
+   },
+   {
+    "Destinazione": "Cala Ponte",
+    "2": 55.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 9
+   },
+   {
+    "Destinazione": "Cala Ponte Marina",
+    "2": 55.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 10
+   },
+   {
+    "Destinazione": "Carovigno",
+    "2": 90.0,
+    "7": 100.0,
+    "9": 130.0,
+    "row_number": 11
+   },
+   {
+    "Destinazione": "Castellana Grotte",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 12
+   },
+   {
+    "Destinazione": "Ceglie Messapica",
+    "2": 85.0,
+    "7": 95.0,
+    "9": 120.0,
+    "row_number": 13
+   },
+   {
+    "Destinazione": "Cisternino",
+    "2": 75.0,
+    "7": 85.0,
+    "9": 105.0,
+    "row_number": 14
+   },
+   {
+    "Destinazione": "Conversano",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 15
+   },
+   {
+    "Destinazione": "Cozze",
+    "2": 65.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 16
+   },
+   {
+    "Destinazione": "Dispo Max 4h",
+    "2": 200.0,
+    "7": 230.0,
+    "9": 290.0,
+    "row_number": 17
+   },
+   {
+    "Destinazione": "Dispo Max 7h",
+    "2": 350.0,
+    "7": 380.0,
+    "9": 475.0,
+    "row_number": 18
+   },
+   {
+    "Destinazione": "Fasano",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 19
+   },
+   {
+    "Destinazione": "Grotte di Castellana",
+    "2": 70.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 20
+   },
+   {
+    "Destinazione": "Lecce",
+    "2": 200.0,
+    "7": 220.0,
+    "9": 280.0,
+    "row_number": 21
+   },
+   {
+    "Destinazione": "Locorotondo",
+    "2": 65.0,
+    "7": 75.0,
+    "9": 90.0,
+    "row_number": 22
+   },
+   {
+    "Destinazione": "Martina Franca",
+    "2": 75.0,
+    "7": 85.0,
+    "9": 105.0,
+    "row_number": 23
+   },
+   {
+    "Destinazione": "Matera",
+    "2": 200.0,
+    "7": 220.0,
+    "9": 280.0,
+    "row_number": 24
+   },
+   {
+    "Destinazione": "Melograno",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 25
+   },
+   {
+    "Destinazione": "Mola di Bari",
+    "2": 75.0,
+    "7": 85.0,
+    "9": 105.0,
+    "row_number": 26
+   },
+   {
+    "Destinazione": "Monopoli",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 27
+   },
+   {
+    "Destinazione": "Stazione Monopoli",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 28
+   },
+   {
+    "Destinazione": "Monopoli Capitolo",
+    "2": 30.0,
+    "7": 35.0,
+    "9": 45.0,
+    "row_number": 29
+   },
+   {
+    "Destinazione": "Montalbano",
+    "2": 65.0,
+    "7": 75.0,
+    "9": 95.0,
+    "row_number": 30
+   },
+   {
+    "Destinazione": "Napoli",
+    "2": 500.0,
+    "7": 550.0,
+    "9": 700.0,
+    "row_number": 31
+   },
+   {
+    "Destinazione": "Noci",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 32
+   },
+   {
+    "Destinazione": "Ostuni",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 33
+   },
+   {
+    "Destinazione": "Otranto",
+    "2": 275.0,
+    "7": 300.0,
+    "9": 375.0,
+    "row_number": 34
+   },
+   {
+    "Destinazione": "Peschiera",
+    "2": 30.0,
+    "7": 35.0,
+    "9": 45.0,
+    "row_number": 35
+   },
+   {
+    "Destinazione": "Pezze di Greco",
+    "2": 55.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 36
+   },
+   {
+    "Destinazione": "Polignano a Mare",
+    "2": 55.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 37
+   },
+   {
+    "Destinazione": "Positano",
+    "2": 600.0,
+    "7": 650.0,
+    "9": 800.0,
+    "row_number": 38
+   },
+   {
+    "Destinazione": "Putignano",
+    "2": 70.0,
+    "7": 80.0,
+    "9": 100.0,
+    "row_number": 39
+   },
+   {
+    "Destinazione": "Roma APT",
+    "2": 800.0,
+    "7": 850.0,
+    "9": 1000.0,
+    "row_number": 40
+   },
+   {
+    "Destinazione": "Sabbiadoro",
+    "2": 30.0,
+    "7": 35.0,
+    "9": 45.0,
+    "row_number": 41
+   },
+   {
+    "Destinazione": "San Vito dei Normanni",
+    "2": 90.0,
+    "7": 100.0,
+    "9": 130.0,
+    "row_number": 42
+   },
+   {
+    "Destinazione": "Savelletri",
+    "2": 40.0,
+    "7": 45.0,
+    "9": 55.0,
+    "row_number": 43
+   },
+   {
+    "Destinazione": "Selva di Fasano",
+    "2": 55.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 44
+   },
+   {
+    "Destinazione": "Sorrento",
+    "2": 600.0,
+    "7": 650.0,
+    "9": 800.0,
+    "row_number": 45
+   },
+   {
+    "Destinazione": "Speziale",
+    "2": 60.0,
+    "7": 65.0,
+    "9": 80.0,
+    "row_number": 46
+   },
+   {
+    "Destinazione": "Stazione di Bari",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 47
+   },
+   {
+    "Destinazione": "Stazione di Brindisi",
+    "2": 115.0,
+    "7": 125.0,
+    "9": 160.0,
+    "row_number": 48
+   },
+   {
+    "Destinazione": "Torre a mare",
+    "2": 75.0,
+    "7": 85.0,
+    "9": 105.0,
+    "row_number": 49
+   },
+   {
+    "Destinazione": "Torre Canne",
+    "2": 50.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 50
+   },
+   {
+    "Destinazione": "Torre Spaccata",
+    "2": 55.0,
+    "7": 60.0,
+    "9": 75.0,
+    "row_number": 51
+   },
+   {
+    "Destinazione": "Tour FD 8h VALLE D’ITRIA",
+    "2": 400.0,
+    "7": 450.0,
+    "9": 550.0,
+    "row_number": 52
+   },
+   {
+    "Destinazione": "Tour FD Lecce Max 6h",
+    "2": 400.0,
+    "7": 450.0,
+    "9": 550.0,
+    "row_number": 53
+   },
+   {
+    "Destinazione": "Tour FD Matera Max 6h",
+    "2": 400.0,
+    "7": 450.0,
+    "9": 550.0,
+    "row_number": 54
+   },
+   {
+    "Destinazione": "Tour HD 4h VALLE D’ITRIA",
+    "2": 300.0,
+    "7": 350.0,
+    "9": 450.0,
+    "row_number": 55
+   },
+   {
+    "Destinazione": "Tour HD Bari Max 4h",
+    "2": 300.0,
+    "7": 350.0,
+    "9": 450.0,
+    "row_number": 56
+   },
+   {
+    "Destinazione": "Tour HD Lecce Max 4h",
+    "2": 300.0,
+    "7": 350.0,
+    "9": 450.0,
+    "row_number": 57
+   },
+   {
+    "Destinazione": "Turi",
+    "2": 80.0,
+    "7": 90.0,
+    "9": 115.0,
+    "row_number": 58
+   }
+  ]
+ },
+ "casi": [
+  {
+   "nome": "Auraterrae → Ostuni",
+   "da": "Auraterrae",
+   "per": "Ostuni",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "12:00",
+   "matchDa": "Auraterrae",
+   "matchPer": "Ostuni",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Ostuni",
+   "latDa": 40.9919138,
+   "lngDa": 17.161766,
+   "latPer": 40.7296828,
+   "lngPer": 17.5771782,
+   "incassato": 120
+  },
+  {
+   "nome": "Monopoli → Melograno",
+   "da": "Monopoli",
+   "per": "Melograno",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Melograno",
+   "orario": "23:30",
+   "matchDa": "Monopoli",
+   "matchPer": "Melograno",
+   "comuneDa": "Monopoli",
+   "comunePer": "Monopoli",
+   "latDa": 40.952516599999996,
+   "lngDa": 17.2985559,
+   "latPer": 40.923963099999995,
+   "lngPer": 17.2762972,
+   "incassato": 35
+  },
+  {
+   "nome": "Auraterrae → Monopoli",
+   "da": "Auraterrae",
+   "per": "Monopoli",
+   "pax": 4,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "10:15",
+   "matchDa": "Auraterrae",
+   "matchPer": "Monopoli",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Monopoli",
+   "latDa": 40.9919138,
+   "lngDa": 17.161766,
+   "latPer": 40.952516599999996,
+   "lngPer": 17.2985559,
+   "incassato": 60
+  },
+  {
+   "nome": "Pietra Blu → Alberobello",
+   "da": "Pietra Blu",
+   "per": "Alberobello",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Pietra Blu",
+   "orario": "10:30",
+   "matchDa": "Pietra Blu",
+   "matchPer": "Alberobello",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Alberobello",
+   "latDa": 41.0238894,
+   "lngDa": 17.1783139,
+   "latPer": 40.7864949,
+   "lngPer": 17.2408836,
+   "incassato": 100
+  },
+  {
+   "nome": "Polignano → APT di Bari",
+   "da": "Polignano a Mare",
+   "per": "APT di Bari",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Antico Mondo",
+   "orario": "08:20",
+   "matchDa": "Polignano a Mare",
+   "matchPer": "APT di Bari",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Bari",
+   "latDa": 40.9950486,
+   "lngDa": 17.2195682,
+   "latPer": 41.1359898,
+   "lngPer": 16.7618185,
+   "incassato": 110
+  },
+  {
+   "nome": "Melograno → Polignano (7 pax)",
+   "da": "Melograno",
+   "per": "Polignano a Mare",
+   "pax": 7,
+   "veicolo": "",
+   "fornitore": "Melograno",
+   "orario": "19:00",
+   "matchDa": "Melograno",
+   "matchPer": "Polignano a Mare",
+   "comuneDa": "Monopoli",
+   "comunePer": "Polignano a Mare",
+   "latDa": 40.923963099999995,
+   "lngDa": 17.2762972,
+   "latPer": 40.9950486,
+   "lngPer": 17.2195682,
+   "incassato": 70
+  },
+  {
+   "nome": "Auraterrae → APT di Bari (07)",
+   "da": "Auraterrae",
+   "per": "APT di Bari",
+   "pax": 1,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "07:00",
+   "matchDa": "Auraterrae",
+   "matchPer": "APT di Bari",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Bari",
+   "latDa": 40.9919138,
+   "lngDa": 17.161766,
+   "latPer": 41.1359898,
+   "lngPer": 16.7618185,
+   "incassato": 130
+  },
+  {
+   "nome": "Grotte di Castellana → Polignano",
+   "da": "Castellana Grotte",
+   "per": "Polignano a Mare",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Puglia Mare",
+   "orario": "14:00",
+   "matchDa": "Castellana Grotte",
+   "matchPer": "Polignano a Mare",
+   "comuneDa": "Castellana Grotte",
+   "comunePer": "Polignano a Mare",
+   "latDa": 40.875852099999996,
+   "lngDa": 17.1479841,
+   "latPer": 40.9950486,
+   "lngPer": 17.2195682,
+   "incassato": 60
+  },
+  {
+   "nome": "Polignano → Sabbiadoro",
+   "da": "Polignano a Mare",
+   "per": "Sabbiadoro",
+   "pax": 4,
+   "veicolo": "",
+   "fornitore": "Antico Mondo",
+   "orario": "11:00",
+   "matchDa": "Polignano a Mare",
+   "matchPer": "Sabbiadoro",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Monopoli",
+   "latDa": 40.9950486,
+   "lngDa": 17.2195682,
+   "latPer": 40.9512222,
+   "lngPer": 17.296903399999998,
+   "incassato": 50
+  },
+  {
+   "nome": "Stazione di Bari → Melograno",
+   "da": "Stazione di Bari",
+   "per": "Melograno",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Melograno",
+   "orario": "15:00",
+   "matchDa": "Stazione di Bari",
+   "matchPer": "Melograno",
+   "comuneDa": "Bari",
+   "comunePer": "Monopoli",
+   "latDa": 41.1179738,
+   "lngDa": 16.870113099999998,
+   "latPer": 40.923963099999995,
+   "lngPer": 17.2762972,
+   "incassato": 150
+  },
+  {
+   "nome": "Peschiera → Monopoli",
+   "da": "Peschiera",
+   "per": "Monopoli",
+   "pax": 1,
+   "veicolo": "",
+   "fornitore": "Talea Group La Peschiera",
+   "orario": "14:00",
+   "matchDa": "Peschiera",
+   "matchPer": "Monopoli",
+   "comuneDa": "Monopoli",
+   "comunePer": "Monopoli",
+   "latDa": 40.9014892,
+   "lngDa": 17.3600978,
+   "latPer": 40.952516599999996,
+   "lngPer": 17.2985559,
+   "incassato": 50
+  },
+  {
+   "nome": "Auraterrae → San Vito",
+   "da": "Auraterrae",
+   "per": "San Vito",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "09:00",
+   "matchDa": "Auraterrae",
+   "matchPer": "San Vito",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Polignano a Mare",
+   "latDa": 40.9919138,
+   "lngDa": 17.161766,
+   "latPer": 41.013450299999995,
+   "lngPer": 17.192759,
+   "incassato": 40
+  },
+  {
+   "nome": "Pietra Blu → San Vito",
+   "da": "Pietra Blu",
+   "per": "San Vito",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Pietra Blu",
+   "orario": "20:00",
+   "matchDa": "Pietra Blu",
+   "matchPer": "San Vito",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Polignano a Mare",
+   "latDa": 41.0238894,
+   "lngDa": 17.1783139,
+   "latPer": 41.013450299999995,
+   "lngPer": 17.192759,
+   "incassato": 0
+  }
+ ]
+}

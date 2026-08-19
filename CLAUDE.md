@@ -64,6 +64,6 @@ una sintesi in un messaggio.
 | Parse transfer (scrive sul gestionale) | `IkFB29XmJJXQx1a9` |
 | Back Officer Email | `yDXJP68pNVVgCFXx` |
 | Calcola Tariffa Prenotazioni | `APv3ZqEizY1HnPia` |
-| Gestionale `Prenotazioni NCC 3.0` | `1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw` |
+| Gestionale `Programma Autisti 2.0` (scheda `Prenotazioni NCC 3.0`) | `1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw` |
 
 Backup dei workflow: `backups/n8n/` (token sempre redatti).

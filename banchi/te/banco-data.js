@@ -1,49 +1,50 @@
 // =====================================================================
 // Banco offline — la colonna Data
-// ⚠️ PROVA CODICE **NON INSTALLATO**. Leggi `apps-script/transferlib-data.gs`.
 // =====================================================================
 //
-// Agostino aveva chiesto che lo script cancellasse la cella quando l'input è
-// testuale. Poi ha spiegato perché non si può: togliere il «tipo di colonna» di
-// Google, che serve a far funzionare questo codice, gli toglierebbe **il
-// calendario col doppio clic** — uno strumento che la struttura usa ogni giorno,
-// scambiato con un messaggio d'errore più bello. Scambio pessimo.
+// Agostino, 19/08: «abbiamo la parte dello script che si occupa delle
+// correzioni... applichiamo anche la data: se non corrisponde a numero ma a
+// testo, viene cancellata o convertita in numero.»
 //
-// Quindi `controllaData` NON è nella libreria. Il banco resta perché la
-// decisione sia rintracciabile e perché, se un domani su un foglio il tipo di
-// colonna non ci fosse, il codice è già provato.
+// Qui si prova esattamente quello, sul file che finisce dentro TransferLib —
+// non su una copia. Le due cose che devono restare vere anche fra sei mesi:
+//   1. una cella che Google ha già capito come data non si tocca (né valore né
+//      formato): è lì che vive il «tipo di colonna», e col tipo di colonna non
+//      si litiga;
+//   2. non si indovina mai. Se non si legge, si cancella e si dice perché.
 //
 //   node banchi/te/banco-data.js
 
 const fs = require('fs');
 const path = require('path');
 
-function FintoFoglio() {
-  const celle = new Map(), note = new Map(), sfondi = new Map(), formati = new Map();
-  const k = (r, c) => r + ',' + c;
+// Oggi finto: 19 agosto 2026. Le date senza anno si contano da qui.
+const OGGI = new Date(2026, 7, 19, 21, 0, 0);
+
+function FintaCella(valore, formato) {
   return {
-    _note: note, _sfondi: sfondi, _formati: formati,
-    getRange: (r, c) => ({
-      getValue: () => (celle.has(k(r, c)) ? celle.get(k(r, c)) : ''),
-      setValue(v) { celle.set(k(r, c), v); return this; },
-      clearContent() { celle.set(k(r, c), ''); return this; },
-      getNote: () => note.get(k(r, c)) || null,
-      setNote(v) { if (v === null) note.delete(k(r, c)); else note.set(k(r, c), v); return this; },
-      setBackground(v) { if (v === null) sfondi.delete(k(r, c)); else sfondi.set(k(r, c), v); return this; },
-      setNumberFormat(v) { formati.set(k(r, c), v); return this; },
-    }),
-    scrivi(r, c, v) { celle.set(k(r, c), v); },
-    leggi(r, c) { return celle.has(k(r, c)) ? celle.get(k(r, c)) : ''; },
+    _v: valore, _nota: null, _sfondo: null, _formato: formato || null, _flush: 0,
+    getValue() { return this._v === undefined ? '' : this._v; },
+    setValue(v) { this._v = v; return this; },
+    clearContent() { this._v = ''; return this; },
+    getNote() { return this._nota; },
+    setNote(v) { this._nota = v; return this; },
+    setBackground(v) { this._sfondo = v; return this; },
+    setNumberFormat(v) { this._formato = v; return this; },
   };
 }
 
-// Si carica il file NON installato, non la libreria: in libreria non c'è più.
-const SRC = fs.readFileSync(
-  path.join(__dirname, '..', '..', 'apps-script', 'transferlib-data.gs'), 'utf8');
+const SRC_LIB = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'apps-script', 'TransferLib-COMPLETO.gs'), 'utf8');
+
 const L = {};
-new Function('exports', 'SpreadsheetApp', 'Logger', SRC + `
-exports.controllaData = controllaData;
-`)(L, { flush: () => {} }, { log: () => {} });
+new Function('exports', 'SpreadsheetApp', 'LockService', 'Utilities', 'Logger', SRC_LIB + `
+exports.canonicalData        = canonicalData;
+exports.correggiCellaData    = correggiCellaData;
+exports.correggiCellaToccata = correggiCellaToccata;
+exports.buildColMap          = buildColMap;
+exports.TE_FORMATO_DATA      = TE_FORMATO_DATA;
+`)(L, { flush() {} }, {}, {}, { log() {} });
 
 let ko = 0;
 function prova(nome, atteso, effettivo) {
@@ -54,87 +55,142 @@ function prova(nome, atteso, effettivo) {
   if (!ok) console.log(`        atteso:   ${a}\n        ottenuto: ${e}`);
 }
 
-const col = { data: 3 };
-
-/** Mette `v` nella cella Data, fa girare il controllo, dice com'è finita. */
-function giocata(v) {
-  const f = FintoFoglio();
-  if (v !== undefined) f.scrivi(20, 3, v);
-  const esito = L.controllaData(f, 20, col);
-  return { esito: esito, resta: f.leggi(20, 3), nota: f._note.get('20,3') || null,
-           sfondo: f._sfondi.get('20,3'), formato: f._formati.get('20,3') };
-}
+const gg = (d) => (d === null ? null : [d.getFullYear(), d.getMonth() + 1, d.getDate()]);
 
 console.log('== Banco: la colonna Data ==\n');
 
-console.log('-- il testo si cancella, sempre --');
-[['«mercoledi 3 settem» — il caso vero di stasera', 'mercoledi 3 settem'],
+console.log('-- il testo che si legge diventa una data vera --');
+[['«7/8» → 7 agosto 2026', '7/8', [2026, 8, 7]],
+ ['«07/08» con lo zero', '07/08', [2026, 8, 7]],
+ ['«7-8» col trattino', '7-8', [2026, 8, 7]],
+ ['«7.8» col punto', '7.8', [2026, 8, 7]],
+ ['« 7 / 8 » con gli spazi', ' 7 / 8 ', [2026, 8, 7]],
+ ['«7/8/2026» per esteso', '7/8/2026', [2026, 8, 7]],
+ ['«7/8/26» a due cifre', '7/8/26', [2026, 8, 7]],
+ ['«31/12» fine anno', '31/12', [2026, 12, 31]],
+ ['«29/2/2028» bisestile vero', '29/2/2028', [2028, 2, 29]],
+].forEach(c => prova(c[0], c[2], gg(L.canonicalData(c[1], OGGI))));
+
+console.log('\n-- l\'anno quando non c\'è: quello di oggi, o il prossimo --');
+prova('«20/8» domani → 2026', [2026, 8, 20], gg(L.canonicalData('20/8', OGGI)));
+prova('«1/8» tre settimane fa → 2026 (non si sposta per poco)',
+  [2026, 8, 1], gg(L.canonicalData('1/8', OGGI)));
+prova('«3/1» già passato da un pezzo → 2027', [2027, 1, 3], gg(L.canonicalData('3/1', OGGI)));
+
+console.log('\n-- il testo che non si legge non diventa niente --');
+[['«merc 8» — il caso di stasera', 'merc 8'],
+ ['«merc 8 agosto»', 'merc 8 agosto'],
+ ['«mercoledi 3 settem»', 'mercoledi 3 settem'],
  ['«3 settembre»', '3 settembre'],
- ['«mercoledì 3 settembre 2026»', 'mercoledì 3 settembre 2026'],
  ['«domani»', 'domani'],
- ['«la prossima settimana»', 'la prossima settimana'],
  ['«asdfgh»', 'asdfgh'],
- ['«3/9/2026» scritto COME TESTO', '3/9/2026'],
- ['un numero', 45000]].forEach(function (c) {
-  const g = giocata(c[1]);
-  prova(c[0] + ' → svuotata', 'svuotata', g.esito);
-  prova('   la cella resta vuota', '', g.resta);
-});
+ ['un numero secco: 45000', 45000],
+ ['«31/2» non esiste → non si sposta al 3 marzo', '31/2'],
+ ['«32/8» giorno impossibile', '32/8'],
+ ['«7/13» mese impossibile', '7/13'],
+ ['«7/8/2026 alle 9» con roba in coda', '7/8/2026 alle 9'],
+].forEach(c => prova(c[0] + ' → null', null, L.canonicalData(c[1], OGGI)));
 
-console.log('\n-- e lo dice, invece di sparire in silenzio --');
-const g1 = giocata('domani');
-prova('nota che spiega cosa scrivere', true, (g1.nota || '').indexOf('3/9/2026') !== -1);
-prova('sfondo rosso', '#f4cccc', g1.sfondo);
+console.log('\n-- sulla cella: convertita --');
+{
+  const c = FintaCella('7/8');
+  prova('esito', 'convertita', L.correggiCellaData(c, OGGI));
+  prova('   dentro c\'è una data vera', [2026, 8, 7], gg(c._v));
+  prova('   e si vede come le altre righe', 'ddd d MMMM yyyy', c._formato);
+  prova('   nessun avviso', null, c._nota);
+}
+{
+  // Cella rimasta formattata come testo dopo un incolla: il formato va messo
+  // PRIMA del valore, altrimenti la data ridiventa stringa.
+  const c = FintaCella('7/8', '@');
+  L.correggiCellaData(c, OGGI);
+  prova('cella formattata «@» → formato rimesso', 'ddd d MMMM yyyy', c._formato);
+}
 
-console.log('\n-- una data vera si tiene, e si vede come le altre --');
-const dataVera = new Date(2026, 8, 3);
-const f2 = FintoFoglio();
-f2.scrivi(20, 3, dataVera);
-prova('Google l\'ha capita come data → formattata', 'formattata', L.controllaData(f2, 20, col));
-prova('   il valore è ancora lì', dataVera.getTime(), f2.leggi(20, 3).getTime());
-prova('   e prende il formato esteso', 'ddd d MMMM yyyy', f2._formati.get('20,3'));
-prova('   senza note', undefined, f2._note.get('20,3'));
+console.log('\n-- sulla cella: svuotata, e lo dice --');
+{
+  const c = FintaCella('merc 8');
+  prova('esito', 'svuotata', L.correggiCellaData(c, OGGI));
+  prova('   la cella resta vuota', '', c._v);
+  prova('   la nota spiega come si scrive', true, (c._nota || '').indexOf('7/8') !== -1);
+  prova('   sfondo rosso', '#f4cccc', c._sfondo);
+}
 
-// È il caso di Agostino: scrivo «7/8», Google la capisce, e deve VEDERSI
-// «ven 7 agosto 2026» come tutte le altre righe — non «07/08/2026».
-const f2b = FintoFoglio();
-f2b.scrivi(20, 3, new Date(2026, 7, 7));      // quello che Google mette dopo «7/8»
-L.controllaData(f2b, 20, col);
-prova('«7/8» → formato esteso, non numerico', 'ddd d MMMM yyyy', f2b._formati.get('20,3'));
-
-// E se qualcuno riformatta la colonna a mano, alla prima data torna com'era.
-const f2c = FintoFoglio();
-f2c._formati.set('20,3', 'dd/MM/yyyy');
-f2c.scrivi(20, 3, new Date(2026, 7, 7));
-L.controllaData(f2c, 20, col);
-prova('formato cambiato a mano → rimesso', 'ddd d MMMM yyyy', f2c._formati.get('20,3'));
+console.log('\n-- la cella che Google ha già capito NON si tocca --');
+{
+  // È il caso in cui sulla colonna c'è il «tipo di colonna»: valore e formato
+  // sono roba di Google, e noi non ci mettiamo le mani.
+  const c = FintaCella(new Date(2026, 8, 3), 'dd/MM/yyyy');
+  prova('esito', 'niente', L.correggiCellaData(c, OGGI));
+  prova('   il valore è ancora lì', [2026, 9, 3], gg(c._v));
+  prova('   il formato è ancora il suo', 'dd/MM/yyyy', c._formato);
+}
 
 console.log('\n-- la cella vuota non è un errore --');
-const g3 = giocata(undefined);
-prova('vuota → niente', 'niente', g3.esito);
-prova('   nessuna nota', null, g3.nota);
+{
+  const c = FintaCella('');
+  prova('esito', 'niente', L.correggiCellaData(c, OGGI));
+  prova('   nessuna nota', null, c._nota);
+}
 
 console.log('\n-- sistemata la data, l\'avviso se ne va da solo --');
-const f4 = FintoFoglio();
-f4.scrivi(20, 3, 'domani');
-L.controllaData(f4, 20, col);                 // svuota e segnala
-prova('prima: la nota c\'è', true, !!f4._note.get('20,3'));
-f4.scrivi(20, 3, new Date(2026, 8, 3));       // ora scrive una data vera
-L.controllaData(f4, 20, col);
-prova('dopo: la nota sparisce', undefined, f4._note.get('20,3'));
-prova('   e il rosso pure', undefined, f4._sfondi.get('20,3'));
+{
+  const c = FintaCella('domani');
+  L.correggiCellaData(c, OGGI);
+  prova('prima: la nota c\'è', true, !!c._nota);
+  c._v = '7/8';
+  L.correggiCellaData(c, OGGI);
+  prova('dopo: la nota sparisce', null, c._nota);
+  prova('   e il rosso pure', null, c._sfondo);
+}
+{
+  const c = FintaCella('domani');
+  L.correggiCellaData(c, OGGI);
+  c._v = new Date(2026, 7, 7);          // corretta a mano col calendario
+  L.correggiCellaData(c, OGGI);
+  prova('corretta col calendario: la nota sparisce lo stesso', null, c._nota);
+}
+
+console.log('\n-- la colonna Data si trova per nome, come le altre --');
+{
+  const H = ['Mese', 'Note', 'Data', 'Time', 'TRS> DA', 'TRS <PER', 'PAX', 'Nome', 'Fornitore',
+    'Volo', 'cell.', 'Autista', 'Veicolo', 'h extra/ritardi', 'Tariffa a noi', 'Tariffa ',
+    'Fee', 'Modalità', 'Tipologia incasso', 'n. pratica', 'Addebitato', 'Stato', 'Eseguito', 'Id'];
+  const { col } = L.buildColMap(H);
+  prova('Pietra Blu — Data = 3', 3, col.data);
+  const spostata = ['Mese', 'Note', 'Reparto', 'Data', 'Time'].concat(H.slice(4));
+  prova('colonna inserita davanti — Data = 4', 4, L.buildColMap(spostata).col.data);
+}
+
+console.log('\n-- il punto d\'ingresso: la modifica su Data passa di qui --');
+{
+  const cella = FintaCella('merc 8');
+  const e = { range: Object.assign({
+    getNumRows: () => 1, getNumColumns: () => 1, getColumn: () => 3,
+  }, cella) };
+  L.correggiCellaToccata(e, { data: 3, ora: 4, telefono: 11 });
+  prova('Data toccata → svuotata', '', e.range.getValue());
+  prova('   con la nota', true, !!e.range.getNote());
+}
+{
+  // Ora e Telefono devono continuare a funzionare come prima.
+  let scritto = null;
+  const e = { range: {
+    getNumRows: () => 1, getNumColumns: () => 1, getColumn: () => 4,
+    getValue: () => '830', setValue(v) { scritto = v; return this; },
+    setNumberFormat() { return this; },
+  } };
+  L.correggiCellaToccata(e, { data: 3, ora: 4, telefono: 11 });
+  prova('Ora toccata → «08:30», come prima', '08:30', scritto);
+}
 
 console.log([
   '',
   '─────────────────────────────────────────────────────────────────────',
-  'Come si riconosce una data: quando quello che scrivi È una data, Google',
-  'nella cella non ci mette il testo — ci mette un valore data, e getValue()',
-  'restituisce un oggetto Date. Se torna una stringa, dentro c\'è testo.',
-  'Non serve altro per decidere, e non c\'è niente da indovinare.',
-  '',
-  '⚠️ Questo codice NON è installato, e non deve esserlo finché sulla colonna',
-  'resta il tipo di colonna di Google — che dà il calendario col doppio clic',
-  'e blocca il testo alla radice, cioè fa già il lavoro, meglio e prima.',
+  'Il ramo che scrive parte SOLO quando nella cella c\'è del testo — cioè',
+  'solo dove il «tipo di colonna» di Google non stava guardando. Dove c\'è,',
+  'il testo non entra proprio e questo codice non arriva nemmeno a girare:',
+  'il calendario col doppio clic resta intatto.',
   '─────────────────────────────────────────────────────────────────────',
 ].join('\n'));
 

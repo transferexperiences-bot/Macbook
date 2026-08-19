@@ -85,6 +85,12 @@ function preparaTipologiaIncasso(sheet, riga, col) {
 function correggiCellaToccata(e, col) {
   if (!e.range || e.range.getNumRows() !== 1 || e.range.getNumColumns() !== 1) return;
   var c = e.range.getColumn();
+
+  // La Data è a parte, per due motivi: non restituisce una stringa da
+  // riscrivere ma una data vera, e qui la cella vuota non vuol dire «non fare
+  // niente» ma «togli l'avviso». Vedi `transferlib-data.gs`.
+  if (col.data && c === col.data) { correggiCellaData(e.range); return; }
+
   var v = e.range.getValue();
   if (v === "" || v === null || v === undefined) return;
 
@@ -117,11 +123,6 @@ function onEditStruttura(e) {
     try { correggiCellaToccata(e, col); } catch (err) {
       Logger.log("correzione cella: " + err);
     }
-
-    // La colonna Data NON si tocca: ci pensa il «tipo di colonna» di Google, che
-    // blocca il testo da sé e in più dà il calendario col doppio clic. Vedi
-    // `apps-script/transferlib-data.gs`, scritto e poi deliberatamente non
-    // installato.
 
     // 2) la tendina, se hai toccato Modalità
     var da = e.range.getColumn();

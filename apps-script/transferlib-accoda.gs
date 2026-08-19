@@ -61,8 +61,9 @@
   COL_ALIASES.tipologia_incasso = ["Tipologia incasso", "Tipologia d'incasso"];
   COL_ALIASES.tariffa           = ["Tariffa", "Prezzo"];
   COL_ALIASES.note              = ["Note", "Nota"];
+  COL_ALIASES.data              = ["Data", "Date"];
 
-  ["modalita", "tipologia_incasso", "tariffa", "note"].forEach(function (k) {
+  ["modalita", "tipologia_incasso", "tariffa", "note", "data"].forEach(function (k) {
     if (RESOLVE_ORDER.indexOf(k) === -1) RESOLVE_ORDER.push(k);
   });
 
@@ -70,6 +71,7 @@
   LEGACY_COL.tipologia_incasso = 19;
   LEGACY_COL.tariffa = 16;
   LEGACY_COL.note = 2;
+  LEGACY_COL.data = 3;
 })();
 
 

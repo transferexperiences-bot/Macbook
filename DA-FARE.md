@@ -1,6 +1,9 @@
-# Da fare — aggiornato 18/08/2026, mattina
+# Da fare — aggiornato 19/08/2026, sera
 
-## ⛔ SCARTATA — il controllo della colonna Data (18/08 sera)
+## ✅ FATTA — la correzione della colonna Data (19/08 sera)
+
+_Sotto c'è la storia: era stata scartata il 18/08, ed è stato giusto scartarla allora.
+Quello che è cambiato non è l'idea, è un fatto._
 
 Agostino scrive «mercoledì 3 settem» nella colonna Data, Google risponde *«non corrisponde al
 tipo di colonna data»*, e chiede che sia lo script a cancellare la cella quando l'input è
@@ -29,7 +32,7 @@ domani su un foglio il tipo di colonna non ci fosse il codice è già provato.
 toglie niente a nessuno, e prende anche le righe che entrano per altre strade — incollate,
 importate, ripescate dalla rete di sicurezza. Da valutare domani.
 
-### 19/08, sera — il buco che questa decisione lascia scoperto
+### 19/08, sera — il fatto che cambia la risposta
 
 Agostino: *«se nella cella digito merc 8 questa non viene cancellata o sistemata»*. È il
 comportamento atteso — `controllaData` non è installato — ma dice anche una cosa che prima non
@@ -43,8 +46,37 @@ Rimettere il controllo nel foglio costerebbe il calendario, che è la cosa che n
 la data arriva come stringa e si vede subito se è testo; e vale per tutti e diciotto i fogli
 senza incollare niente da nessuna parte.
 
-⚠️ È 🔴 rossa (punto 4: cambia come funziona un salvataggio) — si fa solo con l'ok di Agostino,
-prima su banco offline, poi `update_workflow` + `publish_workflow` + rilettura del nodo.
+### La soluzione: accanto a Ora e Telefono, dentro la libreria
+
+Agostino: *«abbiamo la parte dello script che si occupa delle correzioni... applichiamo anche la
+data: se non corrisponde a numero ma a testo, viene cancellata o convertita in numero.»* È lo
+stesso mestiere di `normalizeOra` («830» → «08:30»), su un'altra colonna, nello stesso punto
+d'ingresso.
+
+E quello che ieri la rendeva impossibile oggi la rende **sicura**, per come è scritta:
+
+| dove il tipo di colonna… | cosa succede |
+|---|---|
+| **c'è** | il testo non entra proprio → nella cella c'è una data → il codice **non tocca niente**, né valore né formato. Il calendario col doppio clic resta intatto. |
+| **non c'è** (la cella di «merc 8») | il testo entra → il codice parte: «7/8» diventa una data vera, «merc 8» si cancella con la nota rossa. |
+
+Il ramo che scrive si accende **solo se nella cella c'è del testo** — cioè solo dove Google non
+stava guardando. Per questo il `setNumberFormat` di ieri, che lì per lì litigava con la
+formattazione di Google, qui non litiga con nessuno: sta dentro quel ramo.
+
+Non si indovina mai: `«merc 8»`, `«domani»`, `«3 settembre»`, `«31/2»` non diventano niente, si
+cancellano. Una data indovinata male è peggio di una cella vuota — la cella vuota si vede, la
+data sbagliata parte. L'unica cosa dedotta è l'anno quando manca (quello di oggi; se la data
+sarebbe già passata da più di 30 giorni, il prossimo), ed è dichiarata nel codice.
+
+Codice: `apps-script/transferlib-data.gs`, dentro `apps-script/TransferLib-COMPLETO.gs`.
+Banco: `banchi/te/banco-data.js` — 45 prove verdi, e tutti gli altri banchi verdi con la
+libreria nuova. Da incollare in TransferLib: il guscio sui fogli **non cambia**.
+
+**Resta comunque buona l'altra idea di Agostino:** lo stesso controllo anche in **n8n**,
+all'arrivo della riga — prende le righe che entrano per strade che l'`onEdit` non vede
+(importate, ripescate dalla rete di sicurezza). È 🔴 rossa (punto 4: cambia come funziona un
+salvataggio), quindi si fa solo col suo ok. Il pezzo di codice, ormai, è questo qui già provato.
 
 ## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
 

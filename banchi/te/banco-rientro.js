@@ -212,6 +212,38 @@ titolo('7-bis) andata rovinata: partenza e destinazione coincidono → si blocca
     JSON.stringify(out.avvisi));
 }
 
+// --- 7-ter. il posto detto non è un arrivo ma una partenza (esecuzione 768629)
+titolo('7-ter) «aggiungi rientro calapomte»: a Cala Ponte oggi non arriva nessuno');
+{
+  const righe = [
+    // oggi: il servizio PARTE da Cala Ponte (è quello della mail di Luna, riga 1183)
+    riga({ Time: '19:00', 'Transfer > Da': 'Cala Ponte Hotel', 'Transfer < Per': 'Dempsey Monopoli centro',
+      Pax: '6', Nome: 'Cala Ponte Hotel (Luna - Front Office)', Fornitori: 'Cala Ponte Hotel',
+      Tariffa: '50,00€', Modalità: 'Fattura', Id: 'TR/19082026/UC10X8RCX4CXA5DJ' }),
+    // ieri: due andate ARRIVATE a Cala Ponte, quelle che il tool proponeva per sbaglio
+    riga({ Data: dataFoglio(-1), Time: '00:10', 'Transfer > Da': 'Monopoli', 'Transfer < Per': 'Cala Ponte Hotel',
+      Fornitori: 'Cala Ponte Hotel', Tariffa: '54,00€', Id: 'TR/17082026/N6HRF2BUM132TYRZ' }),
+    riga({ Data: dataFoglio(-1), Time: '16:30', 'Transfer > Da': 'stazione Polignano', 'Transfer < Per': 'cala ponte',
+      Pax: '2', Fornitori: 'Transfer Experience', Tariffa: '20,00€', Id: 'TR/18082026/1501/OHTBCN' }),
+  ];
+  const out = esegui({ luogo: 'Cala Ponte', ora: '21:00', data: '', id: '',
+    query: 'aggiungi rientro calapomte', destinazione: '', autista: '', veicolo: '' }, righe);
+  prova('non pesca le due di ieri', out.allargato_a_ieri === false, 'allargato_a_ieri=' + out.allargato_a_ieri);
+  prova('prende il servizio di oggi che parte da Cala Ponte',
+    out.esito === 'pronto' && out.rientro && out.rientro.Da === 'Dempsey Monopoli centro',
+    out.esito + ' ' + JSON.stringify(out.rientro || {}));
+  prova('il rientro riporta a Cala Ponte', out.rientro && out.rientro.Per === 'Cala Ponte Hotel', (out.rientro||{}).Per);
+  prova('dice come l\'ha trovata', (out.avvisi || []).some(a => /non arrivava nessuno/.test(a)),
+    JSON.stringify(out.avvisi));
+  // e se a Cala Ponte ci arriva davvero qualcuno oggi, vince quello
+  const righe2 = righe.concat([riga({ Time: '15:00', 'Transfer > Da': 'Bari Airport', 'Transfer < Per': 'Cala Ponte Hotel',
+    Pax: '2', Nome: 'Rossi', Fornitori: 'Cala Ponte Hotel', Tariffa: '90,00€', Id: 'TR/19082026/ARRIVO' })]);
+  const out2 = esegui({ luogo: 'Cala Ponte', ora: '21:00', data: '', id: '',
+    query: 'aggiungi rientro calapomte', destinazione: '', autista: '', veicolo: '' }, righe2);
+  prova('se un arrivo c\'è, vince l\'arrivo', out2.rientro && out2.rientro.Da === 'Cala Ponte Hotel' &&
+    out2.rientro.Per === 'Bari Airport', JSON.stringify(out2.rientro || {}));
+}
+
 // --- 8. quello che già funzionava deve continuare a funzionare
 titolo('8) regressioni: modalità, tariffa, doppione, dati mancanti');
 {

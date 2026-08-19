@@ -294,14 +294,25 @@ if (!luogo) {
 }
 
 // ---------- 2. cerca le andate ----------
-function candidatiDelGiorno(giorno) {
+// (F) 19/08/2026 — «aggiungi rientro calapomte» (esecuzione 768629).
+// Cercava SOLO le andate ARRIVATE nel posto detto. Quel giorno a Cala Ponte non arrivava
+// niente, ma alle 19:00 c'era il servizio che PARTIVA da lì (Cala Ponte Hotel → Dempsey
+// Monopoli, riga 1183): il rientro che Agostino voleva era il ritorno di quello. Il tool è
+// saltato al giorno prima e gli ha proposto due andate vecchie, una delle 00:10.
+// Ora, se in quel posto non arriva nessuno, si guarda chi ne PARTE (o chi ha quel nome come
+// fornitore): il rientro riporta il cliente lì. Il giorno prima resta l'ultima spiaggia,
+// dopo aver provato tutte e due i versi su oggi.
+function candidatiDelGiorno(giorno, verso) {
   const out = [];
   for (let i = 0; i < righe.length; i++) {
     const t = righe[i] || {};
     if (String(t['Allert'] || '').trim().toLowerCase() === 'cancellato') continue;
     const dt = parseDataIT(t['Data'], giorno.getFullYear());
     if (!dt || fmtIT(dt) !== fmtIT(giorno)) continue;
-    if (!luogoCombacia(t['Transfer < Per'], luogo)) continue;
+    const combacia = (verso === 'da')
+      ? (luogoCombacia(t['Transfer > Da'], luogo) || luogoCombacia(t['Fornitori'], luogo))
+      : luogoCombacia(t['Transfer < Per'], luogo);
+    if (!combacia) continue;
     const nome = String(t['Nome'] || '').trim();
     const id = String(t['Id'] || '').trim();
     if (!nome && !id) continue; // riga vuota
@@ -311,12 +322,19 @@ function candidatiDelGiorno(giorno) {
   return out;
 }
 
-let trovati = candidatiDelGiorno(giornoBase);
+let trovati = candidatiDelGiorno(giornoBase, 'verso');
 let giornoUsato = giornoBase;
+base.come_trovate = 'arrivate a';
+if (!trovati.length) {
+  const t = candidatiDelGiorno(giornoBase, 'da');
+  if (t.length) { trovati = t; base.come_trovate = 'partite da'; }
+}
 if (!trovati.length) {
   const ieri = piuGiorni(giornoBase, -1);
-  const t2 = candidatiDelGiorno(ieri);
-  if (t2.length) { trovati = t2; giornoUsato = ieri; base.allargato_a_ieri = true; }
+  let t2 = candidatiDelGiorno(ieri, 'verso');
+  let come = 'arrivate a';
+  if (!t2.length) { t2 = candidatiDelGiorno(ieri, 'da'); come = 'partite da'; }
+  if (t2.length) { trovati = t2; giornoUsato = ieri; base.allargato_a_ieri = true; base.come_trovate = come; }
 }
 base.giorno_trovato = fmtIT(giornoUsato);
 
@@ -459,6 +477,13 @@ const veicoloAndata = String(r['Veicolo'] || '').trim();
 const avvisi = [];
 if (!ora) avvisi.push('⛔ Manca l\'ORA del rientro: chiedila ad Agostino prima di mostrare la scheda.');
 if (base.allargato_a_ieri) avvisi.push('⚠️ L\'andata NON è di oggi: è del ' + fmtIT(giornoUsato) + '. Il rientro l\'ho messo il ' + dataRientro + '.');
+
+// (F) se l'andata l'ho trovata girando il verso, si dice forte e chiaro.
+if (base.come_trovate === 'partite da') {
+  avvisi.push('🔎 A «' + luogo + '» quel giorno non arrivava nessuno: ho preso il servizio che PARTE da lì ' +
+    'delle ' + (String(r['Time'] || '').trim() || '—') + ' (' + (perDedotto || '—') + ' → ' + (daRientro || '—') + '), ' +
+    'quindi il rientro riporta a «' + perRientro + '». Se intendevi un altro servizio, dimmelo.');
+}
 
 // (A) se ho ristretto io, si dice come e con cosa. Non si sceglie in silenzio.
 if (comeHoScelto.length) {

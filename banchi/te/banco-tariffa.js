@@ -90,13 +90,19 @@ function prova(nome, atteso, effettivo) {
 
 const trova = (n) => R.find((x) => x.c.nome === n);
 
-console.log('\n-- 1) Pietra Blu: oggi il calcolatore non risponde mai --');
+console.log('\n-- 1) Pietra Blu, dopo la rinomina delle colonne (19/08 sera) --');
 {
-  const x = trova('Pietra Blu → Alberobello');
-  prova('oggi: nessun prezzo', 'warning', x.a.status);
-  prova('   motivo: le colonne del listino non sono numeri', 'no-colonne-prezzo', x.a.motivo);
-  prova('   quindi tariffa 0', 0, x.a.tariffa);
-  prova('corretto: un prezzo c\'è', 'ok', x.b.status);
+  // Le colonne del listino Pietra Blu erano «≤ 2 pax» e «> 3 pax»: il codice
+  // non le riconosceva e rispondeva 0 su ogni corsa. Agostino le ha rinominate
+  // «2» e «3». Il banco è stato rifatto sul listino riletto da Drive.
+  const due = trova('Pietra Blu → Alberobello');
+  prova('2 pax: ora un prezzo c\'è', 'ok', due.a.status);
+
+  // Ma «3» è una soglia CHIUSA: da 4 pax in su non c'è più nessuna colonna.
+  const quattro = trova('Pietra Blu → Alberobello (4 pax)');
+  prova('4 pax: ancora nessun prezzo', 'warning', quattro.a.status);
+  prova('   motivo', 'pax-oltre-listino', quattro.a.motivo);
+  // Si chiude rinominando la seconda colonna con la capienza vera (es. «9»).
 }
 
 console.log('\n-- 2) il ripescaggio su Generico: oggi il foglio si legge e si butta --');
@@ -112,10 +118,21 @@ console.log('\n-- 2) il ripescaggio su Generico: oggi il foglio si legge e si bu
   prova('   il prezzo finale non cambia (vince l\'altro capo)', x.a.tariffa, x.b.tariffa);
 }
 
-console.log('\n-- 3) le corse che oggi funzionano non devono cambiare --');
+console.log('\n-- 3) le corse che oggi funzionano non cambiano... --');
 {
-  const uguali = R.filter((x) => x.a.status === 'ok' && x.a.modo === 'listino-MAX');
+  const uguali = R.filter((x) => x.a.status === 'ok' && x.a.modo === 'listino-MAX' && !x.b.ripescatoDa);
   uguali.forEach((x) => prova('   ' + x.c.nome + ': stessa tariffa', x.a.tariffa, x.b.tariffa));
+}
+
+console.log('\n   ...tranne quelle che il ripescaggio rimette a posto:');
+{
+  const cambiate = R.filter((x) => x.b.ripescatoDa && x.a.tariffa !== x.b.tariffa);
+  cambiate.forEach((x) => console.log(
+    `        ${x.c.nome}: oggi ${euro(x.a.tariffa)} → corretto ${euro(x.b.tariffa)} ` +
+    `(incassato ${euro(x.c.incassato)}, ripescato da ${x.b.ripescatoDa})`));
+  // Pietra Blu ha 11 destinazioni in listino: quasi tutto il resto oggi cade sul
+  // prezzo del comune (Polignano, 30 €) invece che sulla destinazione vera.
+  prova('almeno una corsa rimessa a posto dal ripescaggio', true, cambiate.length > 0);
 }
 
 console.log('\n-- 4) il notturno resta com\'è --');

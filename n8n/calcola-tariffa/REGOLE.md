@@ -146,7 +146,19 @@ Match esatto, poi `includes` nei due sensi: `«Musae»` aggancia il primo fra «
 «Musae Relais & SPA» che capita nell'ordine del foglio. Sui listini, prendere quello dell'altra
 struttura è un errore che non si vede.
 
-### 7. Pietra Blu: il calcolatore non risponde mai — **tariffa 0 su ogni corsa**
+### 7. Pietra Blu: tariffa 0 su ogni corsa — ✅ **RISOLTO IN PARTE il 19/08 sera**
+
+Agostino ha rinominato le due colonne del listino Pietra Blu in `2` e `3`. Riletto il foglio da
+Drive e rifatto il banco: **fino a 3 pax adesso un prezzo c'è**. Sopra i 3 no: `3` è una soglia
+chiusa, e da 4 pax in su torna `pax-oltre-listino` → 0 €. Si chiude rinominando la seconda
+colonna con la capienza vera del veicolo (es. `9`).
+
+Resta vero che con 11 sole destinazioni in listino quasi tutto cade sul prezzo del comune
+(Polignano, 30 €): `Pietra Blu → Alberobello` oggi dà **30 €** contro i **100 €** incassati.
+Col ripescaggio sul Generico darebbe **95 €**. È il punto 1, e su Pietra Blu morde eccome.
+
+<details><summary>com'era prima della rinomina</summary>
+
 
 Il più grosso, e si vede solo mettendo insieme codice e dati. Le colonne di prezzo vengono
 riconosciute solo se l'intestazione è **un numero secco** (`/^\d+$/`). Le intestazioni vere:
@@ -163,6 +175,7 @@ Provato sul banco con le corse vere di Pietra Blu: `status: warning`, `tariffa: 
 Si sistema in due modi — o si rinominano le due colonne del listino in `2` e `3`, oppure il
 codice impara a leggere il numero dentro l'intestazione (è la correzione provata in
 `calcola-tariffa-CORRETTO.js`, che tiene anche il senso di «>»: da lì in su).
+</details>
 
 ### 8. La colonna «Listini Tuk-tuk» non contiene listini
 
@@ -214,6 +227,12 @@ Le differenze fra «incassato» e «calcolatore» non sono tutte errori del calc
 prezzi decisi a mano, sconti, accordi. Ma **cinque casi su tredici** hanno uno scarto, e su due
 il calcolatore non risponde affatto: è il conto che vale la pena guardare riga per riga insieme.
 
-**Una nota onesta sul ripescaggio (punto 1):** sulle tredici corse vere del banco non cambia mai
-il prezzo finale. È un guasto vero — il Generico si legge e si butta, provato — ma morde solo
-quando **nessuno** dei due capi è nel listino del fornitore. Non è quindi urgente come il punto 7.
+**Il ripescaggio (punto 1), dopo la rinomina:** su Pietra Blu cambia eccome, perché il suo
+listino ha 11 destinazioni e tutto il resto cade sul prezzo del comune.
+
+| corsa | oggi | col ripescaggio | incassato |
+|---|---|---|---|
+| Pietra Blu → Alberobello, 2 pax | 30 € | 95 € | 100 € |
+| Pietra Blu → Alberobello, 4 pax | 0 € | 110 € | 125 € |
+
+Sulle altre strutture, che hanno listini pieni, non cambia niente.

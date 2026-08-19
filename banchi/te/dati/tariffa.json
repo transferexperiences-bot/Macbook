@@ -1,5 +1,5 @@
 {
- "_fonte": "Programma Autisti 2.0 (1nqmt8_…), letto il 19/08/2026",
+ "_fonte": "Programma Autisti 2.0 (1nqmt8_…), riletto il 19/08/2026 dopo la rinomina delle colonne Pietra Blu",
  "fornitori": [
   {
    "Fornitori": "Auraterrae",
@@ -508,68 +508,68 @@
   "Pietra Blu": [
    {
     "Destinazione": "Polignano a Mare",
-    "≤ 2 pax": 30.0,
-    "> 3 pax": 40.0,
+    "2": 30.0,
+    "3": 40.0,
     "row_number": 2
    },
    {
     "Destinazione": "Aeroporto di Bari",
-    "≤ 2 pax": 100.0,
-    "> 3 pax": 125.0,
+    "2": 100.0,
+    "3": 125.0,
     "row_number": 3
    },
    {
     "Destinazione": "Stazione di Bari",
-    "≤ 2 pax": 100.0,
-    "> 3 pax": 125.0,
+    "2": 100.0,
+    "3": 125.0,
     "row_number": 4
    },
    {
     "Destinazione": "Città di Bari",
-    "≤ 2 pax": 100.0,
-    "> 3 pax": 125.0,
+    "2": 100.0,
+    "3": 125.0,
     "row_number": 5
    },
    {
     "Destinazione": "Aeroporto di Brindisi",
-    "≤ 2 pax": 125.0,
-    "> 3 pax": 150.0,
+    "2": 125.0,
+    "3": 150.0,
     "row_number": 6
    },
    {
     "Destinazione": "Stazione di Brindisi",
-    "≤ 2 pax": 125.0,
-    "> 3 pax": 150.0,
+    "2": 125.0,
+    "3": 150.0,
     "row_number": 7
    },
    {
     "Destinazione": "Città di Brindisi",
-    "≤ 2 pax": 125.0,
-    "> 3 pax": 150.0,
+    "2": 125.0,
+    "3": 150.0,
     "row_number": 8
    },
    {
     "Destinazione": "Monopoli città",
-    "≤ 2 pax": 45.0,
-    "> 3 pax": 50.0,
+    "2": 45.0,
+    "3": 50.0,
     "row_number": 9
    },
    {
     "Destinazione": "Mola di Bari",
-    "≤ 2 pax": 45.0,
-    "> 3 pax": 50.0,
+    "2": 45.0,
+    "3": 50.0,
     "row_number": 10
    },
    {
     "Destinazione": "APT di Bari",
-    "≤ 2 pax": 100.0,
-    "> 3 pax": 125.0,
+    "2": 100.0,
+    "3": 125.0,
     "row_number": 11
    },
    {
     "Destinazione": "Monopoli",
-    "≤ 2 pax": 45.0,
-    "> 3 pax": 50.0,
+    "2": 45.0,
+    "3": 50.0,
     "row_number": 12
    }
   ],
@@ -2779,6 +2779,24 @@
    "latPer": 41.013450299999995,
    "lngPer": 17.192759,
    "incassato": 0
+  },
+  {
+   "nome": "Pietra Blu → Alberobello (4 pax)",
+   "da": "Pietra Blu",
+   "per": "Alberobello",
+   "pax": 4,
+   "veicolo": "",
+   "fornitore": "Pietra Blu",
+   "orario": "10:30",
+   "matchDa": "Pietra Blu",
+   "matchPer": "Alberobello",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Alberobello",
+   "latDa": 41.0238894,
+   "lngDa": 17.1783139,
+   "latPer": 40.7864949,
+   "lngPer": 17.2408836,
+   "incassato": 125
   }
  ]
 }

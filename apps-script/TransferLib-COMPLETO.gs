@@ -8,6 +8,11 @@
 // SI USA COSÌ: apri TransferLib, clicca nel codice, Ctrl+A, Canc, incolla
 // questo, Ctrl+S. Non serve sapere cosa c'era prima: qui dentro c'è tutto.
 //
+// NON contiene il controllo della colonna Data: quel lavoro lo fa già il «tipo
+// di colonna» di Google, che blocca il testo alla radice e dà il calendario col
+// doppio clic. Il codice esiste in `apps-script/transferlib-data.gs` e NON è
+// installato — il perché è scritto lì.
+//
 // Progetto: 1vo74eNOp7bRgiU-ioVRTRCfb2k9rmDVlV5lmW_DoFKTTKZM_or7K0o96
 // =====================================================================
 
@@ -731,13 +736,10 @@ function onEditStruttura(e) {
       Logger.log("correzione cella: " + err);
     }
 
-    // 1-bis) la Data: si converte quello che si capisce, si butta il resto
-    if (col.data && e.range.getColumn() <= col.data &&
-        col.data <= e.range.getColumn() + e.range.getNumColumns() - 1) {
-      try { controllaData(sheet, e.range.getRow(), col); } catch (err) {
-        Logger.log("controllo data: " + err);
-      }
-    }
+    // La colonna Data NON si tocca: ci pensa il «tipo di colonna» di Google, che
+    // blocca il testo da sé e in più dà il calendario col doppio clic. Vedi
+    // `apps-script/transferlib-data.gs`, scritto e poi deliberatamente non
+    // installato.
 
     // 2) la tendina, se hai toccato Modalità
     var da = e.range.getColumn();
@@ -765,50 +767,4 @@ function onEditStruttura(e) {
       }
     } catch (e2) {}
   }
-}
-
-
-/**
- * Come si vedono le date sui fogli struttura: «ven 7 agosto 2026».
- * È il formato che c'è già sulle righe vecchie — qui si scrive una volta sola,
- * e da qui vale per tutti i fogli.
- *
- * `dddd` invece di `ddd` darebbe «venerdì» per esteso: si cambia qui.
- */
-var TE_FORMATO_DATA = "ddd d MMMM yyyy";
-
-
-/**
- * Controlla la cella Data della riga toccata.
- * @return {string} 'formattata' | 'svuotata' | 'niente'
- */
-function controllaData(sheet, riga, col) {
-  if (!col.data) return 'niente';
-
-  var cella = sheet.getRange(riga, col.data);
-  var v = cella.getValue();
-
-  // È una data vera: si tiene il valore e si mette il formato esteso, così
-  // «7/8» scritto di fretta si vede come «ven 7 agosto 2026» come tutte le altre.
-  if (Object.prototype.toString.call(v) === "[object Date]") {
-    cella.setNumberFormat(TE_FORMATO_DATA);
-    if (cella.getNote()) { cella.setNote(null); cella.setBackground(null); }
-    return 'formattata';
-  }
-
-  // Vuota: non è un errore, magari la stanno ancora scrivendo.
-  if (v === "" || v === null || v === undefined) {
-    if (cella.getNote()) { cella.setNote(null); cella.setBackground(null); }
-    return 'niente';
-  }
-
-  // Tutto il resto è testo: si cancella.
-  cella.clearContent();
-  cella.setNote(
-    "⛔ Qui va una data, non del testo. L'ho tolta.\n" +
-    "Scrivila così: 3/9/2026\n" +
-    "Questa nota sparisce da sola quando la data è giusta.");
-  cella.setBackground("#f4cccc");
-  SpreadsheetApp.flush();
-  return 'svuotata';
 }

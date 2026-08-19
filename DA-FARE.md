@@ -1,47 +1,33 @@
 # Da fare — aggiornato 18/08/2026, mattina
 
-## ✅ PRONTA — la colonna Data: o è una data, o si cancella
+## ⛔ SCARTATA — il controllo della colonna Data (18/08 sera)
 
-18/08 sera. Agostino scrive «mercoledì 3 settem» nella colonna Data e Google risponde *«Non
-valido: questo valore non corrisponde al tipo di colonna data»*. Quel rifiuto è di Google — sulla
-colonna c'è il tipo «data» — e blocca il valore **prima** che qualunque script lo veda: non dice
-cosa scrivere e non lascia traccia.
+Agostino scrive «mercoledì 3 settem» nella colonna Data, Google risponde *«non corrisponde al
+tipo di colonna data»*, e chiede che sia lo script a cancellare la cella quando l'input è
+testuale. Scritto (`apps-script/transferlib-data.gs`, banco verde), poi **non installato**, per
+una ragione che ha dato lui e che chiude la questione:
 
-Agostino: «se io scrivo un testo, tu lo cancelli, finché non la scrive in formato data».
+> «Non voglio modificare la tipologia di colonna, e ti spiego perché: così io clicco due volte
+> e posso selezionare la data.»
 
-E poi, tolta la convalida, la seconda metà del problema: «se scrivo `7/8` resta in formato
-numerico, non viene convertito nel formato attuale data, tipo mercoledì 7 agosto, e non mi va
-bene». Giusto — e la convalida non c'entrava: **come si vede** una data è il formato di
-visualizzazione della cella, un'altra cosa ancora.
+Il tipo di colonna non è solo un controllo: è **il calendario col doppio clic**. Per far girare
+il nostro codice bisognava toglierlo — cioè barattare uno strumento che la struttura usa tutti i
+giorni con un messaggio d'errore più bello. E il tipo di colonna il lavoro lo fa già meglio:
+blocca il testo **alla radice**, prima che entri nella cella; il nostro codice arriva sempre dopo.
 
-Le due cose insieme, in `apps-script/transferlib-data.gs`:
+**Un errore mio da non ripetere.** Nel frattempo avevo aggiunto anche il formato di
+visualizzazione forzato (`setNumberFormat` a ogni scrittura sulla cella Data) per risolvere
+l'altra metà — «se scrivo 7/8 resta in formato numerico». Con il tipo di colonna attivo quel
+`setNumberFormat` **litiga con la formattazione di Google**: l'ho tolto dalla libreria prima che
+facesse danni. Se un domani si riaccende `controllaData`, le due cose non convivono: o l'una o
+l'altra.
 
-| cosa c'è nella cella | cosa si fa |
-|---|---|
-| Google l'ha capita come data | si tiene, e si mette il **formato esteso** «ven 7 agosto 2026» |
-| vuota | non è un errore, si lascia stare |
-| qualunque altra cosa | **si cancella**, e la cella dice perché |
+Il file e il banco restano nel repo perché la decisione sia rintracciabile, e perché se un
+domani su un foglio il tipo di colonna non ci fosse il codice è già provato.
 
-Il formato lo mette il codice (`TE_FORMATO_DATA = "ddd d MMMM yyyy"`), non Agostino a mano su
-diciotto colonne. E lo **rimette ogni volta**: se qualcuno riformatta la colonna, alla prima
-data scritta torna com'era.
-
-**Avevo cominciato a scriverla più complicata** — provare a convertire «3 settembre» in
-`03/09/2026`, indovinare l'anno mancante — e Agostino mi ha fermato: «non capisco perché tu la
-faccia così complicata». Aveva ragione, e non solo per semplicità: su un transfer una data
-indovinata male è peggio di una cella vuota. Se il codice legge «3 settembre» e sbaglia l'anno,
-l'autista si presenta fra dodici mesi e non se ne accorge nessuno finché il cliente non resta a
-terra. Una cella vuota e rossa si vede subito.
-
-Come si riconosce una data, senza indovinare niente: quando quello che scrivi **è** una data,
-Google nella cella non mette il testo — mette un valore data, e `getValue()` restituisce un
-oggetto `Date`. Se torna una stringa, dentro c'è testo. Basta questo.
-
-⚠️ **Non funziona finché sulla colonna Data resta il «tipo di colonna» di Google**: quello blocca
-prima e la libreria non viene nemmeno chiamata. Va tolto sul foglio: *Dati → Tipo di colonna →
-Nessuno*.
-
-Banco verde: `node banchi/te/banco-data.js`. 🔴 Non pubblicata.
+**Resta aperta l'idea di Agostino:** il controllo in **n8n**, all'arrivo della riga. Lì non
+toglie niente a nessuno, e prende anche le righe che entrano per altre strade — incollate,
+importate, ripescate dalla rete di sicurezza. Da valutare domani.
 
 ## ✅ PUBBLICATA SU PIETRA BLU — 18/08/2026, 18:23
 

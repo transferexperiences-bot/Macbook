@@ -1,48 +1,42 @@
 // =====================================================================
-// TransferLib — la colonna Data: o è una data, o si cancella
+// TransferLib — controllo della colonna Data
+// ⚠️ SCRITTO E DELIBERATAMENTE **NON INSTALLATO**. Leggi prima di usarlo.
 // =====================================================================
 //
-// DA DOVE VIENE. 18/08 sera. Agostino scrive «mercoledì 3 settem» nella colonna
-// Data e Google risponde *«Non valido: questo valore non corrisponde al tipo di
-// colonna data»*. Quel rifiuto è di Google — sulla colonna c'è il tipo «data» —
-// e blocca il valore prima che qualunque script lo veda.
+// COSA È SUCCESSO, 18/08 sera.
 //
-// Agostino: «devi fare in modo che lo script cancelli la cella se l'input è
-// testuale, finché non la scrive in formato data».
+// Agostino scrive «mercoledì 3 settem» nella colonna Data e Google risponde
+// *«Non valido: questo valore non corrisponde al tipo di colonna data»*. Lui
+// chiede che sia lo script a cancellare la cella quando l'input è testuale, e
+// io scrivo questo file. Per farlo funzionare però bisogna togliere il «tipo di
+// colonna» di Google — altrimenti blocca prima e il codice non parte.
 //
-// E poi, tolta la convalida, la seconda metà del problema: «se scrivo 7/8 resta
-// in formato numerico, non viene convertito nel formato attuale data, tipo
-// mercoledì 7 agosto, e non mi va bene». Giusto: la convalida di Google non
-// c'entrava niente con **come si vede** la data. Quello è il formato di
-// visualizzazione della cella, ed è una cosa a parte.
+// E LÌ LA RISPOSTA CHE CHIUDE LA QUESTIONE:
 //
-// LA REGOLA.
+//     «Non voglio modificare la tipologia di colonna, e ti spiego perché:
+//      così io clicco due volte e posso selezionare la data.»
 //
-//   Google l'ha capita come data  → si lascia il valore, e si mette il formato
-//                                   esteso: «ven 7 agosto 2026»
-//   la cella è vuota              → non è un errore, si lascia stare
-//   qualunque altra cosa          → si cancella, e la cella dice perché
+// Il tipo di colonna non è solo un controllo: è **il calendario col doppio
+// clic**. Toglierlo per guadagnare un messaggio d'errore più bello sarebbe uno
+// scambio pessimo — si perde uno strumento che la struttura usa tutti i giorni.
 //
-// Il formato lo mette il codice, non tu a mano su diciotto colonne. E lo rimette
-// ogni volta: se qualcuno riformatta la colonna, alla prima data scritta torna
-// com'era.
+// E il tipo di colonna fa già il lavoro, meglio: blocca il testo **alla
+// radice**, prima ancora che entri nella cella. Il nostro codice al confronto
+// arriva sempre dopo.
 //
-// Niente conversioni, niente tentativi di indovinare cosa intendeva. Sui
-// transfer una data indovinata male è peggio di una cella vuota: se il codice
-// legge «3 settembre» e sbaglia l'anno, l'autista si presenta fra dodici mesi
-// e nessuno se ne accorge finché il cliente non resta a terra. Una cella vuota
-// e rossa invece si vede subito.
+// PERCHÉ IL FILE RESTA QUI.
 //
-// Come si riconosce una data: Google, quando quello che scrivi È una data,
-// nella cella non ci mette il testo — ci mette un valore data, e `getValue()`
-// restituisce un oggetto `Date`. Se torna una stringa, quello che c'è dentro è
-// testo. Non serve altro per decidere.
+// Perché la decisione sia rintracciabile, e perché se un domani su un foglio il
+// tipo di colonna non ci fosse, questo è pronto. Per installarlo: rimettere in
+// `onEditStruttura` la chiamata a `controllaData` quando la modifica tocca
+// `col.data`.
 //
-// ⚠️ NON FUNZIONA finché sulla colonna Data resta il «tipo di colonna» di
-// Google: quello blocca prima e questo codice non viene nemmeno chiamato.
-// Va tolto sul foglio — Dati → Tipo di colonna → Nessuno.
+// ⚠️ ATTENZIONE SE LO RIACCENDI: `controllaData` forza il formato di
+// visualizzazione a ogni scrittura. Con il tipo di colonna attivo quel
+// `setNumberFormat` si mette a litigare con la formattazione di Google. Le due
+// cose non convivono: o l'una o l'altra.
 //
-// Banco: banchi/te/banco-data.js
+// Banco: banchi/te/banco-data.js (verde, ma prova codice non installato)
 
 
 /**

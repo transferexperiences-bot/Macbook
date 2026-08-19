@@ -118,13 +118,10 @@ function onEditStruttura(e) {
       Logger.log("correzione cella: " + err);
     }
 
-    // 1-bis) la Data: si converte quello che si capisce, si butta il resto
-    if (col.data && e.range.getColumn() <= col.data &&
-        col.data <= e.range.getColumn() + e.range.getNumColumns() - 1) {
-      try { controllaData(sheet, e.range.getRow(), col); } catch (err) {
-        Logger.log("controllo data: " + err);
-      }
-    }
+    // La colonna Data NON si tocca: ci pensa il «tipo di colonna» di Google, che
+    // blocca il testo da sé e in più dà il calendario col doppio clic. Vedi
+    // `apps-script/transferlib-data.gs`, scritto e poi deliberatamente non
+    // installato.
 
     // 2) la tendina, se hai toccato Modalità
     var da = e.range.getColumn();

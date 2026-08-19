@@ -1,11 +1,17 @@
 // =====================================================================
-// Banco offline — la colonna Data: o è una data, o si cancella
+// Banco offline — la colonna Data
+// ⚠️ PROVA CODICE **NON INSTALLATO**. Leggi `apps-script/transferlib-data.gs`.
 // =====================================================================
 //
-// «Se io scrivo un testo, tu lo cancelli, finché non la scrive in formato data.»
-// Una regola sola, nessuna conversione.
+// Agostino aveva chiesto che lo script cancellasse la cella quando l'input è
+// testuale. Poi ha spiegato perché non si può: togliere il «tipo di colonna» di
+// Google, che serve a far funzionare questo codice, gli toglierebbe **il
+// calendario col doppio clic** — uno strumento che la struttura usa ogni giorno,
+// scambiato con un messaggio d'errore più bello. Scambio pessimo.
 //
-// Gira sul file COMPLETO, quello che finisce dentro TransferLib.
+// Quindi `controllaData` NON è nella libreria. Il banco resta perché la
+// decisione sia rintracciabile e perché, se un domani su un foglio il tipo di
+// colonna non ci fosse, il codice è già provato.
 //
 //   node banchi/te/banco-data.js
 
@@ -31,8 +37,9 @@ function FintoFoglio() {
   };
 }
 
+// Si carica il file NON installato, non la libreria: in libreria non c'è più.
 const SRC = fs.readFileSync(
-  path.join(__dirname, '..', '..', 'apps-script', 'TransferLib-COMPLETO.gs'), 'utf8');
+  path.join(__dirname, '..', '..', 'apps-script', 'transferlib-data.gs'), 'utf8');
 const L = {};
 new Function('exports', 'SpreadsheetApp', 'Logger', SRC + `
 exports.controllaData = controllaData;
@@ -125,8 +132,9 @@ console.log([
   'restituisce un oggetto Date. Se torna una stringa, dentro c\'è testo.',
   'Non serve altro per decidere, e non c\'è niente da indovinare.',
   '',
-  '⚠️ Non funziona finché sulla colonna resta il «tipo di colonna» di Google:',
-  'quello blocca prima. Va tolto — Dati → Tipo di colonna → Nessuno.',
+  '⚠️ Questo codice NON è installato, e non deve esserlo finché sulla colonna',
+  'resta il tipo di colonna di Google — che dà il calendario col doppio clic',
+  'e blocca il testo alla radice, cioè fa già il lavoro, meglio e prima.',
   '─────────────────────────────────────────────────────────────────────',
 ].join('\n'));
 

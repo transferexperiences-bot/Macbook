@@ -1,5 +1,28 @@
 # Da fare — aggiornato 19/08/2026, sera
 
+## ✅ PUBBLICATO — il ripescaggio sul listino Generico (19/08, 22:40)
+
+`Calcola Tariffa Prenotazioni` (`APv3ZqEizY1HnPia`), nodo **Calcola Tariffa**: se una
+destinazione non è nel listino della struttura, ora si cerca nel **Generico** — che veniva già
+letto a ogni calcolo e poi scartato. Dettagli, verifiche e id per tornare indietro:
+`n8n/calcola-tariffa/REGOLE.md`.
+
+Prima, nella stessa giornata: la cella `C1` del listino **Pietra Blu** è passata da `3` a `7`,
+scritta da n8n con un workflow una tantum che **prima legge** e scrive solo se trova `3`
+(esecuzione `769083`, poi archiviato). Da lì Pietra Blu ha di nuovo un prezzo — prima erano
+**tutte** le sue corse a valere 0.
+
+Resta da decidere, e sono soldi, quindi decide Agostino:
+- il **supplemento dal centro** vale solo per i 18 comuni scritti nel codice (Savelletri, Torre
+  Canne, Carovigno, Putignano… → supplemento 0 in silenzio);
+- la **% fee** si legge dal foglio e non entra in nessun conto;
+- **€/min** è vuoto per tutti tranne Puglia Mare, e comunque le ore extra non arrivano al
+  calcolo (`hextra` si perde al primo nodo);
+- il **listino Pietra Blu** ha 11 destinazioni: il ripescaggio tampona, ma le tratte vere andrebbero
+  scritte lì;
+- la colonna **«Listini Tuk-tuk»** contiene numeri per 98 fornitori: solo Puglia Mare ha un nome
+  di listino vero.
+
 ## 🔍 «Ho fatto tutti i fogli?» — il censimento Presenze (19/08 sera)
 
 Domanda di Agostino: *«hai modo di verificare se l'ho fatto per tutti?»*. **No, non da fuori.**

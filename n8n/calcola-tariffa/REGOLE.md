@@ -238,3 +238,38 @@ listino ha 11 destinazioni e tutto il resto cade sul prezzo del comune.
 | Pietra Blu → Alberobello, 4 pax | 40 € | 110 € | 125 € |
 
 Sulle altre strutture, che hanno listini pieni, non cambia niente.
+
+---
+
+# ✅ PUBBLICATO — 19/08/2026, 22:40
+
+Workflow `Calcola Tariffa Prenotazioni` (`APv3ZqEizY1HnPia`), nodo **Calcola Tariffa**.
+
+| | |
+|---|---|
+| versione nuova (attiva) | `758a42f6-3e13-4041-b442-4e75855c7e37` — «Ripescaggio sul listino Generico» |
+| versione precedente (per tornare indietro) | `6524bc93-0d76-4b8c-9053-499eb12142ae` |
+| copia verbatim di com'era | `n8n/calcola-tariffa/calcola-tariffa.js` |
+| codice pubblicato | `n8n/calcola-tariffa/calcola-tariffa-NUOVO.js` |
+
+**Cosa cambia**
+1. **Ripescaggio sul Generico** — se una destinazione non è nel listino della struttura, si cerca
+   nel Generico (che veniva già letto e poi buttato via). Quando succede lo dichiara:
+   `ripescatoDa`.
+2. **Colonne di prezzo** — il numero si legge anche dentro un'intestazione tipo `≤ 2 pax`, così
+   un listino scritto in un altro modo non azzera più le tariffe.
+
+**Cosa NON cambia, di proposito:** la scelta della colonna in base ai pax resta identica, anche
+dove è discutibile (listino 2/7/9 con 12 pax → colonna 9). Cambiarla avrebbe trasformato dei
+prezzi in zeri, e uno zero blocca un transfer: in dubbio si tiene.
+
+**Verifiche fatte, in ordine**
+- banco offline sui listini veri e su 14 corse vere: `banchi/te/banco-tariffa.js`, verde;
+- riletto il nodo dal server dopo la pubblicazione;
+- provato dentro n8n con dati appuntati, esecuzione **769636**:
+  `Pietra Blu → Alberobello, 2 pax` → **95 €**, `ripescatoDa: "Generico"`,
+  capo «per» risolto `{prezzo: 95, mode: "esatto", dest: "Alberobello", daFallback: true}`.
+  Prima della modifica la stessa corsa dava 30 € (prezzo del comune Polignano).
+
+**Se qualcosa non torna:** si ripristina la versione precedente dallo storico del workflow
+(`restore_workflow_version` con l'id qui sopra), oppure si reincolla `calcola-tariffa.js`.

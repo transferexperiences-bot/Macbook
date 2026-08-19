@@ -60,19 +60,19 @@ const euro = (n) => (n || n === 0 ? String(Math.round(n)) + ' €' : '—');
 console.log('== Banco: Calcola Tariffa — codice vero, listini veri, corse vere ==\n');
 console.log('  incassato = quello che c\'è scritto nella colonna Tariffa del foglio');
 console.log('  oggi      = quello che risponde il calcolatore adesso');
-console.log('  corretto  = con le tre correzioni (vedi in fondo)\n');
+console.log('  nuovo     = con il ripescaggio sul Generico (pubblicato il 19/08)\n');
 
 const R = [];
 for (const c of D.casi) {
   const a = calcola(c, 'calcola-tariffa.js');
-  const b = calcola(c, 'calcola-tariffa-CORRETTO.js');
+  const b = calcola(c, 'calcola-tariffa-NUOVO.js');
   R.push({ c, a, b });
   const nota = a.status === 'ok' ? a.modo : (a.motivo || a.status);
   const segno = (x) => (x.status === 'ok' ? euro(x.tariffa) : '⛔ 0 €');
   console.log(
     `  ${c.nome.padEnd(34)} ${String(c.pax + ' pax').padStart(6)}  ` +
     `incassato ${euro(c.incassato).padStart(6)}   oggi ${segno(a).padStart(7)}   ` +
-    `corretto ${segno(b).padStart(7)}   ${nota}`);
+    `nuovo ${segno(b).padStart(7)}   ${nota}`);
   if (dettaglio) console.log('        ', JSON.stringify(a.dettaglio || a));
 }
 

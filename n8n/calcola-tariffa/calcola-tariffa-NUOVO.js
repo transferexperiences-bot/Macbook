@@ -1,30 +1,34 @@
 // =====================================================================
-// «Calcola Tariffa» — versione con le tre correzioni. NON ANCORA IN n8n.
+// «Calcola Tariffa» — versione nuova, pubblicata il 19/08/2026
 // =====================================================================
 //
-// Rispetto al nodo di produzione (`calcola-tariffa.js`) cambiano tre cose, e
-// nient'altro. Tutte e tre sono guasti, non scelte di prezzo: le scelte di
-// prezzo (supplemento dal centro, % fee, €/min) sono di Agostino e restano
-// dove sono.
+// Rispetto a prima cambiano DUE cose, e nient'altro.
 //
-//   1. COLONNE DI PREZZO — oggi valgono solo le intestazioni che sono un
-//      numero secco (`/^\d+$/`). Il listino **Pietra Blu** ha «≤ 2 pax» e
-//      «> 3 pax»: nessuna colonna riconosciuta → `no-colonne-prezzo` →
-//      **tariffa 0 su ogni corsa Pietra Blu**. Ora il numero si legge dentro
-//      l'intestazione, e un'intestazione aperta (`>`, `+`, `oltre`) vale come
-//      «da lì in su».
+//   1. RIPESCAGGIO SU GENERICO — `Trova Listino` prepara da sempre un secondo
+//      tentativo sul listino Generico, e il foglio veniva letto davvero; ma le
+//      tratte si costruivano **solo** dal listino primario, quindi quelle del
+//      Generico restavano lì inutilizzate. Ora, se una destinazione non c'è nel
+//      listino della struttura, si guarda nel Generico prima di ripiegare sul
+//      prezzo del comune o sui km. Quando succede lo dichiara: `ripescatoDa`.
 //
-//   2. RIPESCAGGIO SU GENERICO — `Trova Listino` prepara il secondo tentativo
-//      e il foglio Generico viene letto davvero, ma poi le tratte si
-//      costruivano **solo** dal listino primario: le righe del Generico
-//      restavano lì inutilizzate. Ora, se la destinazione non c'è nel listino
-//      del fornitore, si guarda nel Generico prima di passare ai km.
+//   2. COLONNE DI PREZZO — prima valevano solo le intestazioni che erano un
+//      numero secco (`/^\d+$/`). Il listino Pietra Blu aveva «≤ 2 pax» e
+//      «> 3 pax» e per questo non aveva mai un prezzo. Le colonne sono state
+//      rinominate, ma ora il numero si legge anche dentro l'intestazione: se
+//      capita di nuovo, non si rompe più niente.
 //
-//   3. PAX OLTRE LA SOGLIA — con un listino 2/7/9 e 12 pax, oggi si prende
-//      zitti la colonna più cara. Ora si risponde `pax-oltre-listino`, che è
-//      il vero stato delle cose. (Se l'ultima colonna è aperta — «> 3 pax» —
-//      resta valida per qualunque numero, com'è giusto.)
+// COSA NON CAMBIA, DI PROPOSITO:
 //
+//   • la scelta della colonna in base ai pax resta **identica** a prima, anche
+//     dove è discutibile (con un listino 2/7/9 e 12 pax si prende la colonna 9).
+//     Cambiarla trasformerebbe un prezzo in uno zero, e uno zero blocca un
+//     transfer: in dubbio si tiene;
+//   • il supplemento dal centro (solo 18 comuni scritti nel codice);
+//   • la % fee, che non entra in nessun conto;
+//   • €/min, vuoto per tutti tranne Puglia Mare;
+//   • notturno ×1,2 prima delle 07:00, MAX fra i due capi, km dal garage.
+//
+// Copia di sicurezza di com'era: `calcola-tariffa.js` (verbatim).
 // Banco: banchi/te/banco-tariffa.js
 
 var ctx = $('Trova Listino').first().json;
@@ -40,7 +44,7 @@ function hav(a,b,c,d){var R=6371,x=(c-a)*Math.PI/180,y=(d-b)*Math.PI/180;var q=M
 function fc(n){if(!n)return null;var l=(''+n).toLowerCase().trim();if(C[l])return C[l];for(var k in C){if(l.includes(k)||k.includes(l))return C[k];}return null;}
 function sup(lat,lng,com){if(!lat||!lng||!com)return{km:0,supplemento:0};var c=fc(com);if(!c)return{km:0,supplemento:0};var km=hav(lat,lng,c.lat,c.lng);if(km<=SOG)return{km:Math.round(km*10)/10,supplemento:0};return{km:Math.round(km*10)/10,supplemento:Math.round((km-SOG)*ROAD*RATE)};}
 
-// ── CORREZIONE 1+3: le colonne di prezzo ──────────────────────────────
+// ── le colonne di prezzo ──────────────────────────────
 // "2" → soglia 2 chiusa | "≤ 2 pax" → soglia 2 chiusa | "> 3 pax" → soglia 3 APERTA
 function colonnePrezzo(keys, colDest){
   var out=[];
@@ -55,15 +59,17 @@ function colonnePrezzo(keys, colDest){
   out.sort(function(a,b){return a.soglia-b.soglia;});
   return out;
 }
+// IDENTICA a prima: prima soglia, seconda soglia, poi la terza colonna se c'è.
+// Non la tocco: cambiarla vorrebbe dire trasformare dei prezzi in zeri.
 function scegliColonna(cols, pax){
-  for(var i=0;i<cols.length;i++){
-    if(cols[i].aperta) return cols[i].key;          // «> 3 pax»: da lì in su va bene
-    if(pax<=cols[i].soglia) return cols[i].key;
-  }
-  return null;                                       // oltre l'ultima soglia chiusa
+  if(!cols.length) return null;
+  if(cols[0].aperta) return cols[0].key;
+  if(pax<=cols[0].soglia) return cols[0].key;
+  if(cols.length>=2 && (cols[1].aperta || pax<=cols[1].soglia)) return cols[1].key;
+  return cols[2]?cols[2].key:null;
 }
 
-// ── CORREZIONE 2: i due listini, separati e tutti e due utilizzabili ──
+// ── il ripescaggio: i due listini, separati e tutti e due utilizzabili ──
 // Le righe dei due fogli arrivano attaccate: il secondo si riconosce perché il
 // `row_number` riparte da capo.
 var blocchi=[[]], last=Infinity;
@@ -115,7 +121,7 @@ function cerca(L, raw, m, com, lat, lng){
 function resolve(raw,m,com,lat,lng){
   var r=cerca(L0,raw,m,com,lat,lng);
   if(r) return r;
-  var f=cerca(L1,raw,m,com,lat,lng);         // ← il ripescaggio che oggi non avviene
+  var f=cerca(L1,raw,m,com,lat,lng);    // ← il ripescaggio
   if(f){ ripescato=nomeFallback||'Generico'; f.daFallback=true; return f; }
   return null;
 }

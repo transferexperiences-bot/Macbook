@@ -1,0 +1,1280 @@
+[
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 24,
+  "diverse": 3
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 35,
+  "volte": 23,
+  "diverse": 0
+ },
+ {
+  "fornitore": "pietra blu",
+  "da": "pietra blu",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 40,
+  "volte": 18,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "apt di bari",
+  "per": "auraterrae",
+  "fascia": "≤2",
+  "prezzo": 130,
+  "volte": 18,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 35,
+  "volte": 17,
+  "diverse": 0
+ },
+ {
+  "fornitore": "pietra blu",
+  "da": "pietra blu",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 15,
+  "diverse": 3
+ },
+ {
+  "fornitore": "melograno",
+  "da": "apt di bari",
+  "per": "melograno",
+  "fascia": "≤2",
+  "prezzo": 115,
+  "volte": 13,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "domenico modugno",
+  "per": "san francesco",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 13,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "apt di bari",
+  "per": "peschiera",
+  "fascia": "≤2",
+  "prezzo": 115,
+  "volte": 12,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "monopoli",
+  "fascia": "≤7",
+  "prezzo": 40,
+  "volte": 12,
+  "diverse": 0
+ },
+ {
+  "fornitore": "sparano palace",
+  "da": "bari airport",
+  "per": "sparano palace",
+  "fascia": "≤2",
+  "prezzo": 45,
+  "volte": 10,
+  "diverse": 2
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "apt di bari",
+  "per": "covo dei saraceni",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 9,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "san vito",
+  "fascia": "≤2",
+  "prezzo": 15,
+  "volte": 9,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "musae",
+  "per": "san giovanni",
+  "fascia": "≤2",
+  "prezzo": 25,
+  "volte": 8,
+  "diverse": 2
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "monopoli",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 45,
+  "volte": 8,
+  "diverse": 0
+ },
+ {
+  "fornitore": "serafini",
+  "da": "polignano a mare",
+  "per": "sabbiadoro",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 8,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "apt di bari",
+  "per": "auraterrae",
+  "fascia": "≤7",
+  "prezzo": 130,
+  "volte": 7,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "polignano a mare",
+  "per": "sabbiadoro",
+  "fascia": "≤2",
+  "prezzo": 50,
+  "volte": 7,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "monopoli",
+  "per": "peschiera",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 7,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "monopoli",
+  "fascia": "≤2",
+  "prezzo": 60,
+  "volte": 7,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "fasano",
+  "per": "melograno",
+  "fascia": "≤7",
+  "prezzo": 55,
+  "volte": 7,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "apt di brindisi",
+  "per": "peschiera",
+  "fascia": "≤2",
+  "prezzo": 115,
+  "volte": 6,
+  "diverse": 0
+ },
+ {
+  "fornitore": "6 stelle mama",
+  "da": "apt di bari",
+  "per": "arco",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 6,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "monopoli",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 6,
+  "diverse": 1
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "san francesco",
+  "fascia": "≤7",
+  "prezzo": 15,
+  "volte": 5,
+  "diverse": 1
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "monopoli capitolo",
+  "fascia": "≤2",
+  "prezzo": 70,
+  "volte": 5,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "domenico modugno",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 5,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "bari",
+  "fascia": "≤2",
+  "prezzo": 130,
+  "volte": 5,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "le palme",
+  "per": "tre vigne",
+  "fascia": "≤7",
+  "prezzo": 100,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "grotta palazzese portalga centro",
+  "per": "san francesco",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 4,
+  "diverse": 1
+ },
+ {
+  "fornitore": "suite 10",
+  "da": "sabbiadoro",
+  "per": "suite 10",
+  "fascia": "≤2",
+  "prezzo": 60,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "bari airport",
+  "per": "tre vigne",
+  "fascia": "≤2",
+  "prezzo": 100,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "dorino gite in barca",
+  "da": "monopoli capitolo",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 65,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "stazione di bari",
+  "fascia": "≤2",
+  "prezzo": 115,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "pietra blu",
+  "da": "aeroporto di bari",
+  "per": "pietra blu",
+  "fascia": "≤2",
+  "prezzo": 100,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "san vito",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "peschiera",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 55,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "apt di bari",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 110,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "apt di brindisi",
+  "per": "trulli le icone contrada cinera",
+  "fascia": "≤7",
+  "prezzo": 125,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "polignano a mare",
+  "per": "trulli le icone contrada cinera",
+  "fascia": "≤7",
+  "prezzo": 65,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "giovi",
+  "da": "cala ponte",
+  "per": "giovi",
+  "fascia": "≤9",
+  "prezzo": 40,
+  "volte": 4,
+  "diverse": 0
+ },
+ {
+  "fornitore": "musae lama",
+  "da": "bari airport",
+  "per": "musae in lama",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "san francesco",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "cala ponte hotel",
+  "da": "bari airport",
+  "per": "cala ponte hotel",
+  "fascia": "≤2",
+  "prezzo": 95,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "bari airport",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 110,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "polignano a mare",
+  "per": "porto ghiacciolo",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "monopoli",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "musae relais spa",
+  "da": "bari airport",
+  "per": "musae relais spa",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "stazione",
+  "fascia": "≤2",
+  "prezzo": 35,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "covo dei saraceni",
+  "per": "monopoli",
+  "fascia": "≤2",
+  "prezzo": 55,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 55,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "pietra blu",
+  "da": "aeroporto di bari",
+  "per": "pietra blu",
+  "fascia": "≤7",
+  "prezzo": 125,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "cala ponte",
+  "per": "stazione polignano",
+  "fascia": "≤7",
+  "prezzo": 20,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "monopoli",
+  "per": "stazione polignano",
+  "fascia": "≤7",
+  "prezzo": 30,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "monopoli",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "stazione polignano",
+  "per": "via roma",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "polignano a mare",
+  "per": "sabbiadoro",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "musae lama",
+  "da": "bari airport",
+  "per": "musae lama",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "bayit",
+  "da": "apt di bari",
+  "per": "san vito",
+  "fascia": "≤7",
+  "prezzo": 140,
+  "volte": 3,
+  "diverse": 0
+ },
+ {
+  "fornitore": "dorino gite in barca",
+  "da": "monopoli",
+  "per": "no art monopoli evento",
+  "fascia": "≤9",
+  "prezzo": 150,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "cala paradiso",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "mancini fattura",
+  "da": "badawi",
+  "per": "via roma 59 monopoli",
+  "fascia": "≤7",
+  "prezzo": 83,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "bari centrale via sparano",
+  "per": "tre vigne",
+  "fascia": "≤7",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "peschiera",
+  "per": "savelletri",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "le palme",
+  "per": "tre vigne",
+  "fascia": "≤9",
+  "prezzo": 140,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "cala ponte marina",
+  "per": "domenico modugno",
+  "fascia": "≤2",
+  "prezzo": 15,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "musae al mare",
+  "per": "san giovanni",
+  "fascia": "≤2",
+  "prezzo": 25,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "musae",
+  "fascia": "≤2",
+  "prezzo": 15,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "domenico modugno",
+  "per": "musae",
+  "fascia": "≤2",
+  "prezzo": 20,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "polignano a mare",
+  "per": "san vito",
+  "fascia": "≤7",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "san francesco",
+  "per": "san vito",
+  "fascia": "≤2",
+  "prezzo": 15,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "pietrablu",
+  "per": "san vito",
+  "fascia": "≤7",
+  "prezzo": 25,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "apt di brindisi",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 125,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "tedi tour operator",
+  "da": "cala ponte marina",
+  "per": "marina di ostuni",
+  "fascia": "≤7",
+  "prezzo": 90,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "almarano",
+  "da": "borgo egnazia",
+  "per": "cala ponte marina",
+  "fascia": "≤2",
+  "prezzo": 70,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "apt di brindisi",
+  "per": "tre vigne",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "apt di brindisi",
+  "per": "auraterrae",
+  "fascia": "≤2",
+  "prezzo": 170,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "cala ponte marina",
+  "per": "melograno",
+  "fascia": "≤7",
+  "prezzo": 55,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "puglia mare",
+  "da": "grotte di castellana",
+  "per": "via roma 243 polignano",
+  "fascia": "≤2",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "musae relais spa",
+  "da": "apt di bari",
+  "per": "musae relais spa",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "suite 10",
+  "da": "monopoli",
+  "per": "suite 10",
+  "fascia": "≤7",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "fasano",
+  "fascia": "≤2",
+  "prezzo": 133,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "longo",
+  "da": "bari airport",
+  "per": "longo euro service",
+  "fascia": "≤7",
+  "prezzo": 80,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "musae lama",
+  "da": "musae in lama",
+  "per": "sabbiadoro",
+  "fascia": "≤2",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "covo dei saraceni",
+  "per": "monopoli capitolo",
+  "fascia": "≤7",
+  "prezzo": 65,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "masseria montenapoleone",
+  "per": "masseria saccente",
+  "fascia": "≤7",
+  "prezzo": 85,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "apt di bari",
+  "per": "covo dei saraceni",
+  "fascia": "≤7",
+  "prezzo": 140,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "alberobello",
+  "per": "auraterrae",
+  "fascia": "≤7",
+  "prezzo": 100,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "jonny de napoli",
+  "da": "2 ghiottoni",
+  "per": "tre vigne",
+  "fascia": "≤7",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "monopoli",
+  "per": "pietra blu",
+  "fascia": "≤9",
+  "prezzo": 50,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "covo dei saraceni",
+  "per": "monopoli",
+  "fascia": "≤7",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "housea",
+  "da": "sorrento",
+  "per": "suite1212 pirrelli via capitan pirrelli 45",
+  "fascia": "≤9",
+  "prezzo": 680,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "casa di elena mancini",
+  "da": "bari airport",
+  "per": "casa di elena mancini",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "monopoli",
+  "per": "putignano",
+  "fascia": "≤7",
+  "prezzo": 75,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "fasano",
+  "per": "peschiera",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "le 3 di tuccino",
+  "da": "alberobello",
+  "per": "le 3 di tuccino",
+  "fascia": "?",
+  "prezzo": 80,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "pietrablu",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "octagano beach club",
+  "fascia": "≤2",
+  "prezzo": 90,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "tuccino",
+  "fascia": "≤7",
+  "prezzo": 15,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "jamante",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 15,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "penny",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "coco beach",
+  "per": "via roma",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "grotta palazzese",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 10,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "arco",
+  "per": "monopoli",
+  "fascia": "≤2",
+  "prezzo": 35,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "cozze",
+  "per": "stazione polignano",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "ostuni",
+  "per": "polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "generico",
+  "da": "masseria saccente",
+  "per": "monopoli",
+  "fascia": "≤7",
+  "prezzo": 55,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "san vito",
+  "fascia": "≤7",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "calaponte",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "6 stelle mama",
+  "da": "arco",
+  "per": "sabbiadoro",
+  "fascia": "≤7",
+  "prezzo": 65,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "fasano",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 45,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "cisternino",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 85,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "peschiera",
+  "per": "speziale",
+  "fascia": "≤7",
+  "prezzo": 65,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "dispo max 7h",
+  "per": "trulli le icone contrada cinera",
+  "fascia": "≤7",
+  "prezzo": 380,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "tour fd 8h valle d itria",
+  "per": "trulli le icone contrada cinera",
+  "fascia": "≤7",
+  "prezzo": 450,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "tour fd matera max 6h",
+  "per": "trulli le icone contrada cinera",
+  "fascia": "≤7",
+  "prezzo": 600,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "polignano a mare",
+  "per": "tour polignano a mare alberobello locorotondo cisternino ostuni polignano a mare",
+  "fascia": "≤7",
+  "prezzo": 520,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "world transfer",
+  "da": "chiesa matrice sala san tommaso rientro strutture",
+  "per": "strutture ospiti mattina",
+  "fascia": "?",
+  "prezzo": 250,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "viator",
+  "da": "bari airport",
+  "per": "la carasse boutique hotel",
+  "fascia": "≤2",
+  "prezzo": 90,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "bayit",
+  "da": "apt di bari",
+  "per": "arco",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "erik",
+  "da": "borgo egnazia",
+  "per": "full day polignano lecce",
+  "fascia": "≤9",
+  "prezzo": 500,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "cala ponte hotel",
+  "da": "cala ponte hotel",
+  "per": "monopoli",
+  "fascia": "≤7",
+  "prezzo": 45,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "puglia consierge",
+  "da": "masseria d erchia",
+  "per": "matera",
+  "fascia": "≤9",
+  "prezzo": 200,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "cala ponte marina",
+  "per": "melograno",
+  "fascia": "≤2",
+  "prezzo": 45,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "peschiera",
+  "per": "tour fd lecce max 6h",
+  "fascia": "≤7",
+  "prezzo": 450,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "alberobello",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 80,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "monopoli",
+  "fascia": "≤9",
+  "prezzo": 50,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "puglia mare",
+  "da": "la veranda di giselda",
+  "per": "lega navale monopoli",
+  "fascia": "≤7",
+  "prezzo": 50,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "polignano a mare",
+  "fascia": "≤9",
+  "prezzo": 70,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "covo dei saraceni",
+  "da": "alberobello",
+  "per": "covo dei saraceni",
+  "fascia": "≤7",
+  "prezzo": 90,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "dorino gite in barca",
+  "da": "bari airport",
+  "per": "monopoli capitolo",
+  "fascia": "≤2",
+  "prezzo": 120,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "dorino gite in barca",
+  "da": "monopoli capitolo",
+  "per": "ostuni",
+  "fascia": "≤7",
+  "prezzo": 140,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "cala ponte hotel",
+  "da": "cala ponte hotel",
+  "per": "diving subinastinenza scuba team via cala fontanella 2 monopoli",
+  "fascia": "≤2",
+  "prezzo": 45,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "transfer experience",
+  "da": "monopoli",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 30,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "talea group la peschiera",
+  "da": "ostuni",
+  "per": "peschiera",
+  "fascia": "≤7",
+  "prezzo": 90,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "diretto ref francesco masseria saccente",
+  "da": "masseria saccente",
+  "per": "terre di san vito wine tasting",
+  "fascia": "≤2",
+  "prezzo": 40,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "antico mondo",
+  "da": "apt di bari",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 110,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "6 stelle mama",
+  "da": "arco",
+  "per": "sabbiadoro",
+  "fascia": "≤2",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "erik",
+  "da": "borgo egnazia",
+  "per": "full day matera sosta altamura no bari",
+  "fascia": "≤9",
+  "prezzo": 480,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "auraterrae",
+  "da": "auraterrae",
+  "per": "monopoli",
+  "fascia": "≤7",
+  "prezzo": 60,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "pietra blu",
+  "da": "alberobello",
+  "per": "pietra blu",
+  "fascia": "≤2",
+  "prezzo": 100,
+  "volte": 2,
+  "diverse": 0
+ },
+ {
+  "fornitore": "melograno",
+  "da": "melograno",
+  "per": "polignano a mare",
+  "fascia": "≤2",
+  "prezzo": 45,
+  "volte": 2,
+  "diverse": 0
+ }
+]

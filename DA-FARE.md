@@ -215,3 +215,65 @@ per un prezzo deciso.
 tariffe vuote o a zero sono 10, l'1%: `Calcola Tariffa Gate` dentro Parse transfer il buco lo
 tappa quasi sempre. Il problema non è la quantità, è che quando sbaglia sbaglia in grande e
 in silenzio.
+
+## 5 — «Non si riesce ad avere prezzi corretti»: misurato, e si può
+
+Domanda di Agostino, 20/08 all'una di notte. Misurata sulle righe vere del gestionale
+(1.101 righe con un prezzo), non a naso.
+
+### Perché oggi sbaglia
+
+Il listino `Generico` ha **62 destinazioni**. I transfer veri vanno in centinaia di posti che
+lì dentro non ci sono: hotel, trulli, ristoranti, link di Maps. Quando il nome non c'è, il
+motore **non dice «non lo so»**: ripiega su un confronto morbido fra nomi
+(`nome.includes(riga) || riga.includes(nome)`) e poi sui chilometri. Da lì arrivano i numeri
+assurdi, e non sono rari — sono un intero modo di sbagliare:
+
+| quello che succede | prezzo vero | prezzo calcolato |
+|---|---|---|
+| «stazione» somiglia a «Stazione di Bari» | 10 € | 120 € |
+| «roma» (link di Maps non risolto) somiglia a «Roma APT» | ~135 € | **1.080 €** |
+| «Peschiera → Savelletri» prezzato come tratta da Polignano | 40 € | 95 € |
+
+Quanto vale il calcolo di oggi, sulle righe vere:
+
+* prezzo preso col nome **esatto**: azzecca il numero nel **20%** dei casi
+* prezzo preso per **somiglianza**: **4%**
+* tratte che il listino non copre proprio: **33%** delle righe
+
+### Il listino che esiste già e nessuno ha scritto
+
+I prezzi giusti ci sono: sono sulle righe che Agostino ha accettato. Raggruppando per
+**fornitore + tratta (senza verso) + fascia pax**, e riportando a giorno il supplemento
+notturno (×1,2 prima delle 7):
+
+* **142 tratte** hanno sempre lo stesso prezzo → sono righe di listino pronte
+* coprono il **51%** delle righe con un prezzo
+
+Messo alla prova **onestamente** (per giudicare una riga il listino viene ricostruito senza
+quella riga e senza le sue gemelle dello stesso giorno — `banchi/te/banco-listino-imparato.js`):
+
+* risponde sul **33%** delle righe
+* e quando risponde dà **il numero identico nel 93% dei casi**
+
+Contro il 20% del calcolo attuale. Gli sbagli che restano sono da 5-10 € su corse corte che
+Agostino prezza a mano di volta in volta.
+
+### Cosa propongo
+
+1. **Prima si guarda lo storico.** Fornitore + tratta + fascia pax: se quella corsa è già
+   stata fatta almeno due volte allo stesso prezzo, quello è il prezzo. Nessun indovinello.
+2. **Poi il listino del fornitore, e solo per nome esatto.**
+3. **Se nessuno dei due risponde, si dice che non si sa e si chiede.** Niente confronto
+   morbido, niente chilometri: è lì che nascono i 1.080 €.
+4. **Il Pax vuoto si legge dal veicolo** (Sprinter = 9, Vito = 7): oggi un Pax vuoto vale 1 e
+   prende la colonna più economica. Cambia la fascia sul 3% delle righe.
+
+Il listino imparato si aggiorna da solo: ogni tratta prezzata due volte diventa una riga.
+
+**Roba pronta:** `backups/n8n/calcola-tariffa/listino-imparato.json` (142 righe, 33 fornitori),
+`banchi/te/impara-listino.js`, `banchi/te/banco-listino.js`, `banchi/te/banco-listino-imparato.js`.
+
+**Serve il via libera** (zona rossa 1 e 2): il listino imparato va messo dove il motore lo
+legge — una scheda nuova del foglio struttura, oppure una tabella dati di n8n — e il motore
+va cambiato per smettere di indovinare.

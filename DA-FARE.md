@@ -73,11 +73,32 @@ Struttura: Pietra Blu
 TR-20260821-PROVA-non-e-un-transfer-vero
 ```
 
-Manca:
-1. ~~premere Avvia~~ — fatto.
-2. Poi si aggancia al flusso approvazioni (`Prenotazioni Transfer 6.0`, `NT4lxIxyBAl5lHpN`),
-   che ha **141 nodi** ed è quello che manda le schede col ✅/❌. Lì la scheda va cancellata —
-   o riscritta in una riga se ha più di 48 ore, che è il limite di Telegram.
+**✅ COLLEGATO il 20/08, 21:0x.** Il flusso delle schede col ✅ non è `Prenotazioni Transfer 6.0`
+(quello è il bot di chat, 141 nodi e con dentro il lavoro di un'altra sessione) ma
+**`Transfer webhook`** (`MJHTq5MksSeUhKgX`, 87 nodi, nessuna bozza aperta). Lì la catena della
+conferma è:
+
+```
+TG Trigger - Callback → Code - Parse Callback → Cerca id sheet → … →
+Smart Write Struttura → Prepara dati gestionale → gestionale   ← qui la riga è scritta davvero
+```
+
+Dopo `gestionale` ci sono già quattro rami (Writeback Conferma, CRM, Bottone Importo, verifica).
+Ne ho aggiunto un quinto, due nodi:
+
+- **`Scheda per l'archivio`** — legge `Prepara dati gestionale` e compone i campi. `YES` →
+  «confermato», `ESEGUITO` → «eseguito».
+- **`Archivia`** — chiama il sotto-workflow `iMdL25QO3dRkRxg8`.
+
+Tutti e due `onError: continueRegularOutput`: **un archivio che si rompe non può far fallire un
+salvataggio**. Versione attiva `93a9559f-a36f-4102-a2da-55ab89b30c8b`.
+
+Manca ancora:
+1. gli altri due esiti — **annullato** (ramo `Declined`) e **cancellato** (ramo
+   `Update Allert Cancellato`). Stessa idea, dati diversi: si fanno dopo aver visto che il primo
+   funziona sul campo.
+2. la scheda nel bot richieste: oggi non viene cancellata ma **riscritta** dai nodi
+   `Edit a text message*` che ci sono già. Da guardare insieme se basta così.
 
 ⚠️ Da sapere: il 20/08 alle 17:20 `Prenotazioni Transfer 6.0` aveva una **bozza non
 pubblicata** (`versionId ≠ activeVersionId`). Non l'ho toccato: qualcun altro ci sta lavorando.

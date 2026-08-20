@@ -338,3 +338,40 @@ metà della storia.
 **Rimedio da valutare:** mettere in fila gli allegati invece di farli correre — il secondo
 allegato aspetta che il primo abbia finito, così almeno se lo trova in memoria. Costa attesa
 (il secondo turno arriverebbe dopo ~45 s invece che subito) e va deciso con Agostino.
+
+## 8 — Orca non creava più i messaggi per il cliente  ✅ 20/08 10:45
+
+**Agostino, 20/08:** «orchestratore fa schifo… non crea neanche messaggi per parlare con il
+cliente, è proprio pessimo». Aveva ragione, e la causa è di una riga.
+
+**Prova.** Esecuzione `772543` delle 09:54. Il prompt chiede al modello di racchiudere il
+messaggio cliente fra `[[WA_MSG]]` e `[[/WA_MSG]]`, seguiti da `[[WA_TEL:numero]]`.
+`Code Parser Intent` cerca **esattamente** quelle doppie quadre, e quando le trova costruisce
+il link «💬 Invia su WhatsApp» col messaggio già dentro. Il modello ha scritto invece:
+
+```
+<WA_MSG> … </WA_MSG>    <WA_TEL></WA_TEL>
+```
+
+Le quadre non c'erano. Il parser non ha riconosciuto niente, quindi:
+1. **nessun link WhatsApp** — cioè la cosa per cui Orca esiste;
+2. i tag sono rimasti nel testo e Agostino se li è visti in chat, in mezzo al messaggio.
+
+**Perché non si risolve nel prompt.** Perché nel prompt c'era già, e il modello l'ha
+disatteso lo stesso. È la regola di CLAUDE.md: quello che conta lo produce il codice.
+
+**Fatto.** Nodo nuovo `Normalizza i marcatori` fra `Risposta vuota?` e `Code Parser Intent`:
+riscrive i marcatori noti (`WA_MSG`, `WA_TEL`, `SUMUP`, `INTENT`, `BUTTONS`) nella forma che
+il parser capisce, comunque il modello li abbia incartati — doppie quadre, quadre singole,
+angolari, graffe, tonde — e non tocca nient'altro, tag HTML compresi.
+
+**Provato da capo a fondo** sul testo vero dell'esecuzione: prima nessun link, dopo
+
+```
+💬 <a href="https://wa.me/393335551234?text=Gentile%20Cliente%2C…">Invia su WhatsApp</a>
+```
+
+Versione attiva **`2fa74186`**. Banco `banchi/te/banco-marcatori.js`, 22 casi verdi.
+
+Il campo `marcatori_raddrizzati` dice, esecuzione per esecuzione, se è servito: se resta
+sempre `true`, il modello continua a sbagliare le parentesi e vale la pena rivedere il prompt.

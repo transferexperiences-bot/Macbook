@@ -11,10 +11,15 @@ const path = require('path');
 const CODICE = fs.readFileSync(path.join(__dirname, '../../backups/n8n/calcola-tariffa/applica-listino-imparato.js'), 'utf8');
 const IMPARATO = require('../../backups/n8n/calcola-tariffa/listino-imparato.json');
 
-function gira(esito, tabella) {
+// `luoghi` è quello che «Prepara Ricerche» e «Estrai Comuni» avrebbero prodotto: serve
+// alla guardia per sapere se un link di Maps si è risolto davvero e quale comune è uscito.
+function gira(esito, tabella, luoghi) {
   const righe = (tabella || IMPARATO).map((r) => ({ json: r }));
+  const L = luoghi || {};
   const $ = (nome) => {
     if (nome === 'Calcola Tariffa') return { first: () => ({ json: esito }) };
+    if (nome === 'Prepara Ricerche') return { all: () => (L.prep || []).map((j) => ({ json: j })) };
+    if (nome === 'Estrai Comuni') return { first: () => ({ json: L.comuni || {} }) };
     throw new Error('nodo non previsto: ' + nome);
   };
   const $input = { all: () => righe };
@@ -102,6 +107,91 @@ for (const [da, per, forn, atteso] of [
 // ─────────────────────────────────────────────────────────────────────────────
 // Regola numero uno: se questo nodo inciampa, il prezzo di prima deve passare intatto.
 // Sta in mezzo alla strada che porta una riga sul gestionale.
+// ─────────────────────────────────────────────────────────────────────────────
+// La guardia: quando il motore è arrivato al prezzo indovinando, non si dà il prezzo.
+console.log('\nla guardia sui prezzi indovinati');
+
+// 760644, il caso vero: Savelletri → Polignano prezzato 1.080 € perché il link di Maps
+// della partenza non si è risolto e il listino ha risposto col prezzo dell'aeroporto di Roma.
+const ESITO_1080 = {
+  status: 'ok', tariffa: 1080, matchEsatto: false, modo: 'listino-MAX', listino: 'Generico',
+  da: 'https://maps.app.goo.gl/W1NMNfwxU9hQnwhk6', per: 'Polignano a Mare',
+  pax: 1, veicolo: 'Sprinter 9 posti', fornitore: 'Tedi tour operator', orario: '17:00',
+  dettaglio: {
+    da: { prezzo: 1080, mode: 'comune+raggio', dest: 'Roma APT' },
+    per: { prezzo: 30, mode: 'esatto', dest: 'Polignano a Mare' },
+    kmGaragePickup: 520.1, kmCorsa: 519.8, kmRientro: 0.3, kmTot: 1040.1
+  }
+};
+const LUOGHI_1080 = {
+  prep: [
+    { _type: 'da', _addr: '', _mapUrl: 'https://maps.app.goo.gl/W1NMNfwxU9hQnwhk6', _resolvedVia: undefined },
+    { _type: 'per', _addr: 'Polignano a Mare', _mapUrl: null, _resolvedVia: 'geocode' }
+  ],
+  comuni: { comuneDa: 'Roma', comunePer: 'Polignano a Mare' }
+};
+const g1080 = gira(ESITO_1080, null, LUOGHI_1080);
+t('i 1.080 € non escono più', g1080.status === 'warning' && g1080.tariffa === 0, JSON.stringify(g1080.tariffa));
+t('e dice perché: il link non si è risolto', g1080.motivo === 'partenza-non-risolta', String(g1080.motivo));
+t('tiene traccia del numero che avrebbe dato', g1080.tariffa_calcolata_prima === 1080);
+
+// stesso caso ma il link si è risolto: a fermarlo basta la distanza
+const risolto = JSON.parse(JSON.stringify(LUOGHI_1080));
+risolto.prep[0]._resolvedVia = 'maps-url-nominatim';
+t('se il link si fosse risolto, ci pensa la distanza',
+  gira(ESITO_1080, null, risolto).motivo === 'distanza-fuori-scala');
+
+// e se anche la distanza fosse normale, resta il listino di un altro posto
+const vicino = JSON.parse(JSON.stringify(ESITO_1080));
+vicino.dettaglio.kmGaragePickup = 12; vicino.dettaglio.kmCorsa = 30; vicino.dettaglio.kmRientro = 8;
+t('e se anche la distanza tornasse, resta il listino di un altro posto',
+  gira(vicino, null, risolto).motivo === 'listino-di-un-altro-posto');
+
+// «stazione» che prende il prezzo di «Stazione di Bari»: 10 € prezzati 120
+const stazione = {
+  status: 'ok', tariffa: 120, matchEsatto: false, modo: 'listino-MAX',
+  da: 'Arco', per: 'stazione', pax: 2, fornitore: 'Tal Dei Tali', orario: '10:00',
+  dettaglio: { per: { prezzo: 120, mode: 'comune+raggio', dest: 'Stazione di Bari' },
+               kmGaragePickup: 3, kmCorsa: 2, kmRientro: 3 }
+};
+const gStaz = gira(stazione, null, { prep: [{ _type: 'da', _addr: 'Arco' }, { _type: 'per', _addr: 'stazione' }],
+  comuni: { comuneDa: 'Polignano a Mare', comunePer: 'stazione' } });
+t('«stazione» non prende più il prezzo di «Stazione di Bari»',
+  gStaz.status === 'warning' && gStaz.motivo === 'listino-di-un-altro-posto', JSON.stringify(gStaz.motivo));
+
+console.log('\nquello che la guardia NON deve toccare');
+// il prezzo esatto di listino passa sempre, anche se lontanissimo
+const amalfi = {
+  status: 'ok', tariffa: 850, matchEsatto: true, modo: 'listino-MAX',
+  da: 'Auraterrae', per: 'Amalfi', pax: 4, fornitore: 'Auraterrae', orario: '09:00',
+  dettaglio: { da: { prezzo: 0, mode: 'esatto', dest: 'Auraterrae' },
+               per: { prezzo: 850, mode: 'esatto', dest: 'Amalfi' },
+               kmGaragePickup: 15, kmCorsa: 280, kmRientro: 295 }
+};
+t('Auraterrae → Amalfi a 850 € di listino esatto: non si tocca',
+  gira(amalfi, null, { prep: [{ _type: 'da', _addr: 'Auraterrae' }, { _type: 'per', _addr: 'Amalfi' }],
+    comuni: { comuneDa: 'Polignano a Mare', comunePer: 'Amalfi' } }).tariffa === 850);
+
+// un comune che prende la riga più corta dello stesso posto: va bene
+const polignano = {
+  status: 'ok', tariffa: 35, matchEsatto: false, modo: 'listino-MAX',
+  da: 'Auraterrae', per: 'via Roma 12', pax: 2, fornitore: 'Auraterrae', orario: '10:00',
+  dettaglio: { per: { prezzo: 35, mode: 'comune+raggio', dest: 'Polignano' },
+               kmGaragePickup: 2, kmCorsa: 3, kmRientro: 2 }
+};
+t('«Polignano a Mare» che prende la riga «Polignano»: passa',
+  gira(polignano, null, { prep: [{ _type: 'da', _addr: 'Auraterrae' }, { _type: 'per', _addr: 'via Roma 12' }],
+    comuni: { comuneDa: 'Polignano a Mare', comunePer: 'Polignano a Mare' } }).tariffa === 35);
+
+// e una tratta imparata vince comunque, anche se la guardia avrebbe da ridire
+const imparataForte = gira({ status: 'ok', tariffa: 120, matchEsatto: false, modo: 'listino-MAX',
+  da: 'Arco', per: 'stazione Polignano', pax: 2, fornitore: 'Transfer Experience', orario: '10:00',
+  dettaglio: { per: { prezzo: 120, mode: 'comune+raggio', dest: 'Stazione di Bari' }, kmCorsa: 2 } },
+  null, { prep: [{ _type: 'da', _addr: 'Arco' }, { _type: 'per', _addr: 'stazione Polignano' }],
+    comuni: { comuneDa: 'Polignano a Mare', comunePer: 'stazione' } });
+t('se la tratta è imparata, il prezzo giusto vince prima che la guardia intervenga',
+  imparataForte.tariffa === 10 && imparataForte.status === 'ok', JSON.stringify(imparataForte.tariffa));
+
 console.log('\nse inciampa, non porta giù il salvataggio');
 function giraRotto(esito) {
   const $ = () => ({ first: () => ({ json: esito }) });

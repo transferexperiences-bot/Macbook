@@ -13,8 +13,12 @@ const CASA = new RegExp(process.argv[5], 'i');
 
 const strip = (s) => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '')
   .toLowerCase().replace(/https?:\/\/\S+/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+// Alcuni listini hanno solo due colonne (Auraterrae: 7 e 9, niente 2). La chiave
+// «__colonne» dice quali soglie ci sono davvero, così la fascia si sceglie come la sceglie
+// il motore: la prima soglia che copre i pax, e se nessuna copre, l'ultima colonna.
+const SOGLIE = listino.__colonne || [2, 7, 9];
 const perNome = new Map();
-for (const k of Object.keys(listino)) perNome.set(strip(k), listino[k]);
+for (const k of Object.keys(listino)) if (k !== '__colonne') perNome.set(strip(k), listino[k]);
 
 function colonna(pax, veicolo) {
   let p = parseInt(pax, 10);
@@ -24,7 +28,8 @@ function colonna(pax, veicolo) {
     p = m ? parseInt(m[1], 10) : (/sprinter|minibus/.test(v) ? 9 : (/vito|minivan/.test(v) ? 7 : 0));
   }
   if (!p) return null;
-  return p <= 2 ? 0 : (p <= 7 ? 1 : 2);
+  for (let i = 0; i < SOGLIE.length; i++) if (p <= SOGLIE[i]) return i;
+  return SOGLIE.length - 1;
 }
 const notturno = (r) => { const h = parseInt(String(r.Time || '').slice(0, 2), 10); return (!isNaN(h) && h < 7) ? 1.2 : 1; };
 

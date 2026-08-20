@@ -300,3 +300,41 @@ motore, quando non trova, indovina ancora (confronto morbido, poi chilometri). T
 farebbe crescere di molto le domande, e il numero vero non lo so finché non ho i listini dei
 singoli fornitori. La `guardia-luogo.js` del punto 4 copre intanto i casi assurdi, ed è
 ancora da approvare.
+
+## 6 — Orca: le vCard le leggeva come un CSV  ✅ 20/08 10:20
+
+**Prova.** Esecuzione `772535` del 20/08 alle 09:54. Agostino manda il contatto
+`Ivan Deluxe Nemeth.vcf` e Orca risponde, con parole sue:
+
+> «mi è arrivata solo la vcard ma senza dati leggibili (vedo solo "VERSION:3.0", niente
+> nome/telefono/email)»
+
+Il nome e il numero erano dentro il file. Al posto del lettore c'era un `Extract From File`
+**senza operazione impostata**: n8n ripiega sul CSV, prende `BEGIN:VCARD` come intestazione
+di colonna e `VERSION:3.0` come unico dato, e butta tutto il resto. Prenotazioni Transfer 6.0
+il lettore giusto ce l'ha dal 07/08; Orca no.
+
+**Fatto.** Nodo nuovo `Leggi la vCard` al posto di `Extract vCard`. Legge nome, telefoni,
+email, azienda, ruolo e note; regge le righe piegate, il quoted-printable con gli accenti e
+il prefisso `itemN.` di iOS; prende il binario in tre modi diversi perché in n8n quale
+funzioni dipende da come gira il nodo. Se non riesce a leggerlo lo dice invece di inventare.
+
+Versione attiva **`6b40b3e0`**. Banco `banchi/te/banco-vcard.js`, 15 casi verdi.
+
+## 7 — Orca: due risposte per un gruppo di messaggi  🟡 da sistemare
+
+**Prova.** Stesso momento, 20/08 09:54:03. Agostino manda insieme un contatto, una frase
+(«No 7 / 3 ore. a 740€») e un vocale da 34 secondi. Partono quattro esecuzioni; due passano
+il buffer e vanno avanti **in parallelo**:
+
+* `772535` — il contatto, che si prende anche la frase;
+* `772537` — il vocale, da solo, con `text` vuoto.
+
+Il buffer fa quello per cui è stato scritto («un allegato va sempre avanti»: due binari non
+si possono unire in un turno solo), ma i due turni **corrono insieme** e nessuno dei due vede
+l'altro: stessa memoria, scritta da tutte e due. Agostino riceve due risposte, ognuna con
+metà della storia.
+
+**Rimedio da valutare:** mettere in fila gli allegati invece di farli correre — il secondo
+allegato aspetta che il primo abbia finito, così almeno se lo trova in memoria. Costa attesa
+(il secondo turno arriverebbe dopo ~45 s invece che subito) e va deciso con Agostino.

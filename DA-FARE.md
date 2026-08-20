@@ -39,8 +39,37 @@ svolti — il gestionale segna dopo come hanno pagato davvero. Sui servizi futur
   in un caso spiega anche perché l'ora è diversa (pick-up anticipato alle 08:30).
 
 Codice: `n8n/controllo-incrociato/confronto.js`. Banco: `banchi/te/banco-confronto.js`, verde
-(14 prove nuove). **Non ancora pubblicato su n8n**: cambia cosa arriva su Telegram, quindi si
-fa col via di Agostino.
+(14 prove nuove).
+
+**✅ PUBBLICATO il 20/08**: workflow `SV · Controllo Strutture ↔ Gestionale`
+(`OIW5kMQKtYvprbdv`), nodo `Confronta`, versione attiva
+`c0c623e3-8e17-43e5-b1d8-1c3e7389c157`. Non l'ho fatto girare a mano — manda un messaggio su
+Telegram e quella è roba che esce: parte da sé al giro dell'ora.
+
+## 🤖 Bot Archivio — costruito, aspetta solo lo Start (20/08)
+
+Agostino vuole due bot: **Richieste** (le schede da approvare) e **Archivio** (la rubrica di
+quelle già decise). Il bot archivio esiste: **@storicobookings_bot**, «Storico Bookings».
+
+Fatto:
+- **`TE — Archivio transfer (bot Storico Bookings)`** (`iMdL25QO3dRkRxg8`), pubblicato.
+  Sotto-workflow: riceve un transfer già deciso e ne manda la scheda al bot. Non scrive su
+  nessun foglio, e ha `onError: continueRegularOutput` — un archivio che si rompe non deve
+  poter far fallire un salvataggio.
+- **`TE — sonda bot Archivio`** (`dfseVIRNnqU8DSt1`), una tantum, per la prova d'invio.
+
+Manca:
+1. **Agostino deve aprire @storicobookings_bot e premere Avvia.** Finché non lo fa Telegram
+   risponde `chat not found` (provato: esecuzione 774660). Un bot non può scrivere per primo.
+2. Poi si aggancia al flusso approvazioni (`Prenotazioni Transfer 6.0`, `NT4lxIxyBAl5lHpN`),
+   che ha **141 nodi** ed è quello che manda le schede col ✅/❌. Lì la scheda va cancellata —
+   o riscritta in una riga se ha più di 48 ore, che è il limite di Telegram.
+
+⚠️ Da sapere: il 20/08 alle 17:20 `Prenotazioni Transfer 6.0` aveva una **bozza non
+pubblicata** (`versionId ≠ activeVersionId`). Non l'ho toccato: qualcun altro ci sta lavorando.
+
+⚠️ Il token del bot **non sta nel repo**. Vive dentro i nodi HTTP di n8n. Quando c'è tempo va
+spostato in una credenziale Telegram, così non compare più in chiaro nei backup dei workflow.
 
 ## ✅ PUBBLICATO — il km segue la commissione (20/08, 10:18)
 

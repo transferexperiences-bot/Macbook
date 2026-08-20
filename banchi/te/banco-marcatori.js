@@ -70,5 +70,38 @@ t('un messaggio normale passa identico', gira(NORMALE).output === NORMALE);
 t('il minore-maggiore in un prezzo non diventa un marcatore',
   gira('costo < 100 e > 50').output === 'costo < 100 e > 50', gira('costo < 100 e > 50').output);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// La spia: domande fatte alla persona sbagliata.
+console.log('\nla spia sulle domande fatte a chi non sa la risposta');
+const CHIEDE_AD_AGOSTINO = [
+  'Ok, tour in barca HD 3 ore.',
+  '[[WA_MSG]]',
+  'Gentile Cliente, a che ora preferisce partire?',
+  '[[/WA_MSG]]',
+  '[[WA_TEL:]]',
+  'Serve: nome, numero, struttura/punto di ritiro. E confermi italiano o inglese?'
+].join('\n');
+const spia = gira(CHIEDE_AD_AGOSTINO).domande_da_cliente;
+t('vede che sta chiedendo ad Agostino il punto di ritiro', spia.indexOf('punto di ritiro') !== -1, JSON.stringify(spia));
+t('e il nome, e il numero', spia.indexOf('nome del cliente') !== -1 && spia.indexOf('numero del cliente') !== -1, JSON.stringify(spia));
+t('e la lingua', spia.indexOf('lingua') !== -1, JSON.stringify(spia));
+
+const GIUSTO = [
+  'Ok, tour in barca HD 3 ore. Confermo?',
+  '[[WA_MSG]]',
+  'Gentile Cliente, da quale struttura la passiamo a prendere, e a che ora preferisce partire?',
+  '[[/WA_MSG]]',
+  '[[WA_TEL:393335551234]]'
+].join('\n');
+t('le domande DENTRO il messaggio al cliente non contano',
+  gira(GIUSTO).domande_da_cliente.length === 0, JSON.stringify(gira(GIUSTO).domande_da_cliente));
+
+t('una domanda che tocca davvero ad Agostino non viene segnata',
+  gira('Serve il tuo ok sul prezzo: 740€ o scendo a 700?').domande_da_cliente.length === 0,
+  JSON.stringify(gira('Serve il tuo ok sul prezzo: 740€ o scendo a 700?').domande_da_cliente));
+t('«mi serve il nome della struttura» non è un dato del cliente',
+  gira('Mi serve il nome della struttura per il listino.').domande_da_cliente.indexOf('nome del cliente') === -1,
+  JSON.stringify(gira('Mi serve il nome della struttura per il listino.').domande_da_cliente));
+
 console.log('\n' + ok + ' ok, ' + ko + ' KO\n');
 process.exit(ko ? 1 : 0);

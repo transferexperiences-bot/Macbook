@@ -375,3 +375,36 @@ Versione attiva **`2fa74186`**. Banco `banchi/te/banco-marcatori.js`, 22 casi ve
 
 Il campo `marcatori_raddrizzati` dice, esecuzione per esecuzione, se è servito: se resta
 sempre `true`, il modello continua a sbagliare le parentesi e vale la pena rivedere il prompt.
+
+## 9 — Orca chiedeva ad Agostino cose che sa solo il cliente  ✅ 20/08 11:10
+
+**Agostino, 20/08:** «non mi piace faccia domande che dovrebbe fare direttamente al cliente,
+inutile chiedere a me».
+
+**Prova.** Esecuzione `772543`. Orca prepara il messaggio per il cliente e poi chiude con:
+
+> «Serve: nome, numero, struttura/punto di ritiro. E confermi italiano o inglese?»
+
+Il punto di ritiro lo sa il cliente, non Agostino. La lingua si deduce dal numero, e la regola
+è già scritta nel prompt sotto STILE E TONO. Agostino finisce a fare da centralino fra il bot
+e il cliente, per dati che non ha.
+
+**Fatto.** Nodo `Regola: chiedilo al cliente` fra `Unisci memoria` e `AI Agent Orca`. Attacca
+al prompt la divisione dei ruoli:
+
+* **Agostino** decide: se si fa, prezzo, sconto, acconto, mezzo, autista, disponibilità,
+  accordi con la struttura.
+* **Il cliente** sa tutto il resto: come si chiama, dove alloggia, da dove parte, a che ora,
+  quanti sono, le valigie, il volo.
+* Se il dato manca e lo sa il cliente → la domanda va **dentro** il messaggio al cliente, e il
+  messaggio si scrive lo stesso invece di aspettare.
+
+Sta in un nodo a parte perché il prompt vive dentro `Unisci memoria`, 80 KB di codice: là
+dentro una regola non si rilegge e non si prova.
+
+**E si misura.** `Normalizza i marcatori` scrive `domande_da_cliente` a ogni turno: elenca i
+dati del cliente che Orca ha chiesto ad Agostino (le domande dentro il messaggio al cliente
+non contano). Non corregge niente — riscrivere la prosa del modello è peggio del male. Se il
+campo resta pieno turno dopo turno, la regola scritta non ha preso e si cambia strada.
+
+Versione attiva **`c4fcac60`**. Banco `banchi/te/banco-marcatori.js`, 28 casi verdi.

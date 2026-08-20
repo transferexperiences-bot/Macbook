@@ -71,6 +71,32 @@ function normalizza(testo) {
   return t;
 }
 
+// ── LA SPIA: domande fatte alla persona sbagliata ────────────────────────────
+// Agostino, 20/08: «non mi piace faccia domande che dovrebbe fare direttamente al
+// cliente, inutile chiedere a me». La regola sta nel prompt (nodo «Regola: chiedilo al
+// cliente»), e una regola scritta o funziona o non funziona: questo la misura.
+// Qui NON si corregge niente — riscrivere la prosa del modello è peggio del male. Si
+// segna e basta: se `domande_da_cliente` resta pieno turno dopo turno, la regola non ha
+// preso e va cambiata strada.
+const DATI_DEL_CLIENTE = [
+  ['nome del cliente', /\bnome\b(?!\s+(?:della|del)\s+(?:struttura|hotel|fornitore))/i],
+  ['numero del cliente', /\b(numero|cellulare|telefono|contatto)\b/i],
+  ['punto di ritiro', /\b(punto di ritiro|dove.{0,12}prendiamo|da quale struttura|indirizzo di ritiro|pick.?up)\b/i],
+  ['orario', /\b(a che ora|che ora preferisce|orario di partenza)\b/i],
+  ['quante persone', /\b(quanti sono|quante persone|quanti pax|numero di passeggeri)\b/i],
+  ['volo', /\b(numero di volo|che volo)\b/i],
+  ['lingua', /\b(italiano o inglese|in che lingua|conferm\w+ (?:la )?lingua)\b/i]
+];
+const CHIEDE = /(mi serv|serve\b|mi manca|mancano|dimmi|mi dici|puoi darmi|mi passi|conferm\w+\?)/i;
+
+function domandeFuoriPosto(testo) {
+  // si guarda SOLO quello che Agostino legge: il messaggio per il cliente è giusto che
+  // le domande le contenga.
+  const soloPerAgostino = String(testo).replace(/\[\[WA_MSG\]\][\s\S]*?\[\[\/WA_MSG\]\]/gi, ' ');
+  if (!CHIEDE.test(soloPerAgostino)) return [];
+  return DATI_DEL_CLIENTE.filter(([, rx]) => rx.test(soloPerAgostino)).map(([nome]) => nome);
+}
+
 for (const it of items) {
   const j = it.json || {};
   const grezzo = (j.output !== undefined && j.output !== null) ? j.output : j.text;
@@ -79,7 +105,8 @@ for (const it of items) {
     output: pulito,
     // si tiene traccia solo quando è servito davvero: così si vede se il modello continua
     // a sbagliare le parentesi anche dopo aver sistemato il prompt.
-    marcatori_raddrizzati: pulito !== String(grezzo == null ? '' : grezzo)
+    marcatori_raddrizzati: pulito !== String(grezzo == null ? '' : grezzo),
+    domande_da_cliente: domandeFuoriPosto(pulito)
   }) });
 }
 return fuori;

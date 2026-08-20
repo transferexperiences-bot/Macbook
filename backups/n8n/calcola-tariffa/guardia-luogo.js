@@ -1,6 +1,13 @@
 // === GUARDIA LUOGO — 20/08/2026 ===
-// Da innestare in «Calcola Tariffa Prenotazioni» (APv3ZqEizY1HnPia), nel nodo
-// «Calcola Tariffa», subito prima del `return` che manda fuori il prezzo.
+// ⚠️ SUPERATO IL 20/08 ALLE 11:00. Questa è la versione di prova, tenuta perché il suo
+// banco (banchi/te/banco-guardia-luogo.js) ragiona sui casi in chiaro ed è il posto più
+// leggibile per capire la regola. Quella VERA, in produzione, sta dentro
+// «Applica listino imparato» (backups/n8n/calcola-tariffa/applica-listino-imparato.js),
+// che la applica subito dopo aver cercato nel listino imparato. Se cambi la regola,
+// cambiala LÀ: questo file non gira più da nessuna parte.
+//
+// Era pensato per innestarsi in «Calcola Tariffa Prenotazioni» (APv3ZqEizY1HnPia), nel
+// nodo «Calcola Tariffa», subito prima del `return` che manda fuori il prezzo.
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // IL GUASTO, CON LE PROVE

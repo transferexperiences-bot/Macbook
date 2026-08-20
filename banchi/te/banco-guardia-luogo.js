@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 // Banco della «Guardia Luogo» — il pezzo che impedisce a una tariffa inventata di
 // finire su una riga vera del gestionale.
+// ⚠️ Prova la versione DI STUDIO (backups/n8n/calcola-tariffa/guardia-luogo.js), non
+// quella in produzione: dal 20/08 la guardia vera vive dentro «Applica listino imparato»
+// e il suo banco è banchi/te/banco-applica-imparato.js. Questo resta perché i casi qui
+// sono scritti in chiaro ed è il posto più leggibile per capire la regola.
 //   node banchi/te/banco-guardia-luogo.js
 // Il caso che l'ha fatta nascere è vero e ha un numero: esecuzione 760644 del 18/08,
 // Savelletri → Polignano a Mare prezzato 1.080 € perché il link di Maps della partenza

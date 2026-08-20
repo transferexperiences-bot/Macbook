@@ -71,7 +71,11 @@ var TE_CAMPI = [
   { nome: 'Autista',   str: 'Autista',         ges: 'Autista',        tipo: 'testo' },
   { nome: 'Veicolo',   str: 'Veicolo',         ges: 'Veicolo',        tipo: 'testo' },
   { nome: 'Ore extra', str: 'h extra/ritardi', ges: 'h extra',        tipo: 'testo' },
-  { nome: 'Fee',       str: 'Fee',             ges: 'Fee',            tipo: 'soldi' },
+  // Sul gestionale la fee è scritta col meno davanti (−24), sulle strutture no (24):
+  // è la stessa cifra vista da due parti. Si confronta il valore assoluto, altrimenti
+  // ogni riga con una commissione risulterebbe discordante — sulle righe vere erano 76.
+  { nome: 'Fee',       str: 'Fee',             ges: 'Fee',            tipo: 'soldi-assoluto',
+    zeroVuoto: true },
   { nome: 'Modalità',  str: 'Modalità',        ges: 'Modalità',       tipo: 'testo' }
 ];
 
@@ -125,7 +129,14 @@ function teOra_(v) {
 // I telefoni si scrivono in dieci modi: +39, 0039, con gli spazi, senza. Conta
 // il numero, non come è scritto: si confrontano le ultime nove cifre.
 function teTel_(v) {
-  var d = teS_(v).replace(/\D/g, '');
+  var t = teS_(v);
+  // I telefoni salvati come numero tornano in notazione scientifica («4.178E10»):
+  // vanno riportati in cifre, altrimenti sono tutti diversi da tutto.
+  if (/e\+?\d+$/i.test(t.replace(/\s/g, ''))) {
+    var n = Number(t.replace(/\s/g, ''));
+    if (!isNaN(n)) t = n.toFixed(0);
+  }
+  var d = t.replace(/\D/g, '');
   if (d.length < 6) return '';
   return d.slice(-9);
 }
@@ -226,11 +237,21 @@ function teConfronta_(strutture, gestionale, oggi, adesso) {
                      avviso: true });
         return;
       }
-      else if (c.tipo === 'numero' || c.tipo === 'soldi') {
+      else if (c.tipo === 'numero' || c.tipo === 'soldi' || c.tipo === 'soldi-assoluto') {
         var na = teNum_(a), nb = teNum_(b);
         if (na === null || nb === null) return;            // non confrontabile
+        if (c.tipo === 'soldi-assoluto') { na = Math.abs(na); nb = Math.abs(nb); }
+        // Sulla Fee lo zero vuol dire «non calcolata», non «zero euro»: su un foglio
+        // c'è e sull'altro no, e non è una discordanza. Sulle righe vere erano 32.
+        if (c.zeroVuoto && (na === 0 || nb === 0)) return;
         va = String(na); vb = String(nb);
       } else { va = teNorm_(a); vb = teNorm_(b); }
+
+      // Sui campi aggiunti il 20/08, uno che contiene l'altro non è una discordanza:
+      // il gestionale scrive «Sprinter GZ204TT» dove la struttura scrive «Sprinter»,
+      // ed è la stessa cosa detta con più precisione. Sui sette campi rossi invece il
+      // confronto resta stretto com'era: lì una parola in più può essere un errore.
+      if (!c.grave && va && vb && (va.indexOf(vb) !== -1 || vb.indexOf(va) !== -1)) return;
       // se uno dei due non si è lasciato leggere non si grida: si tace
       if (!va || !vb) return;
       if (va !== vb) {

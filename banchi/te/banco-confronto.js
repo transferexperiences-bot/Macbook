@@ -212,5 +212,63 @@ prova('senza data — non è un servizio da fare', false,
     teConfronta_([s], [g], '17/08/2026', '08:00').discordanti.length);
 }
 
+
+// =====================================================================
+// I campi aggiunti il 20/08 — «tutti, assolutamente» (Agostino)
+// Le regole qui sotto non sono gusti: ognuna toglie un falso allarme che
+// sulle righe VERE si contava a decine. I numeri sono nei commenti.
+// =====================================================================
+console.log('\n-- i campi nuovi --');
+function conf(campiStr, campiGes) {
+  const s = { ...STR, ...campiStr };
+  const g = { ...GES, Data: '17/08/2026', Time: '17:30', ...campiGes };  // resto uguale
+  const r = teConfronta_([s], [g], '17/08/2026', '08:00');
+  return r.discordanti.length ? r.discordanti[0].differenze.map((d) => d.campo) : [];
+}
+
+// La nota è il motivo per cui Agostino ha chiesto tutti i campi.
+prova('nota della struttura che sul gestionale non c\'è → si segnala',
+  ['Note'], conf({ Note: 'bambino 2 anni, seggiolino' }, { Note: '' }));
+prova('nota già presente, con altro intorno → silenzio',
+  [], conf({ Note: 'seggiolino' }, { Note: 'cliente abituale · seggiolino · pagato' }));
+prova('nota solo sul gestionale → silenzio (non è la struttura a chiedere)',
+  [], conf({ Note: '' }, { Note: 'chiamato il cliente' }));
+
+// Fee: sul gestionale è negativa. Erano 76 falsi allarmi su 161 servizi.
+prova('fee 24 contro −24 → silenzio', [], conf({ Fee: '24' }, { Fee: '-24.0' }));
+prova('fee 0 da una parte → silenzio (vuol dire «non calcolata»)',
+  [], conf({ Fee: '0' }, { Fee: '-3.15' }));
+prova('fee davvero diversa → si segnala', ['Fee'], conf({ Fee: '24' }, { Fee: '-30' }));
+
+// Telefoni salvati come numero: tornano in notazione scientifica. Erano 18.
+prova('telefono in notazione scientifica → silenzio',
+  [], conf({ 'cell.': '41782609962' }, { 'Cell.': '4.1782609962E10' }));
+prova('telefono con prefisso scritto diverso → silenzio',
+  [], conf({ 'cell.': '+39 080 4240108' }, { 'Cell.': '00390804240108' }));
+prova('telefono di un\'altra persona → si segnala',
+  ['Telefono'], conf({ 'cell.': '3331112223' }, { 'Cell.': '3339998887' }));
+
+// Il gestionale è più preciso: non è una discordanza.
+prova('veicolo «Sprinter» contro «Sprinter GZ204TT» → silenzio',
+  [], conf({ Veicolo: 'Sprinter' }, { Veicolo: 'Sprinter GZ204TT' }));
+prova('autista diverso → si segnala (arancione)',
+  ['Autista'], conf({ Autista: 'Giuseppe Fanelli' }, { Autista: 'Claudio Moccia' }));
+prova('volo diverso → si segnala', ['Volo'], conf({ Volo: 'FR7838' }, { Volo: 'W64321' }));
+
+// Il colore: i sette campi che mandano un autista nel posto sbagliato restano rossi,
+// tutto il resto è arancione.
+{
+  const s = { ...STR, Autista: 'Tizio', Note: 'seggiolino' };
+  const g = { ...GES, Data: '17/08/2026', Time: '17:30', Autista: 'Caio', Note: '' };
+  const r = teConfronta_([s], [g], '17/08/2026', '08:00');
+  prova('due differenze, nessuna grave → arancione', false, r.discordanti[0].grave);
+}
+{
+  const s = { ...STR, Note: 'seggiolino' };
+  const g = { ...GES, Note: '' };                    // GES ha data e ora diverse
+  const r = teConfronta_([s], [g], '17/08/2026', '08:00');
+  prova('con anche l\'ora sbagliata → rosso', true, r.discordanti[0].grave);
+}
+
 console.log(`\n${ko === 0 ? 'Tutte le prove passano.' : ko + ' prove FALLITE.'}`);
 process.exit(ko === 0 ? 0 : 1);

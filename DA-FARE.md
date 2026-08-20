@@ -1,5 +1,40 @@
 # Da fare — aggiornato 19/08/2026, sera
 
+## 🔎 Controllo incrociato: adesso guarda TUTTI i campi (20/08) — DA PUBBLICARE
+
+Agostino: «devi aggiungere tutti i campi, tutti, assolutamente». Prima ne guardava otto (data,
+ora, luoghi, pax, nome, fornitore, tariffa): tutto il resto poteva cambiare senza che nessuno lo
+sapesse, **note comprese**, che è dove le strutture scrivono le cose che contano.
+
+Adesso confronta **sedici campi** — tutti quelli che esistono su tutti e due i fogli:
+data · ora · partenza · arrivo · pax · nome · fornitore · tariffa · **note · volo · telefono ·
+autista · veicolo · ore extra · fee · modalità**.
+
+I sette che mandano un autista nel posto sbagliato restano **rossi**; gli altri sono arancioni.
+
+**Quattro regole per non affogare nel rumore**, ognuna misurata sulle righe vere:
+
+| regola | falsi allarmi tolti |
+|---|---|
+| la fee sul gestionale è negativa (−24 contro 24): conta il valore assoluto | 76 |
+| fee a 0 da una parte = «non calcolata», non «zero euro» | 32 |
+| i telefoni salvati come numero tornano in notazione scientifica (`4.17E10`) | 18 |
+| il gestionale è più preciso: «Sprinter GZ204TT» contiene «Sprinter» → non è una discordanza | 8 |
+
+Le note hanno una regola loro: si segnala **solo** quando sulla struttura c'è scritto qualcosa
+che sul gestionale non c'è. Confrontarle parola per parola vorrebbe dire un avviso a ogni virgola.
+
+**Misurato sulle righe vere di oggi** (161 servizi ancora da svolgere): **2 segnalazioni prima,
+6 adesso**. Le quattro nuove sono tutte vere:
+- acconto: struttura «50 € non ancora ricevuto», gestionale «ACCONTO €50 RICEVUTO»;
+- tariffa 95 € sulla struttura, **0** sul gestionale;
+- due pacchetti dove la nota del gestionale dice una cosa diversa da quella della struttura —
+  in un caso spiega anche perché l'ora è diversa (pick-up anticipato alle 08:30).
+
+Codice: `n8n/controllo-incrociato/confronto.js`. Banco: `banchi/te/banco-confronto.js`, verde
+(14 prove nuove). **Non ancora pubblicato su n8n**: cambia cosa arriva su Telegram, quindi si
+fa col via di Agostino.
+
 ## ✅ PUBBLICATO — il km segue la commissione (20/08, 10:18)
 
 `Calcola Tariffa Prenotazioni`, versione `b499ab29`. €/km e €/min = 1,00 + la percentuale della

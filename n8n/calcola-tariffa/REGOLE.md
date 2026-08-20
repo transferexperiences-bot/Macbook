@@ -179,7 +179,31 @@ codice impara a leggere il numero dentro l'intestazione (è la correzione provat
 `calcola-tariffa-CORRETTO.js`, che tiene anche il senso di «>»: da lì in su).
 </details>
 
-### 8. La colonna «Listini Tuk-tuk» non contiene listini
+### 8. e 9. — ⚠️ CORRETTE il 20/08: avevo letto male il foglio
+
+Il 19/08 avevo scritto che la colonna «Listini Tuk-tuk» conteneva dei numeri e che «€/min» era
+vuota per tutti. **Era sbagliato, ed era un errore mio**: il lettore di fogli che uso qui
+sbagliava a gestire le celle vuote e faceva scivolare i valori di una colonna. Riletto con il
+lettore corretto, la verità è l'opposto:
+
+| colonna | cosa contiene davvero |
+|---|---|
+| C · «Listini Tuk-tuk» | **vuota per tutti**, tranne Puglia Mare: «Puglia Mare Tuk-tuk» |
+| D · «€/min» | **1,0** per quasi tutti, **1,3** per Auraterrae, 0,8 e 0,59 per due |
+
+Quel «1,3» di Auraterrae è esattamente il **€/km** che la regola di Transfer Experience assegna
+ad Auraterrae. Quindi la colonna intitolata «€/min» in realtà contiene il **€/km**, ed è rimasta
+a 1,0 per tutti gli altri, commissione o no. È il motivo per cui il 19/08 Agostino ha deciso:
+il €/km si calcola dalla percentuale, non si legge da lì.
+
+**Cosa cambia per il codice pubblicato: niente.** La v3 calcola €/km e €/min dalla `% fee`
+(colonna E), che ho letto giusta in tutti e due i casi. E la correzione a `Trova Listino` resta
+valida e anzi più utile di quanto pensassi: la colonna del listino tuk-tuk **esiste davvero** e
+non veniva mai trovata per via del plurale.
+
+<details><summary>com'era scritto qui prima della correzione</summary>
+
+#### (versione sbagliata) La colonna «Listini Tuk-tuk» non contiene listini
 
 Su 1028 righe di `Fornitori e strutture`, la colonna C contiene **numeri** (1.0, 1.3, 0.8, 0.59)
 per 98 fornitori, ed è vuota per 916. **Un solo fornitore ha un nome di listino: Puglia Mare**
@@ -193,6 +217,9 @@ numero `1291`.
 
 Vuota su 992 righe, `0` su 35, e vale `1.0` solo per Puglia Mare. Quindi anche riparando la
 tubatura del punto 2, le ore extra resterebbero a zero finché la colonna non si riempie.
+
+
+</details>
 
 ### 10. Il nome del file in `CLAUDE.md` era sbagliato — corretto
 

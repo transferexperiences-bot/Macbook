@@ -41,15 +41,38 @@
 //
 // Banco: banchi/te/banco-confronto.js (dati veri del 17/08).
 
+// TUTTI i campi che esistono su tutti e due i fogli (Agostino, 20/08: «tutti,
+// assolutamente»). Prima erano otto: si guardavano data, ora, luoghi, pax, nome,
+// fornitore e tariffa, e tutto il resto poteva cambiare senza che nessuno lo
+// sapesse — comprese le note, dove le strutture scrivono le cose che contano
+// («bambino 2 anni, seggiolino»).
+//
+// `grave: true` = rosso, è un errore e basta: manda un autista nel posto
+// sbagliato, all'ora sbagliata, a prendere la persona sbagliata.
+// Tutto il resto è arancione: va guardato, ma non è detto che sia un guasto.
+//
+// I campi che stanno su un foglio solo non si possono confrontare, e infatti non
+// sono qui: Mese, Tipologia incasso, n. pratica, Addebitato, Stato, Eseguito,
+// Cell. driver, Assigned Car (strutture); Allert, Hide, Acconto, %, Stato %,
+// Sub-appalti, Netto, Show, WhatsApp, Conto (gestionale).
 var TE_CAMPI = [
-  { nome: 'Data',      str: 'Data',           ges: 'Data',              tipo: 'data' },
-  { nome: 'Ora',       str: 'Time',           ges: 'Time',              tipo: 'ora' },
-  { nome: 'Partenza',  str: 'TRS> DA',        ges: 'Transfer > Da',     tipo: 'testo' },
-  { nome: 'Arrivo',    str: 'TRS <PER',       ges: 'Transfer < Per',    tipo: 'testo' },
-  { nome: 'Pax',       str: 'PAX',            ges: 'Pax',               tipo: 'numero' },
-  { nome: 'Nome',      str: 'Nome',           ges: 'Nome',              tipo: 'testo' },
-  { nome: 'Fornitore', str: 'Fornitore',      ges: 'Fornitori',         tipo: 'testo' },
-  { nome: 'Tariffa',   str: 'Tariffa a noi',  ges: 'Tariffa',           tipo: 'soldi', avviso: true }
+  { nome: 'Data',      str: 'Data',            ges: 'Data',           tipo: 'data',  grave: true },
+  { nome: 'Ora',       str: 'Time',            ges: 'Time',           tipo: 'ora',   grave: true },
+  { nome: 'Partenza',  str: 'TRS> DA',         ges: 'Transfer > Da',  tipo: 'testo', grave: true },
+  { nome: 'Arrivo',    str: 'TRS <PER',        ges: 'Transfer < Per', tipo: 'testo', grave: true },
+  { nome: 'Pax',       str: 'PAX',             ges: 'Pax',            tipo: 'numero',grave: true },
+  { nome: 'Nome',      str: 'Nome',            ges: 'Nome',           tipo: 'testo', grave: true },
+  { nome: 'Fornitore', str: 'Fornitore',       ges: 'Fornitori',      tipo: 'testo', grave: true },
+  { nome: 'Tariffa',   str: 'Tariffa a noi',   ges: 'Tariffa',        tipo: 'soldi' },
+  // --- aggiunti il 20/08 ---
+  { nome: 'Note',      str: 'Note',            ges: 'Note',           tipo: 'nota' },
+  { nome: 'Volo',      str: 'Volo',            ges: 'Volo',           tipo: 'testo' },
+  { nome: 'Telefono',  str: 'cell.',           ges: 'Cell.',          tipo: 'telefono' },
+  { nome: 'Autista',   str: 'Autista',         ges: 'Autista',        tipo: 'testo' },
+  { nome: 'Veicolo',   str: 'Veicolo',         ges: 'Veicolo',        tipo: 'testo' },
+  { nome: 'Ore extra', str: 'h extra/ritardi', ges: 'h extra',        tipo: 'testo' },
+  { nome: 'Fee',       str: 'Fee',             ges: 'Fee',            tipo: 'soldi' },
+  { nome: 'Modalità',  str: 'Modalità',        ges: 'Modalità',       tipo: 'testo' }
 ];
 
 function teS_(v) { return (v === null || v === undefined) ? '' : String(v).trim(); }
@@ -97,6 +120,14 @@ function teOra_(v) {
   m = /^(\d{1,2})$/.exec(s);
   if (m) { var h2 = Number(m[1]); if (h2 >= 0 && h2 <= 23) return teDue_(h2) + ':00'; }
   return '';
+}
+
+// I telefoni si scrivono in dieci modi: +39, 0039, con gli spazi, senza. Conta
+// il numero, non come è scritto: si confrontano le ultime nove cifre.
+function teTel_(v) {
+  var d = teS_(v).replace(/\D/g, '');
+  if (d.length < 6) return '';
+  return d.slice(-9);
 }
 
 function teNum_(v) {
@@ -182,6 +213,19 @@ function teConfronta_(strutture, gestionale, oggi, adesso) {
       var va, vb;
       if (c.tipo === 'data')        { va = teData_(a); vb = teData_(b); }
       else if (c.tipo === 'ora')    { va = teOra_(a);  vb = teOra_(b); }
+      else if (c.tipo === 'telefono') { va = teTel_(a); vb = teTel_(b); }
+      else if (c.tipo === 'nota')   {
+        // Le note sono testo libero: confrontarle parola per parola vorrebbe dire
+        // una segnalazione ogni volta che si aggiusta una virgola, e in due giorni
+        // non le leggerebbe più nessuno. Si segnala una cosa sola, ma quella conta:
+        // sulla struttura c'è scritto qualcosa che sul gestionale non c'è.
+        var na2 = teNorm_(a);
+        if (!na2) return;                                  // la struttura non ha scritto niente
+        if (teNorm_(b).indexOf(na2) !== -1) return;        // c'è già, magari con altro intorno
+        diffe.push({ campo: c.nome, strutture: teS_(a), gestionale: teS_(b) || '(vuota)',
+                     avviso: true });
+        return;
+      }
       else if (c.tipo === 'numero' || c.tipo === 'soldi') {
         var na = teNum_(a), nb = teNum_(b);
         if (na === null || nb === null) return;            // non confrontabile
@@ -190,7 +234,7 @@ function teConfronta_(strutture, gestionale, oggi, adesso) {
       // se uno dei due non si è lasciato leggere non si grida: si tace
       if (!va || !vb) return;
       if (va !== vb) {
-        diffe.push({ campo: c.nome, strutture: teS_(a), gestionale: teS_(b), avviso: !!c.avviso });
+        diffe.push({ campo: c.nome, strutture: teS_(a), gestionale: teS_(b), avviso: !c.grave });
       }
     });
 

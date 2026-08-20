@@ -199,7 +199,8 @@ console.log([
   'Restano decisioni di Agostino, non toccate:',
   '  \u2022 il supplemento dal centro vale solo per i 18 comuni scritti nel codice;',
   '  \u2022 il listino Pietra Blu ha 11 destinazioni: il ripescaggio \u00e8 un cerotto;',
-  '  \u2022 la colonna \u00abListini Tuk-tuk\u00bb contiene il \u20ac/km di tutti gli altri.',
+  '  \u2022 la colonna \u00ab\u20ac/min\u00bb contiene un moltiplicatore (1,0 \u00b7 1,3): sembra un \u20ac/km',
+  '    rimasto indietro, e non c\'entra con i minuti.',
   '\u2500'.repeat(69),
 ].join('\n'));
 

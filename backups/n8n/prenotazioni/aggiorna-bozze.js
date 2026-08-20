@@ -125,18 +125,70 @@ for (const riga of righe) {
   for (const id of riga.match(idRe) || []) delete map[id];
 }
 
-// ---- 2-bis) scarto deciso dal testo di Agostino (23/07/2026) ----
+// ---- 2-bis) scarto deciso da Agostino (23/07/2026, riscritto il 20/08/2026) ----
+// 20/08 (Agostino: «perché le bozze mi vengono ripresentate anche quando le ho scartate»).
+// Misurato sul banco, sul codice in produzione: dal registro usciva SOLO lo scarto scritto
+// esattamente «annulla…». «Scarta», «scartala», «No», «no lascia perdere» e il tap sul
+// promemoria — che di proposito non stampa gli Id — lasciavano la bozza dentro, e il
+// promemoria del turno dopo gliela rimetteva davanti.
+// Ora conta il GESTO, non la parola che ha scelto.
 {
   const _userTxt = String(norm.text || '');
   const _omTxt = String(norm.originalMessageText || '');
+  const _s = _userTxt.trim().toLowerCase().replace(/[.!,;]+$/, '');
+  const _parole = _s.split(/\s+/).filter(Boolean).length;
   const _KILL = /annull|cancell|scarta|scartare|elimin|butta|lascia perdere/i;
+
+  // Un Id scritto per esteso è sempre una prova: vale a qualunque lunghezza.
   if (_KILL.test(_userTxt)) {
     for (const id of (_userTxt.match(idRe) || [])) delete map[id];
-    if (/^\s*(❌\s*)?annulla\b/i.test(_userTxt.trim())) {
-      for (const id of (_omTxt.match(idRe) || [])) delete map[id];
-    }
+  }
+
+  // Un «no» SECCO è uno scarto. Un «no» seguito da altro no: può essere una correzione
+  // («no, il volo è alle 9») e lì la bozza si tiene. Una bozza di troppo è rumore, una
+  // bozza persa è un transfer che sparisce. Per lo stesso motivo una frase che porta dei
+  // numeri non è mai uno scarto: sta correggendo qualcosa.
+  const _SOLO_NO = /^[^\p{L}]*n[oò][\s.!]*$/iu;
+  const _VERBO = /^[^\p{L}]*\s*(?:(?:no|ok|e)[,\s]+)?(?:annull\w*|scart\w*|cancell\w*|elimin\w*|butt\w*|lascia\s+(?:stare|perdere)|niente|nulla|nada)\b/iu;
+  const _diceBozze = /bozz/i.test(_s);
+  const _scarto = _SOLO_NO.test(_s) ||
+    (_VERBO.test(_s) && (_diceBozze || (_parole <= 4 && !/\d/.test(_s))));
+
+  if (_scarto) {
+    const _idsSuoi = _userTxt.match(idRe) || [];
+    const _idsOm = _omTxt.match(idRe) || [];
+    for (const id of _idsSuoi) delete map[id];
+    // «scarta la seconda» su un messaggio con tre schede non vuol dire scartarle tutte:
+    // quando indica UNA fra tante, dal registro non esce niente qui — lo dirà la risposta
+    // dell'agente, letta dalle sezioni 1 e 2. Meglio una bozza di troppo che due perse.
+    const _ORDINALE = /(?:^|\s)(?:l[ao]\s+|il\s+|i\s+|le\s+|gli\s+)?(?:prim\w|second\w|terz\w|quart\w|quint\w|ultim\w|#\s*\d)/i;
+    const _indicaUna = _idsOm.length > 1 && _ORDINALE.test(_s) && !/tutt/i.test(_s);
+    if (!_indicaUna) for (const id of _idsOm) delete map[id];
+
+    // «scarta tutte le bozze»: l'ha detto lui, si svuota tutto.
     if (/(annull|cancell|scart|elimin|butt)\w*\s+(pure\s+|anche\s+)?(le\s+|tutte\s+le\s+)?bozz|bozz\w*\s+(puoi\s+|le\s+)?(annullar|cancellar|scartar|eliminar|buttar)/i.test(_userTxt)) {
       for (const k of Object.keys(map)) delete map[k];
+    } else if (!_idsSuoi.length && !_idsOm.length && /bozz[ae]\s+apert[ae]/i.test(_omTxt)) {
+      // Ha premuto sul PROMEMORIA, che elenca le bozze in riga compatta e senza Id
+      // (è fatto così apposta, se no verrebbe scambiato per una scheda). Escono solo
+      // quelle davvero ELENCATE lì dentro, riconosciute da ora + destinazione: se nel
+      // registro ne è entrata un'altra dopo, quella non l'ha vista e resta.
+      const _campoDi = (scheda, nomi) => {
+        const re = new RegExp('^[^\\p{L}\\n]*\\s*(?:' + nomi + ')\\s*:\\s*(.+)$', 'iu');
+        for (const riga of String(scheda || '').split('\n')) {
+          const m = riga.match(re);
+          if (m && m[1].trim()) return m[1].trim();
+        }
+        return '';
+      };
+      const _righeOm = _omTxt.split('\n');
+      for (const k of Object.keys(map)) {
+        const b = (map[k] || {}).b || '';
+        const ora = _campoDi(b, 'Ora|Time');
+        const rif = _campoDi(b, 'Per|To') || _campoDi(b, 'Nome|Name');
+        if (!ora) continue;
+        if (_righeOm.some((r) => r.indexOf(ora) >= 0 && (!rif || r.indexOf(rif) >= 0))) delete map[k];
+      }
     }
   }
   // ---- 08/08/2026: «quando io faccio nulla quella bozza la deve cancellare» ----

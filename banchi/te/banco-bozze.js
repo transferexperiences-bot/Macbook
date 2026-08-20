@@ -153,6 +153,81 @@ console.log('\n3) regressioni: il resto del registro si comporta come prima');
   prova('«niente» tiene solo le schede di questo turno', v53.n === 3, JSON.stringify(v53.bozze.map(b => b.id)));
 }
 
+// ============================================================================
+// 4) 20/08/2026 — «perché le bozze mi vengono ripresentate anche quando le ho scartate»
+// Prima usciva dal registro solo lo scarto scritto esattamente «annulla…». Ogni altro
+// modo di dire di no lasciava la bozza dentro, e il promemoria gliela rimetteva davanti.
+// Qui si prova il gesto in tutte le sue forme, e — cosa che conta uguale — si prova che
+// una CORREZIONE non fa sparire la bozza.
+// ============================================================================
+console.log('\n4) lo scarto vale comunque sia detto, la correzione non è uno scarto');
+{
+  const ID = 'TR/20082026/SX8AF1YRPT2R6RUM';
+  const SCHEDA = [
+    '🚐 TRANSFER 1',
+    '📅 Data: 20/08/2026 (giovedì)',
+    '🕐 Ora: 12:00',
+    '📍 Da: Covo Dei Saraceni',
+    '🎯 Per: Ospedale di Monopoli/Fasano',
+    '🏢 Fornitori: Covo Dei Saraceni',
+    '💳 Modalità: Incassare',
+    '🚖 Autista: Claudio Moccia',
+    '💰 Tariffa: 50',
+    '🆔 Id: ' + ID,
+  ].join('\n');
+  // il promemoria vero di «Bozze - Chiedi cosa salvare»: riga compatta, SENZA Id
+  const PROMEMORIA = [
+    "⏳ Resta 1 bozza aperta — sul gestionale non c'è.",
+    '',
+    '1️⃣ 20/08/2026 · 12:00 · Ospedale di Monopoli/Fasano · 50€',
+    '',
+    'Che faccio?',
+  ].join('\n');
+  const REG = JSON.stringify({ [ID]: { b: SCHEDA, ts: Date.now() } });
+
+  const giro = (userTxt, omTxt, risposta) => esegui(V5, {
+    'Normalizer (kind/text/file_id)': [{ chat_id: '522233722', text: userTxt, originalMessageText: omTxt }],
+    'Code in JavaScript': [{ agent_output_clean: risposta, intent: 'chat' }],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: REG }],
+    'Salva via Parse transfer (intent)': [{}],
+    'Componi Payload Salvataggio': [{ payload_schede: [] }],
+  });
+  const esce = (nome, userTxt, omTxt, risposta) =>
+    prova(nome, giro(userTxt, omTxt, risposta || 'Fatto.').n === 0);
+  const resta = (nome, userTxt, omTxt, risposta) =>
+    prova(nome, giro(userTxt, omTxt, risposta || 'Ok.').n === 1);
+
+  esce('tap «Annulla» sulla scheda', 'Annulla', SCHEDA);
+  esce('tap «Scarta»', 'Scarta', SCHEDA);
+  esce('tap «No»', 'No', SCHEDA, 'Va bene, non la salvo.');
+  esce('scrive «scartala»', 'scartala', SCHEDA);
+  esce('scrive «lascia perdere»', 'lascia perdere', SCHEDA);
+  esce('scrive «no lascia perdere»', 'no lascia perdere', SCHEDA);
+  esce('tap «🗑️ Scarta tutte» dal promemoria', 'annulla tutte le bozze', PROMEMORIA);
+  esce('tap «Annulla» sul promemoria, che gli Id non li stampa', 'Annulla', PROMEMORIA);
+  esce('bottone Annulla nuovo: il comando porta l\'Id', 'cancella ' + ID, SCHEDA);
+
+  resta('«no, il volo è alle 9» è una correzione, non uno scarto', 'no il volo è alle 9', SCHEDA);
+  resta('«no il nome è Angela» è una correzione', 'no il nome è Angela', SCHEDA);
+  resta('«non è quello» non è uno scarto', 'non è quello', SCHEDA);
+  resta('«cambia l\'ora» non è uno scarto', "cambia l'ora", SCHEDA);
+  resta('«sì» non è uno scarto', 'sì', SCHEDA);
+
+  // indicarne UNA fra tante non vuol dire scartarle tutte
+  const ID2 = 'TR/20082026/WO3PYJZOJTPBDDON';
+  const SCHEDA2 = SCHEDA.replace(ID, ID2).replace('🕐 Ora: 12:00', '🕐 Ora: 18:30');
+  const DUE = SCHEDA + '\n\n|||\n\n' + SCHEDA2;
+  const v = esegui(V5, {
+    'Normalizer (kind/text/file_id)': [{ chat_id: '522233722', text: 'scarta la seconda', originalMessageText: DUE }],
+    'Code in JavaScript': [{ agent_output_clean: 'Quale delle due?', intent: 'chat' }],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: JSON.stringify({
+      [ID]: { b: SCHEDA, ts: Date.now() }, [ID2]: { b: SCHEDA2, ts: Date.now() } }) }],
+    'Salva via Parse transfer (intent)': [{}],
+    'Componi Payload Salvataggio': [{ payload_schede: [] }],
+  });
+  prova('«scarta la seconda» non porta via tutte e due le bozze', v.n === 2, 'n=' + v.n);
+}
+
 console.log('\n=============================');
 console.log('  ' + ok + ' passate, ' + ko + ' fallite');
 console.log('=============================');

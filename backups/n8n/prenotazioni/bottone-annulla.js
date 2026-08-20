@@ -2,16 +2,20 @@
 // Nodo: «Bottone Annulla» in Prenotazioni Transfer 6.0, fra «Format Telegram Output (intent)»
 // e «TG - Send Dynamic».
 //
-// Va a coppia con il nodo «Salva e mostra»: quando una scheda completa viene salvata senza
-// chiedere conferma, il messaggio che arriva ad Agostino deve portarsi dietro il modo di
-// disfare, altrimenti gli si toglie una domanda e gli si toglie anche il controllo.
+// Va a coppia con la regola «salva e mostra» che sta dentro «Code in JavaScript»: quando una
+// scheda completa viene salvata senza chiedere conferma, il messaggio che arriva ad Agostino
+// deve portarsi dietro il modo di disfare, altrimenti gli si toglie una domanda e gli si
+// toglie anche il controllo.
 // L'annullo passa dalla cancellazione morbida di sempre: Allert = Cancellato, mai delete.
 //
-// Se il salvataggio invece l'ha confermato lui, qui non si tocca niente.
+// Se il salvataggio invece l'ha confermato lui, qui non si tocca niente: il bottone
+// comparirebbe su ogni conferma e diventerebbe rumore.
+//
+// Banco: banchi/te/banco-bottone-annulla.js
 const items = $input.all();
 
 let diretto = false;
-try { diretto = !!$('Salva e mostra').first().json.salvataggio_diretto; } catch (e) { diretto = false; }
+try { diretto = !!$('Code in JavaScript').first().json.salvataggio_diretto; } catch (e) { diretto = false; }
 if (!diretto || !items.length) return items;
 
 // Gli Id da annullare sono quelli che il gestionale dice di aver scritto davvero,
@@ -30,20 +34,36 @@ try {
 } catch (e) {}
 if (!ids.length) return items;
 
-// callback_data: massimo 64 byte (limite Telegram). Con un Id solo ci sta il comando
-// preciso; con più Id si manda un comando che l'agente risolve sul messaggio, dove gli Id
-// sono tutti scritti — meglio che troncarne uno a metà.
-let testo, cb;
+// callback_data: massimo 64 byte (limite Telegram).
+//
+// ⚠️ La parola conta. In questo bot «annulla» vuol dire «scarta la bozza, non salvarla» —
+// è quello che fa il bottone ❌ Annulla accanto a Conferma. Ma qui la riga sul gestionale
+// c'è GIÀ: se il comando dicesse «annulla», l'agente potrebbe limitarsi a buttare la bozza
+// e lasciare la riga scritta. Il comando dice quindi «cancella», che è la strada della
+// cancellazione morbida di sempre: Allert = Cancellato + nota ⛔, mai delete.
+// Quello che Agostino LEGGE resta «Annulla»: è la parola sua.
+const _byte = (s) => Buffer.byteLength(String(s), 'utf8');
+const righe = [];
+
 if (ids.length === 1) {
-  testo = '🗑️ Annulla — non era giusto';
-  cb = 'annulla ' + ids[0];
-  if (cb.length > 64) cb = 'annulla l\'ultimo salvataggio';
+  const cb = 'cancella ' + ids[0];
+  righe.push([{ text: '🗑️ Annulla — non era giusto',
+                callback_data: _byte(cb) <= 64 ? cb : 'cancella l\'ultimo transfer salvato' }]);
+} else if (ids.length <= 3) {
+  // due o tre schede: un bottone per ognuna, con il suo Id preciso. Meglio tre bottoni
+  // esatti di un comando solo che l'agente deve interpretare.
+  ids.forEach((id, i) => {
+    const cb = 'cancella ' + id;
+    if (_byte(cb) <= 64) righe.push([{ text: '🗑️ Annulla il ' + (i + 1) + '°', callback_data: cb }]);
+  });
+  if (!righe.length) righe.push([{ text: '🗑️ Annulla tutti e ' + ids.length,
+                                   callback_data: 'cancella gli ultimi ' + ids.length + ' transfer salvati' }]);
 } else {
-  testo = '🗑️ Annulla tutti e ' + ids.length;
-  cb = 'annulla gli ultimi ' + ids.length + ' transfer salvati';
+  righe.push([{ text: '🗑️ Annulla tutti e ' + ids.length,
+                callback_data: 'cancella gli ultimi ' + ids.length + ' transfer salvati' }]);
 }
 
 items[0].json = Object.assign({}, items[0].json, {
-  replyMarkupJson: JSON.stringify({ inline_keyboard: [[{ text: testo, callback_data: cb }]] })
+  replyMarkupJson: JSON.stringify({ inline_keyboard: righe })
 });
 return items;

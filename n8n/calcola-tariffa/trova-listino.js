@@ -22,7 +22,10 @@ if (!fornitore) fornitore = 'generico';
 const keys = Object.keys(fornitori[0] || {});
 const fornitoreCol  = keys.find(k => /^fornitor/i.test(k));
 const listinoAutoCol = keys.find(k => /listino.*auto.*minivan|auto.*minivan/i.test(k));
-const listinoTukCol  = keys.find(k => /listino.*tuk/i.test(k));
+// La colonna si chiama «Listini Tuk-tuk», al plurale: `/listino.*tuk/` non l'ha
+// mai trovata, quindi il listino tuk-tuk non si è mai aperto per nessuno — nemmeno
+// per Puglia Mare, l'unico che ce l'ha. Ogni corsa in tuk-tuk finiva a zero.
+const listinoTukCol  = keys.find(k => /listin[oi].*tuk/i.test(k));
 const feeCol        = keys.find(k => /%\s*fee|fee\s*orar|extra\s*fee/i.test(k));
 
 if (!fornitoreCol)   return [{ json: { error: 'Colonna Fornitori non trovata' } }];
@@ -70,6 +73,9 @@ const isTukTuk = /tuk[\s\-]*tuk|ape|calessino/i.test(veicolo);
 let listinoName = '';
 if (isTukTuk) {
   listinoName = listinoTukCol ? String(matchedRow[listinoTukCol] || '').trim() : '';
+  // In quella colonna, per quasi tutti, c'è un NUMERO (il €/km: 1,0 · 1,3 · 0,8):
+  // è il residuo di una colonna vecchia. Un numero non è il nome di un foglio.
+  if (/^[\d.,]+$/.test(listinoName)) listinoName = '';
   if (!listinoName) listinoName = 'Generico Tuk-tuk';
 } else {
   listinoName = String(matchedRow[listinoAutoCol] || '').trim();

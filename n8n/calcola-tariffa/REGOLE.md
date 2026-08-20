@@ -273,3 +273,65 @@ prezzi in zeri, e uno zero blocca un transfer: in dubbio si tiene.
 
 **Se qualcosa non torna:** si ripristina la versione precedente dallo storico del workflow
 (`restore_workflow_version` con l'id qui sopra), oppure si reincolla `calcola-tariffa.js`.
+
+
+---
+
+# ✅ PUBBLICATO — 20/08/2026, 10:18 (v3)
+
+Versione attiva `b499ab29-41fb-42a5-87b1-e90f88aeb7ec`, nodi **Calcola Tariffa** e
+**Trova Listino**. Codice: `calcola-tariffa-v3.js` e `trova-listino.js`.
+
+**Deciso da Agostino, e messo in pratica**
+
+1. **€/km e €/min = 1,00 € + la percentuale della struttura**, arrotondato ai 10 centesimi.
+   La commissione la paga il chilometro, non il margine.
+
+   | % fee | €/km e €/min |
+   |---|---|
+   | 0% | 1,00 |
+   | 7% (Melograno, La Peschiera) | 1,10 |
+   | 10% (De Napoli) | 1,10 |
+   | 20% (Pietra Blu, Antico Mondo, 6 Stelle) | 1,20 |
+   | 26% (Auraterrae) | 1,30 |
+   | 30% | 1,30 |
+
+2. **Un prezzo fatto a km si arrotonda ai 5 €** (minimo 30). I listini sono tutti multipli di
+   5: un prezzo inventato deve somigliare a un prezzo vero.
+3. **Il tuk-tuk non si quota mai a km.** Raggio corto, prezzi bassi: o la tratta è nel suo
+   listino, o si risponde `tuk-tuk-fuori-listino`. Prima, con i km, un tuk-tuk per Matera
+   veniva quotato **165 €**.
+4. **Notturno 22:00–07:00** (+20%), com'è scritto nelle regole di Transfer Experience. Il
+   codice guardava solo `ora < 07:00` e si perdeva le due ore prima di mezzanotte.
+5. **Le ore extra arrivano al calcolo.** `hextra` non passava da «Prepara Ricerche»: ora si
+   legge anche dall'input del trigger, senza toccare gli altri nodi.
+
+**Un guasto trovato lungo la strada.** In `Trova Listino` la colonna del listino tuk-tuk si
+cercava con `/listino.*tuk/`, ma la colonna si chiama **«Listini Tuk-tuk»**, al plurale:
+non è mai stata trovata. Quindi **nessuna corsa in tuk-tuk ha mai avuto un listino** — nemmeno
+Puglia Mare, l'unico che ce l'ha. Corretto. In più, in quella colonna per quasi tutti c'è un
+**numero** (1,0 · 1,3 · 0,8): è il vecchio €/km, e un numero non è il nome di un foglio, quindi
+ora viene ignorato.
+
+**Verifiche**: banco `banchi/te/banco-tariffa.js` verde su listini e corse vere; riletto il
+nodo dal server; provato dentro n8n con dati appuntati, esecuzione **772611** —
+`Monopoli → Melograno, 23:30` → **36 €** con `moltiplicatoreNotturno 1.2` e `euroKm 1.1`
+(Melograno, 7%). Prima: 30 €. Incassati davvero: 35 €.
+
+## ⚠️ Da allineare: il notturno nel nodo «Applica listino imparato»
+
+La notte fra il 19 e il 20 un'altra sessione ha aggiunto due nodi **dopo** Calcola Tariffa
+(«Leggi listino imparato» e «Applica listino imparato», versioni `b72c7973`, `30e823b8`,
+`9d37d07d`). Il mio aggiornamento si è innestato **sopra** il loro: nessuno dei due nodi nuovi
+è stato toccato, e l'esecuzione 772611 lo attraversa intatto.
+
+Ma quel nodo **riapplica il notturno per conto suo**, con la regola vecchia:
+
+```js
+const mol = (ora && !isNaN(hh) && hh < 7) ? 1.2 : 1;
+```
+
+Quindi quando risponde il listino imparato, una corsa alle 23:30 **non** prende il +20%.
+È una riga sola da cambiare in `(hh >= 22 || hh < 7)`, ma quel nodo ha il suo banco
+(`banchi/te/banco-applica-imparato.js`) che **non è su questo ramo**: si sistema da lì, non
+alla cieca.

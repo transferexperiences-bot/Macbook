@@ -2543,6 +2543,36 @@
     "9": 115.0,
     "row_number": 58
    }
+  ],
+  "Puglia Mare Tuk-tuk": [
+   {
+    "Destinazione": "San Vito",
+    "2": 10.0,
+    "3": 15.0,
+    "4": 20.0,
+    "row_number": 2
+   },
+   {
+    "Destinazione": "Stazione",
+    "2": 15.0,
+    "3": 15.0,
+    "4": 20.0,
+    "row_number": 3
+   },
+   {
+    "Destinazione": "Domenico modugno",
+    "2": 10.0,
+    "3": 15.0,
+    "4": 20.0,
+    "row_number": 4
+   },
+   {
+    "Destinazione": "Tour 40'",
+    "2": 40.0,
+    "3": 60.0,
+    "4": 80.0,
+    "row_number": 5
+   }
   ]
  },
  "casi": [
@@ -2797,6 +2827,61 @@
    "latPer": 40.7864949,
    "lngPer": 17.2408836,
    "incassato": 125
+  },
+  {
+   "nome": "Auraterrae → Ostuni con 1h di attesa",
+   "da": "Auraterrae",
+   "per": "Ostuni",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "12:00",
+   "matchDa": "Auraterrae",
+   "matchPer": "Ostuni",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Ostuni",
+   "latDa": 40.9919138,
+   "lngDa": 17.161766,
+   "latPer": 40.7296828,
+   "lngPer": 17.5771782,
+   "incassato": null,
+   "hextra": "1h"
+  },
+  {
+   "nome": "Tuk-tuk → Matera",
+   "da": "Polignano a Mare",
+   "per": "Matera",
+   "pax": 2,
+   "veicolo": "Tuk-tuk",
+   "fornitore": "Puglia Mare",
+   "orario": "10:00",
+   "matchDa": "Polignano a Mare",
+   "matchPer": "Matera",
+   "comuneDa": "Polignano a Mare",
+   "comunePer": "Matera",
+   "latDa": 40.9942,
+   "lngDa": 17.2217,
+   "latPer": 40.6663,
+   "lngPer": 16.6043,
+   "incassato": null
+  },
+  {
+   "nome": "Gravina → Altamura, Auraterrae (COSTRUITO)",
+   "da": "Contrada Sant'Elia, Gravina in Puglia",
+   "per": "Masseria Iesce, Altamura",
+   "pax": 2,
+   "veicolo": "",
+   "fornitore": "Auraterrae",
+   "orario": "10:00",
+   "matchDa": "Contrada Sant'Elia",
+   "matchPer": "Masseria Iesce",
+   "comuneDa": "Gravina in Puglia",
+   "comunePer": "Altamura",
+   "latDa": 40.8194,
+   "lngDa": 16.4157,
+   "latPer": 40.8286,
+   "lngPer": 16.554,
+   "incassato": null
   }
  ]
 }

@@ -36,6 +36,8 @@ function nodo(codice, nodi, inputItems) {
 
 /** Il giro completo: Trova Listino → Leggi Listino (una volta per item) → Calcola Tariffa. */
 function calcola(caso, fileCalcolo) {
+  const trigger = [{ row: 1, da: caso.da, per: caso.per, pax: caso.pax, veicolo: caso.veicolo,
+                     fornitore: caso.fornitore, orario: caso.orario, hextra: caso.hextra || '' }];
   const trovati = nodo(SRC_TROVA, { 'Estrai Comuni': [caso], 'Leggi Fornitori': D.fornitori })
     .map((i) => i.json);
 
@@ -51,7 +53,8 @@ function calcola(caso, fileCalcolo) {
     righe = righe.concat(rows ? rows : [{ error: 'foglio «' + t.sheetName + '» non trovato' }]);
   }
 
-  return nodo(SRC_CALC(fileCalcolo), { 'Trova Listino': trovati }, righe)[0].json;
+  return nodo(SRC_CALC(fileCalcolo),
+    { 'Trova Listino': trovati, 'Execute Workflow Trigger': trigger }, righe)[0].json;
 }
 
 const dettaglio = process.argv.indexOf('--dettaglio') !== -1;
@@ -60,12 +63,12 @@ const euro = (n) => (n || n === 0 ? String(Math.round(n)) + ' €' : '—');
 console.log('== Banco: Calcola Tariffa — codice vero, listini veri, corse vere ==\n');
 console.log('  incassato = quello che c\'è scritto nella colonna Tariffa del foglio');
 console.log('  oggi      = quello che risponde il calcolatore adesso');
-console.log('  nuovo     = con il ripescaggio sul Generico (pubblicato il 19/08)\n');
+console.log('  nuovo     = v3: \u20ac/km dalla commissione, notturno dalle 22, tuk-tuk senza km\n');
 
 const R = [];
 for (const c of D.casi) {
   const a = calcola(c, 'calcola-tariffa.js');
-  const b = calcola(c, 'calcola-tariffa-NUOVO.js');
+  const b = calcola(c, 'calcola-tariffa-v3.js');
   R.push({ c, a, b });
   const nota = a.status === 'ok' ? a.modo : (a.motivo || a.status);
   const segno = (x) => (x.status === 'ok' ? euro(x.tariffa) : '⛔ 0 €');
@@ -120,7 +123,8 @@ console.log('\n-- 2) il ripescaggio su Generico: oggi il foglio si legge e si bu
 
 console.log('\n-- 3) le corse che oggi funzionano non cambiano... --');
 {
-  const uguali = R.filter((x) => x.a.status === 'ok' && x.a.modo === 'listino-MAX' && !x.b.ripescatoDa);
+  const uguali = R.filter((x) => x.a.status === 'ok' && x.a.modo === 'listino-MAX' &&
+    !x.b.ripescatoDa && !x.b.dettaglio.notturno && !x.c.hextra);
   uguali.forEach((x) => prova('   ' + x.c.nome + ': stessa tariffa', x.a.tariffa, x.b.tariffa));
 }
 
@@ -148,22 +152,55 @@ console.log('\n-- 5) le ore extra: oggi sono sempre zero --');
   prova('e l\'extra è sempre 0', 0, R.filter((x) => x.a.extra > 0).length);
 }
 
+console.log('\n-- 6) v3: il \u20ac/km segue la commissione --');
+{
+  const km = R.filter((x) => x.b.modo === 'km-garage');
+  km.forEach((x) => console.log(
+    `        ${x.c.nome}: ${x.c.fornitore} \u2192 ${x.b.dettaglio.euroKm} \u20ac/km, ` +
+    `${x.a.tariffa} \u20ac \u2192 ${x.b.tariffa} \u20ac`));
+  prova('un prezzo a km \u00e8 multiplo di 5', true, km.every((x) => x.b.tariffa % 5 === 0));
+}
+
+console.log('\n-- 7) v3: il notturno parte dalle 22 --');
+{
+  const x = trova('Monopoli \u2192 Melograno');       // 23:30
+  prova('prima: nessun supplemento', 1, x.a.moltiplicatoreNotturno);
+  prova('ora: +20%', 1.2, x.b.moltiplicatoreNotturno);
+  prova('   30 \u20ac \u2192 36 \u20ac (incassati 35)', 36, x.b.tariffa);
+  const g = trova('Auraterrae \u2192 Ostuni');        // 12:00, in pieno giorno
+  prova('a mezzogiorno resta 1', 1, g.b.moltiplicatoreNotturno);
+}
+
+console.log('\n-- 8) v3: il tuk-tuk non si quota a km --');
+{
+  const x = trova('Tuk-tuk \u2192 Matera');
+  prova('nessun prezzo inventato', 'warning', x.b.status);
+  prova('   e dice perch\u00e9', 'tuk-tuk-fuori-listino', x.b.motivo);
+}
+
+console.log('\n-- 9) v3: le ore extra arrivano al calcolo --');
+{
+  const x = trova('Auraterrae \u2192 Ostuni con 1h di attesa');
+  prova('prima: extra 0', 0, x.a.extra);
+  prova('ora: 60 min \u00d7 1,30 = 78 \u20ac', 78, x.b.extra);
+}
+
 console.log([
   '',
-  '─────────────────────────────────────────────────────────────────────',
-  'Le tre correzioni provate qui:',
-  '  1. le colonne di prezzo si riconoscono anche se l\'intestazione è',
-  '     «≤ 2 pax» invece di «2» — oggi Pietra Blu non ha prezzi per questo.',
-  '  2. il ripescaggio su Generico avviene davvero: oggi il foglio Generico',
-  '     viene letto e poi buttato via.',
-  '  3. pax oltre la soglia più alta del listino → si dice, invece di',
-  '     prendere zitti la colonna più costosa.',
+  '\u2500'.repeat(69),
+  'Cosa cambia con la v3, in una riga:',
+  '  \u2022 \u20ac/km e \u20ac/min = 1,00 + la commissione, ai 10 centesimi',
+  '    (Auraterrae 26% \u2192 1,30 | Pietra Blu 20% \u2192 1,20 | nessuna fee \u2192 1,00);',
+  '  \u2022 un prezzo fatto a km si arrotonda ai 5 \u20ac, minimo 30;',
+  '  \u2022 il tuk-tuk non si quota a km: o \u00e8 nel suo listino, o si dice;',
+  '  \u2022 notturno 22:00-07:00, non pi\u00f9 solo prima delle 07:00;',
+  '  \u2022 le ore extra arrivano al calcolo (prima si perdevano per strada).',
   '',
-  'NON toccate qui, perché sono decisioni tue, non bug:',
-  '  • il supplemento dal centro vale solo per 18 comuni scritti nel codice;',
-  '  • la % fee non entra in nessun conto;',
-  '  • €/min è vuoto per tutti i fornitori tranne Puglia Mare.',
-  '─────────────────────────────────────────────────────────────────────',
+  'Restano decisioni di Agostino, non toccate:',
+  '  \u2022 il supplemento dal centro vale solo per i 18 comuni scritti nel codice;',
+  '  \u2022 il listino Pietra Blu ha 11 destinazioni: il ripescaggio \u00e8 un cerotto;',
+  '  \u2022 la colonna \u00abListini Tuk-tuk\u00bb contiene il \u20ac/km di tutti gli altri.',
+  '\u2500'.repeat(69),
 ].join('\n'));
 
 console.log(`\n${ko} prove rosse.`);

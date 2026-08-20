@@ -1,5 +1,18 @@
 # Da fare — aggiornato 19/08/2026, sera
 
+## ✅ PUBBLICATO — il km segue la commissione (20/08, 10:18)
+
+`Calcola Tariffa Prenotazioni`, versione `b499ab29`. €/km e €/min = 1,00 + la percentuale della
+struttura (Auraterrae 1,30 · Pietra Blu 1,20 · nessuna fee 1,00); prezzo a km arrotondato ai
+5 €, minimo 30; tuk-tuk mai a km; notturno 22:00–07:00; ore extra che finalmente arrivano al
+calcolo. Più un guasto trovato per strada: la colonna «Listini Tuk-tuk» non veniva **mai**
+trovata (la regex cercava «listino» al singolare), quindi nessuna corsa in tuk-tuk ha mai avuto
+un listino. Dettagli e verifiche: `n8n/calcola-tariffa/REGOLE.md`.
+
+⚠️ **Da allineare, non fatto qui:** il nodo «Applica listino imparato» — aggiunto da un'altra
+sessione la notte fra il 19 e il 20 — riapplica il notturno con la regola vecchia (`hh < 7`).
+Una riga, ma il suo banco non sta su questo ramo.
+
 ## ✅ PUBBLICATO — il ripescaggio sul listino Generico (19/08, 22:40)
 
 `Calcola Tariffa Prenotazioni` (`APv3ZqEizY1HnPia`), nodo **Calcola Tariffa**: se una

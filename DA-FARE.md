@@ -216,7 +216,7 @@ tariffe vuote o a zero sono 10, l'1%: `Calcola Tariffa Gate` dentro Parse transf
 tappa quasi sempre. Il problema non è la quantità, è che quando sbaglia sbaglia in grande e
 in silenzio.
 
-## 5 — «Non si riesce ad avere prezzi corretti»: misurato, e si può
+## 5 — «Non si riesce ad avere prezzi corretti»: misurato, e ora è acceso  ✅ 20/08 08:16
 
 Domanda di Agostino, 20/08 all'una di notte. Misurata sulle righe vere del gestionale
 (1.101 righe con un prezzo), non a naso.
@@ -271,9 +271,32 @@ Agostino prezza a mano di volta in volta.
 
 Il listino imparato si aggiorna da solo: ogni tratta prezzata due volte diventa una riga.
 
-**Roba pronta:** `backups/n8n/calcola-tariffa/listino-imparato.json` (142 righe, 33 fornitori),
-`banchi/te/impara-listino.js`, `banchi/te/banco-listino.js`, `banchi/te/banco-listino-imparato.js`.
+### Fatto e pubblicato (con l'ok di Agostino, 20/08)
 
-**Serve il via libera** (zona rossa 1 e 2): il listino imparato va messo dove il motore lo
-legge — una scheda nuova del foglio struttura, oppure una tabella dati di n8n — e il motore
-va cambiato per smettere di indovinare.
+Le 142 righe stanno nella tabella dati n8n **«Listino imparato»** (`X0sGTo1c1U5aHjjo`, progetto
+`QBb49wu2rmLX0wgk`) — non in una scheda del foglio perché il ponte Claude sa creare un foglio
+nuovo, non una scheda dentro un foglio esistente. La tabella si corregge dalla UI di n8n; se
+Agostino preferisce il foglio, basta che crei la scheda vuota e ci si sposta in un colpo.
+
+In `Calcola Tariffa Prenotazioni` (`APv3ZqEizY1HnPia`) due nodi nuovi dopo `Calcola Tariffa`:
+`Leggi listino imparato` → `Applica listino imparato`. Versione attiva **`30e823b8`** (prima
+era `758a42f6`). Il nodo sta dentro un `try`: se la tabella non risponde o una riga è malata,
+passa intatto il prezzo di prima — sta in mezzo alla strada che porta una riga sul gestionale.
+
+**Interruttore:** svuotare la tabella spegne tutto senza toccare il codice.
+
+**Misurato prima di accendere:** rigiocato su tutte le 1.132 righe vere con un prezzo, il
+listino imparato risponde su metà e **conferma il prezzo già scritto nel 98% dei casi**; ne
+cambierebbe 13, mediana 5 €.
+
+**Banchi:** `banchi/te/banco-applica-imparato.js` (22 verdi, due dei quali sono l'inciampo),
+`banchi/te/simula-imparato.js`, `banchi/te/banco-listino-imparato.js`, `banchi/te/banco-listino.js`,
+`banchi/te/impara-listino.js`.
+
+### Quello che resta da decidere
+
+Il punto 3 — «se nessuno risponde, si dice che non si sa» — **non** è stato fatto: oggi il
+motore, quando non trova, indovina ancora (confronto morbido, poi chilometri). Toglierlo
+farebbe crescere di molto le domande, e il numero vero non lo so finché non ho i listini dei
+singoli fornitori. La `guardia-luogo.js` del punto 4 copre intanto i casi assurdi, ed è
+ancora da approvare.

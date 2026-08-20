@@ -6,9 +6,15 @@ Agostino: «devi aggiungere tutti i campi, tutti, assolutamente». Prima ne guar
 ora, luoghi, pax, nome, fornitore, tariffa): tutto il resto poteva cambiare senza che nessuno lo
 sapesse, **note comprese**, che è dove le strutture scrivono le cose che contano.
 
-Adesso confronta **sedici campi** — tutti quelli che esistono su tutti e due i fogli:
+Adesso confronta **quattordici campi**:
 data · ora · partenza · arrivo · pax · nome · fornitore · tariffa · **note · volo · telefono ·
-autista · veicolo · ore extra · fee · modalità**.
+ore extra · fee · modalità**.
+
+**Autista e Veicolo restano fuori** (Agostino, 20/08: «sui fogli struttura non vengono mai
+compilati, non ti puoi basare su quelli»). I numeri gli danno ragione: compilati sul **16%** e
+sul **24%** delle righe con Id — e quando ci sono li ha scritti n8n, quindi una differenza lì
+vuol dire che l'autista è cambiato dopo, non che c'è un errore. Sui servizi di oggi non
+avrebbero prodotto **nemmeno una** segnalazione. Riaccenderli è togliere due `//`.
 
 I sette che mandano un autista nel posto sbagliato restano **rossi**; gli altri sono arancioni.
 
@@ -25,7 +31,8 @@ Le note hanno una regola loro: si segnala **solo** quando sulla struttura c'è s
 che sul gestionale non c'è. Confrontarle parola per parola vorrebbe dire un avviso a ogni virgola.
 
 **Misurato sulle righe vere di oggi** (161 servizi ancora da svolgere): **2 segnalazioni prima,
-6 adesso**. Le quattro nuove sono tutte vere:
+6 adesso**. (Su tutto lo storico: 233, ma 133 sono «Modalità» e cadono tutte su servizi già
+svolti — il gestionale segna dopo come hanno pagato davvero. Sui servizi futuri, zero.) Le quattro nuove sono tutte vere:
 - acconto: struttura «50 € non ancora ricevuto», gestionale «ACCONTO €50 RICEVUTO»;
 - tariffa 95 € sulla struttura, **0** sul gestionale;
 - due pacchetti dove la nota del gestionale dice una cosa diversa da quella della struttura —

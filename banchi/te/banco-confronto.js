@@ -249,10 +249,12 @@ prova('telefono di un\'altra persona → si segnala',
   ['Telefono'], conf({ 'cell.': '3331112223' }, { 'Cell.': '3339998887' }));
 
 // Il gestionale è più preciso: non è una discordanza.
-prova('veicolo «Sprinter» contro «Sprinter GZ204TT» → silenzio',
-  [], conf({ Veicolo: 'Sprinter' }, { Veicolo: 'Sprinter GZ204TT' }));
-prova('autista diverso → si segnala (arancione)',
-  ['Autista'], conf({ Autista: 'Giuseppe Fanelli' }, { Autista: 'Claudio Moccia' }));
+// Autista e Veicolo sono spenti di proposito: sui fogli struttura non si compilano
+// (16% e 24% sulle righe vere) e quando ci sono li ha scritti n8n.
+prova('autista diverso → silenzio, non lo guardiamo',
+  [], conf({ Autista: 'Giuseppe Fanelli' }, { Autista: 'Claudio Moccia' }));
+prova('veicolo diverso → silenzio',
+  [], conf({ Veicolo: 'Sprinter' }, { Veicolo: 'Vito FJ154PR' }));
 prova('volo diverso → si segnala', ['Volo'], conf({ Volo: 'FR7838' }, { Volo: 'W64321' }));
 
 // Il colore: i sette campi che mandano un autista nel posto sbagliato restano rossi,

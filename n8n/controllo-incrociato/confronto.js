@@ -68,8 +68,13 @@ var TE_CAMPI = [
   { nome: 'Note',      str: 'Note',            ges: 'Note',           tipo: 'nota' },
   { nome: 'Volo',      str: 'Volo',            ges: 'Volo',           tipo: 'testo' },
   { nome: 'Telefono',  str: 'cell.',           ges: 'Cell.',          tipo: 'telefono' },
-  { nome: 'Autista',   str: 'Autista',         ges: 'Autista',        tipo: 'testo' },
-  { nome: 'Veicolo',   str: 'Veicolo',         ges: 'Veicolo',        tipo: 'testo' },
+  // ⛔ Autista e Veicolo NON si confrontano (Agostino, 20/08: «sui fogli struttura
+  // non vengono mai compilati, non ti puoi basare su quelli»). Sulle righe vere sono
+  // compilati sul 16% e sul 24%, e quando ci sono li ha scritti n8n: un disallineamento
+  // lì dice che è cambiato l'autista dopo, non che c'è un errore.
+  // Riaccenderli costa due righe, e oggi non produrrebbero nemmeno una segnalazione.
+  // { nome: 'Autista',   str: 'Autista',         ges: 'Autista',        tipo: 'testo' },
+  // { nome: 'Veicolo',   str: 'Veicolo',         ges: 'Veicolo',        tipo: 'testo' },
   { nome: 'Ore extra', str: 'h extra/ritardi', ges: 'h extra',        tipo: 'testo' },
   // Sul gestionale la fee è scritta col meno davanti (−24), sulle strutture no (24):
   // è la stessa cifra vista da due parti. Si confronta il valore assoluto, altrimenti

@@ -58,9 +58,23 @@ Fatto:
   poter far fallire un salvataggio.
 - **`TE — sonda bot Archivio`** (`dfseVIRNnqU8DSt1`), una tantum, per la prova d'invio.
 
+**✅ FUNZIONA.** Agostino ha premuto Avvia alle 20:48; esecuzione **775250** → la scheda è
+arrivata davvero (`message_id 3`, chat 522233722):
+
+```
+✅ CONFERMATO · 20/08, 20:54
+
+Rossi Mario · 2 pax
+21/08/2026 · 09:00
+Pietra Blu Resort, Polignano a Mare → Aeroporto di Bari
+100 € · Incassare
+Struttura: Pietra Blu
+📝 bambino 2 anni, seggiolino
+TR-20260821-PROVA-non-e-un-transfer-vero
+```
+
 Manca:
-1. **Agostino deve aprire @storicobookings_bot e premere Avvia.** Finché non lo fa Telegram
-   risponde `chat not found` (provato: esecuzione 774660). Un bot non può scrivere per primo.
+1. ~~premere Avvia~~ — fatto.
 2. Poi si aggancia al flusso approvazioni (`Prenotazioni Transfer 6.0`, `NT4lxIxyBAl5lHpN`),
    che ha **141 nodi** ed è quello che manda le schede col ✅/❌. Lì la scheda va cancellata —
    o riscritta in una riga se ha più di 48 ore, che è il limite di Telegram.

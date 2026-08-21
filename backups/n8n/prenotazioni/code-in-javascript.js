@@ -299,12 +299,83 @@ if (kbRows.length > 0) {
   replyMarkupJson = JSON.stringify({ inline_keyboard: kbRows });
 }
 
-// === «SALVATO» SOLO SE L'HO GUARDATO (10/08/2026) ===
-// Il 10/08, su un messaggio di conferma cliente incollato in chat, l'agente ha risposto
-// «è un transfer già salvato» senza cercarlo: sul gestionale non c'era. Se in questo turno
-// cerca_servizi non è stato chiamato, l'affermazione non può passare come un fatto.
-let _hoCercato = false;
-try { _hoCercato = $('cerca_servizi').all().length > 0; } catch (e) { _hoCercato = false; }
+// === NON SI PARLA DEL GESTIONALE SENZA AVERLO APERTO ===
+// Nasce il 10/08/2026: su un messaggio di conferma cliente incollato in chat, l'agente ha
+// risposto «è un transfer già salvato» senza cercarlo. Sul gestionale non c'era.
+//
+// Allargata il 21/08/2026, esecuzioni 781061 e 781122. Ore 19:06, il bot scrive:
+//     «"Calaponti" — ho due luoghi simili NEL GESTIONALE: quale intendo?»
+//     «"Otella" non lo trovo tra le destinazioni.»
+// e tre minuti dopo:
+//     «la conferma di "Otella" — NON LA TROVO NEL GESTIONALE, dimmi il nome esatto.»
+// In tutti e due i turni i tool sul gestionale chiamati sono ZERO: nei sub-run c'è solo
+// Simple Memory e il modello. Non ha aperto niente. Poi su quelle due frasi ha costruito
+// due domande, e Agostino ha risposto a domande inventate.
+//
+// La guardia del 10/08 non le prendeva: guardava un tool solo (cerca_servizi) e tre frasi
+// («già salvato», «risulta salvato», «non risulta sul gestionale»).
+//
+// Adesso ogni famiglia di affermazione è legata al tool che la potrebbe provare. Se quel
+// tool in questo turno non ha girato, la parte falsa della frase viene sostituita con
+// quella vera — e la domanda resta in piedi, perché la domanda spesso è buona: è la
+// premessa che è inventata.
+const _giroDi = (nome) => { try { return $(nome).all().length > 0; } catch (e) { return false; } };
+const _hoCercato = _giroDi('cerca_servizi');           // nome storico, usato più sotto
+const _visto = {
+  servizi: _hoCercato,
+  luoghi: _giroDi('get_destination'),
+  fornitori: _giroDi('get_fornitore'),
+  autisti: _giroDi('get_autista'),
+};
+// «non lo trovo nel gestionale» detto in generale: basta che ne abbia aperto UNO qualsiasi.
+_visto.qualcosa = _visto.servizi || _visto.luoghi || _visto.fornitori || _visto.autisti
+  || _giroDi('get_modalita') || _giroDi('get_mezzo') || _giroDi('cerca_cliente')
+  || _giroDi('tool_scheda_cliente');
+
+const _AFFERMAZIONI = [
+  { prova: 'luoghi', cosa: 'i luoghi',
+    rx: /non\s+(?:l[oa]\s+|li\s+|le\s+)?(?:trovo|ho|vedo)\s+(?:tra|fra|n[ae]ll)[^,.;\n]{0,40}(?:destinazion\w*|luogh\w*|indirizz\w*|post\w*)/gi,
+    con: 'non l\'ho ancora cercato fra le destinazioni' },
+  { prova: 'luoghi', cosa: 'i luoghi',
+    rx: /(?:ho|ci\s+sono|trovo|esistono)\s+(?:due|tre|\d+|pi[ùu])\s+(?:luogh\w*|post\w*|destinazion\w*|indirizz\w*)\s+simil\w*(?:\s+(?:nel|sul)\s+gestionale)?/gi,
+    con: 'potrebbero esserci più posti con un nome simile — non ho ancora guardato' },
+  { prova: 'fornitori', cosa: 'i fornitori',
+    rx: /non\s+(?:l[oa]\s+|li\s+|le\s+)?(?:trovo|ho|vedo)\s+(?:tra|fra|n[ae]ll)[^,.;\n]{0,30}fornitor\w*/gi,
+    con: 'non l\'ho ancora cercato fra i fornitori' },
+  { prova: 'autisti', cosa: 'gli autisti',
+    rx: /non\s+(?:l[oa]\s+|li\s+|le\s+)?(?:trovo|ho|vedo)\s+(?:tra|fra|n[ae]ll)[^,.;\n]{0,30}autist\w*/gi,
+    con: 'non l\'ho ancora cercato fra gli autisti' },
+  { prova: 'qualcosa', cosa: 'il gestionale',
+    rx: /non\s+(?:l[oa]\s+|li\s+|le\s+)?(?:trovo|ho|vedo|risulta)\s*(?:[^,.;\n]{0,20}?)\s*(?:nel|sul)\s+gestionale/gi,
+    con: 'non l\'ho ancora cercato nel gestionale' },
+];
+
+{
+  const _prima = text;
+  const _toccate = [];
+  let _quante = 0;
+  for (const a of _AFFERMAZIONI) {
+    if (_visto[a.prova]) continue;                 // ha guardato: la frase è sua e resta
+    a.rx.lastIndex = 0;
+    if (!a.rx.test(text)) continue;
+    a.rx.lastIndex = 0;
+    text = text.replace(a.rx, () => { _quante++; return a.con; });
+    if (_toccate.indexOf(a.cosa) === -1) _toccate.push(a.cosa);
+  }
+  // Se la riscrittura ha toccato mezzo messaggio, il rischio è di rigirarlo male: si
+  // rimette il testo di prima e si mette la nota in testa. Meglio una nota in più che un
+  // messaggio storto.
+  if (_quante > 4 || (text.trim().length < 30 && _prima.trim().length >= 30)) {
+    text = '⚠️ <b>Non ho aperto il gestionale in questo passaggio.</b> Quello che dico qui '
+         + 'sotto su ' + _toccate.join(' e ') + ' è da verificare.\n\n' + _prima;
+  } else if (_toccate.length) {
+    text += '\n\n⚠️ Su ' + _toccate.join(' e ') + ' non ho ancora aperto il gestionale in '
+          + 'questo passaggio: dimmi «controlla» e guardo.';
+  }
+  var _affermaSenzaProva = _toccate;
+}
+
+// I transfer hanno una nota loro, che nomina l'Id: era così dal 10/08 e resta.
 const _RX_SALVATO = /(gi[àa]\s+salvat[oa](?:\s+(?:sul|nel)\s+gestionale)?|gi[àa]\s+(?:sul|nel)\s+gestionale|already\s+saved|risulta\s+salvat[oa]|non\s+risulta\s+(?:sul|nel)\s+gestionale|non\s+(?:è|e')\s+salvat[oa](?:\s+(?:sul|nel)\s+gestionale)?)/gi;
 if (!_hoCercato && _RX_SALVATO.test(text)) {
   text = text.replace(_RX_SALVATO, 'ancora da verificare sul gestionale');
@@ -372,7 +443,8 @@ return {
       intent: intent,
   id: cancelId,
   replyMarkupJson: replyMarkupJson,
-  salvataggio_diretto: salvataggioDiretto
+  salvataggio_diretto: salvataggioDiretto,
+  afferma_senza_prova: (typeof _affermaSenzaProva !== 'undefined' ? _affermaSenzaProva : [])
 };
 
 } catch (err) {

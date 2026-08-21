@@ -149,12 +149,18 @@ let raw_text = textBody;
 raw_text = raw_text.replace(/\[APPEND_OK\]/g, '').trim();
 
 // Pulizia testo: rimuove null chars (NON spazi normali!)
+// 21/08/2026: la sentinella NON si scrive piu' come sequenza di escape unicode. Caricando
+// via API quella sequenza si e' rotta due volte in due modi diversi (una volta e' arrivata
+// come byte NUL vero, una volta con il backslash raddoppiato). Il carattere si costruisce
+// con String.fromCharCode: stesso identico comportamento, niente da sbagliare in trasporto.
+const NUL = String.fromCharCode(0);
+const RX_NUL = new RegExp(NUL, 'g');
 let text = String(raw_text)
   .replace(/\\n/g, '\n')
-  .replace(/\u0000/g, '')
+  .replace(RX_NUL, '')
   .trim();
 
-if (!text || text.trim() === '') text = '\u200B';
+if (!text || text.trim() === '') text = String.fromCharCode(0x200B);
 
 // Ricalcola giorno della settimana
 const ITALIAN_DAYS = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
@@ -194,19 +200,19 @@ const codeBlocks = [];
 text = text.replace(/```[\w]*\n?([\s\S]*?)```/g, (_, inner) => {
   const idx = codeBlocks.length;
   codeBlocks.push(inner.trim());
-  return '\u0000CB' + idx + '\u0000';
+  return NUL + 'CB' + idx + NUL;
 });
 
 const inlineCodes = [];
 text = text.replace(/`([^`]+)`/g, (_, inner) => {
   const idx = inlineCodes.length;
   inlineCodes.push(inner);
-  return '\u0000IC' + idx + '\u0000';
+  return NUL + 'IC' + idx + NUL;
 });
 
-const parts = text.split(/(\u0000(?:CB|IC)\d+\u0000)/);
+const parts = text.split(new RegExp('(' + NUL + '(?:CB|IC)\\d+' + NUL + ')'));
 text = parts.map(part => {
-  if (/^\u0000(?:CB|IC)\d+\u0000$/.test(part)) return part;
+  if (new RegExp('^' + NUL + '(?:CB|IC)\\d+' + NUL + '$').test(part)) return part;
   return escapeHtml(part);
 }).join('');
 
@@ -216,10 +222,10 @@ text = text.replace(/__(.+?)__/gs, '<u>$1</u>');
 text = text.replace(/~~(.+?)~~/gs, '<s>$1</s>');
 
 codeBlocks.forEach((block, i) => {
-  text = text.replace('\u0000CB' + i + '\u0000', '<pre>' + escapeHtml(block) + '</pre>');
+  text = text.replace(NUL + 'CB' + i + NUL, '<pre>' + escapeHtml(block) + '</pre>');
 });
 inlineCodes.forEach((block, i) => {
-  text = text.replace('\u0000IC' + i + '\u0000', '<code>' + escapeHtml(block) + '</code>');
+  text = text.replace(NUL + 'IC' + i + NUL, '<code>' + escapeHtml(block) + '</code>');
 });
 
 const ALLOWED = new Set(['b','i','u','s','code','pre','a','tg-spoiler']);

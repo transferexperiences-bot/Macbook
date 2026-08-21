@@ -73,6 +73,22 @@ Struttura: Pietra Blu
 TR-20260821-PROVA-non-e-un-transfer-vero
 ```
 
+### ✅ Archivio completo: confermati, annullati, cancellati (21/08)
+
+Agganciati anche gli altri due esiti, ognuno sul suo ramo:
+
+| esito | dove è appeso | cosa arriva in archivio |
+|---|---|---|
+| **confermato / eseguito** | dopo `gestionale` | scheda + bottone ✏️ Importo |
+| **annullato** | dopo `Declined` (bottone ❌) | scheda, «Prenotazione annullata:» |
+| **cancellato** | dopo `Update Allert Cancellato` | scheda, «Prenotazione cancellata:» |
+
+Il bottone Importo lo mette **solo sui vivi**: su un transfer annullato o cancellato non c'è
+nessun importo da correggere, e il controllo sta dentro l'archivio (`vivo`), non sparso nei rami.
+
+Tutti e sei i nodi nuovi: `onError: continueRegularOutput` e archiviazione **solo al primo giro**
+(`$runIndex > 0` → niente). Transfer webhook attivo: `8a9b0c57`.
+
 ### 21/08 pomeriggio — tre cose viste sul campo
 
 **1. Il bottone non compariva. Non era il codice: era che non avevo pubblicato.**

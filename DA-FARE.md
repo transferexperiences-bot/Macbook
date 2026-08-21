@@ -73,6 +73,35 @@ Struttura: Pietra Blu
 TR-20260821-PROVA-non-e-un-transfer-vero
 ```
 
+### La scheda si sposta: via da Prenotazioni, in archivio col bottone (21/08)
+
+Agostino: *«l'ultimo messaggio dovrebbe essere cancellato da prenotazioni e messo in storico
+sempre con pulsante per modifica importo»*, e poi *«il bottone solo sul bot nuovo, non quello
+vecchio»*.
+
+Come funziona adesso, dopo che premi ✅:
+
+1. la scheda in **Prenotazioni** perde i bottoni e viene **cancellata**
+   (`TG Bottone Importo (dopo conferma)` → `TG Togli la scheda da Prenotazioni`);
+2. la stessa scheda arriva in **Storico Bookings** con il bottone **✏️ Importo**.
+
+⚠️ Telegram lascia cancellare un messaggio solo entro **48 ore**. Se non ci riesce, in
+Prenotazioni resta la scheda confermata **senza bottoni** — mai con due bottoni Importo in giro.
+
+**Il bottone funziona davvero.** Un bottone su un messaggio del bot Storico risponde al bot
+Storico, non a quello delle Prenotazioni: serviva un posto dove raccoglierlo.
+Nuovo workflow **`TE — Storico: bottone Importo`** (`hUF78f14YwZu0Q8I`), webhook
+`/webhook/storico/callback`, che fa le stesse cose del gemello dentro `Transfer webhook`: apre
+l'attesa nella tabella `Agente` e chiede la cifra sul bot che sa leggere i numeri scritti a mano.
+Il webhook del bot Storico è stato puntato lì: `setWebhook` → *«Webhook was set»*
+(esecuzione 778795), con `allowed_updates: ["callback_query"]` — il bot non legge i messaggi,
+solo i tocchi sui bottoni.
+
+Provato: esecuzione **778795** → scheda in archivio con il bottone (`message_id 13`).
+
+Versioni attive: archivio `iMdL25QO3dRkRxg8`, storico-importo `89665f75`,
+Transfer webhook `8cb6b537`.
+
 ### Il template: in archivio va la scheda identica
 
 Agostino, 21/08: *«per lo storico conferme usa sempre questo template»* — cioè la scheda che si

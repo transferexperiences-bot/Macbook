@@ -384,6 +384,129 @@ if (!_hoCercato && _RX_SALVATO.test(text)) {
         + (_quale || 'questo transfer') + '» e lo verifico riga per riga.';
 }
 
+// === LE CORREZIONI DEVONO ARRIVARE SUL GESTIONALE (21/08/2026) ===
+// Esecuzioni 780488 e 780489. Agostino scrive «Tariffa fai 60€ e cancella il 2», poi manda
+// un vocale «era un solo transfer, 6 persone». Il bot risponde «tolgo il secondo»,
+// «correggo la bozza», ridisegna la scheda — e sul gestionale non arriva NIENTE. Le righe
+// 1281 e 1282 restano 2 pax a 120€ e 4 pax a 140€, per un transfer del giorno dopo.
+//
+// Il ramo per salvare una correzione c'è ed è cablato:
+//     Switch (intent):  intent === 'conferma' OR 'modifica'  →  Componi Payload → SALVA
+// Non scatta mai perché `intent` lo decide il MODELLO scrivendo [INTENT: ...], e su una
+// correzione scrive «chat». Di nuovo una decisione che conta lasciata alle parole.
+//
+// Qui la decide il codice, sulla stessa prova del registro: se una scheda stampata ha un
+// Id che il gestionale ha già confermato (`st: 'salvata'`) e il suo contenuto è CAMBIATO,
+// quel turno è una modifica. Stesso Id → appendOrUpdate → la riga si aggiorna.
+// Se invece è identica non si tocca niente: è una ristampa, e il payload la scarta.
+//
+// Il confronto è sui CAMPI, non sul testo grezzo: questo nodo e «Componi Payload
+// Salvataggio» ritagliano le schede in modi diversi. Le due funzioni `firmaScheda` devono
+// restare uguali — il banco le confronta.
+function firmaScheda(scheda) {
+  const CAMPI = ['Data|Date', 'Ora|Time', 'Da|From', 'Per|To', 'Pax', 'Nome|Name',
+    'Fornitor\\w*|Supplier\\w*', 'Modalit[àa]|Mode', 'Tariffa|Fare', 'Acconto|Deposit',
+    'Volo|Flight', 'Autista|Driver', 'Veicolo|Vehicle', 'Cell\\.?|Phone|Telefono', 'Note|Notes'];
+  const out = [];
+  for (const nomi of CAMPI) {
+    const m = String(scheda || '').match(
+      new RegExp('^[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*(.*)$', 'imu'));
+    let v = m ? String(m[1]) : '';
+    v = v.replace(/\s*🗺️\s*Maps\s*/gu, ' ')
+         .replace(/<\/?[a-z][^>]*>/gi, '')
+         .replace(/[\s ]+/g, ' ')
+         .replace(/[—–-]\s*$/, '')
+         .trim().toLowerCase();
+    out.push(nomi.split('|')[0] + '=' + v);
+  }
+  return out.join('|');
+}
+
+// il registro com'era all'inizio del turno
+const _reg = {};
+try {
+  for (const r of $('Leggi Bozze').all()) {
+    const d = r.json.Dati ?? r.json.dati;
+    if (d) Object.assign(_reg, JSON.parse(String(d)) || {});
+  }
+} catch (e) {}
+
+// le schede stampate in questo messaggio, spezzate sui |||
+const _blocchi = String(text).split(/\|\|\|/);
+const _stampate = [];
+for (const b of _blocchi) {
+  const m = b.match(/TR[\/-]\d{8}[\/-][A-Za-z0-9-]{4,}/);
+  if (m) _stampate.push({ id: m[0], scheda: b });
+}
+
+// il bot dice che sta togliendo qualcosa: la cancellazione non si indovina, si chiede
+const _toglieQualcosa = /\b(?:tolgo|levo|elimino|rimuovo|cancello|scarto|togliamo|eliminiamo)\b/i.test(text);
+
+let _modificate = [];
+if (intent === 'chat' && hasRecap && !isCancelFlow && !_elencoDalFoglio) {
+  for (const c of _stampate) {
+    const v = _reg[c.id];
+    if (!v || v.st !== 'salvata') continue;
+    if (firmaScheda(String(v.b || '')) === firmaScheda(c.scheda)) continue;  // ristampa
+    _modificate.push(c.id);
+  }
+  if (_modificate.length) {
+    intent = 'modifica';
+    replyMarkupJson = null;   // il messaggio dopo la scrittura porta i suoi bottoni
+  }
+}
+
+// Ristampa pura: OGNI scheda a schermo è già sul gestionale e non è cambiata di un campo.
+// Non c'è niente da salvare, e «salva e mostra» non deve partire: altrimenti riscrive righe
+// identiche e ti rimanda la conferma di roba fatta ieri. È il caso 4 del banco.
+let _tutteRistampe = false;
+if (_stampate.length) {
+  _tutteRistampe = _stampate.every((c) => {
+    const v = _reg[c.id];
+    return v && v.st === 'salvata' && firmaScheda(String(v.b || '')) === firmaScheda(c.scheda);
+  });
+}
+
+// === «TOLGO IL SECONDO» NON CANCELLA NIENTE: LO FA IL BOTTONE ===
+// Quando il bot dice che toglie una scheda, quella scheda sparisce dal recap. Dedurre una
+// cancellazione da un'assenza è il modo migliore per cancellare la riga sbagliata: qui non
+// si deduce. Se nel registro ci sono righe CONFERMATE che in questo recap non compaiono
+// più, si attaccano i bottoni con il loro Id vero. Un tap passa da «IF Cancella» e fa la
+// cancellazione morbida di sempre: Allert = Cancellato + nota ⛔, mai delete.
+let _daCancellare = [];
+if (_toglieQualcosa && !isCancelFlow) {
+  const _stampatiOra = new Set(_stampate.map((c) => c.id));
+  for (const id of Object.keys(_reg)) {
+    if (!_reg[id] || _reg[id].st !== 'salvata') continue;
+    if (_stampatiOra.has(id)) continue;
+    _daCancellare.push(id);
+  }
+  if (_daCancellare.length && _daCancellare.length <= 3) {
+    const _campoDi = (scheda, nomi) => {
+      const m = String(scheda || '').match(
+        new RegExp('^[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*(.+?)[ \\t]*$', 'imu'));
+      return m ? String(m[1]).replace(/\s*🗺️\s*Maps\s*$/u, '').trim() : '';
+    };
+    const _righe = [];
+    for (const id of _daCancellare) {
+      const b = (_reg[id] || {}).b || '';
+      const et = [ _campoDi(b, 'Ora|Time'),
+                   [_campoDi(b, 'Da|From'), _campoDi(b, 'Per|To')].filter(Boolean).join('→') ]
+                 .filter(Boolean).join(' ');
+      const cb = 'cancella ' + id;
+      if (Buffer.byteLength(cb, 'utf8') > 64) continue;
+      _righe.push([{ text: '🗑️ Cancella ' + (et.length > 26 ? et.slice(0, 25) + '…' : (et || 'questo')),
+                     callback_data: cb }]);
+    }
+    if (_righe.length) {
+      const _pre = replyMarkupJson ? (JSON.parse(replyMarkupJson).inline_keyboard || []) : [];
+      replyMarkupJson = JSON.stringify({ inline_keyboard: _pre.concat(_righe) });
+      text += '\n\n⚠️ Quelle righe sono già sul gestionale: per toglierle davvero usa il '
+            + 'bottone qui sotto — io da solo non cancello niente.';
+    }
+  }
+}
+
 // === SALVA E MOSTRA, INVECE DI CHIEDERE (20/08/2026) ===
 // Nasce dall'analisi delle chat vere (12/01-09/05/2026, 5.000 messaggi): su 919 domande
 // del bot, circa 600 sono «⚠️ Confermi l'inserimento?», e Agostino risponde in una o due
@@ -399,7 +522,8 @@ if (!_hoCercato && _RX_SALVATO.test(text)) {
 //   · schede con dei buchi, o con un ⛔ dentro
 // In tutti quei casi non si tocca niente: il giro resta quello di prima.
 let salvataggioDiretto = false;
-if (intent === 'chat' && hasRecap && hasConfirmBtn && !isCancelFlow && !_elencoDalFoglio) {
+if (intent === 'chat' && hasRecap && hasConfirmBtn && !isCancelFlow && !_elencoDalFoglio
+    && !_tutteRistampe) {
   // \s comprende il newline: con \s*\S un campo vuoto («Ora:» e a capo) sembrava pieno
   // perché il controllo saltava alla riga dopo. Dopo i due punti si guarda solo la RIGA.
   const _campo = (s, nomi) => new RegExp('(^|\\n)[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*\\S', 'iu').test(s);
@@ -422,7 +546,6 @@ if (intent === 'chat' && hasRecap && hasConfirmBtn && !isCancelFlow && !_elencoD
   // dire aggiornare una riga e lasciare l'altra sul gestionale dicendo «✅ confermato».
   // Finché la cancellazione di una riga già scritta non passa da un comando vero, qui si
   // chiede. È il caso in cui sbagliare costa: si tiene, non si indovina.
-  const _toglieQualcosa = /\b(?:tolgo|levo|elimino|rimuovo|cancello|scarto|togliamo|eliminiamo)\b/i.test(text);
   const _bloccante = text.indexOf('⛔') !== -1;
   if (_tutteComplete && !_tariffaAperta && !_soldiAperti && !_bloccante && !_toglieQualcosa) {
     intent = 'conferma';
@@ -444,7 +567,9 @@ return {
   id: cancelId,
   replyMarkupJson: replyMarkupJson,
   salvataggio_diretto: salvataggioDiretto,
-  afferma_senza_prova: (typeof _affermaSenzaProva !== 'undefined' ? _affermaSenzaProva : [])
+  afferma_senza_prova: (typeof _affermaSenzaProva !== 'undefined' ? _affermaSenzaProva : []),
+  schede_modificate: _modificate,
+  righe_da_cancellare: _daCancellare
 };
 
 } catch (err) {

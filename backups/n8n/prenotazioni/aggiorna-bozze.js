@@ -1,4 +1,10 @@
-// BOZZE LEDGER v6 — 21/08/2026 (v5: 18/08, v4: 14/08, v3: 07/08)
+// BOZZE LEDGER v7 — 21/08/2026 (v6: stessa sera, v5: 18/08, v4: 14/08, v3: 07/08)
+// Perché v7: Agostino, 21/08 — «com'è possibile che per ogni nuovo transfer salvato mi
+// rimanda anche i vecchi». Perché una scheda salvata SPARIVA dal registro, e con lei la
+// memoria che era già sul gestionale: l'agente la ristampava e il payload la rimandava.
+// Ora ogni scheda ha uno stato — bozza · spedita · salvata — scritto solo dal codice, e le
+// salvate restano dentro il TTL. Vedi la sezione 1 e la sezione 3.
+//
 // Perché v6: il 21/08 alle 19:14 (esecuzione 781233) tre transfer sono stati spediti a
 // Parse transfer e la ricevuta ne ha riportato UNO. La v5 li ha tolti dal registro tutti
 // e tre — «spedito» valeva quanto «ricevuto» — e due transfer di quella sera sono rimasti
@@ -94,7 +100,16 @@ const carte = estraiCarte(out);
 
 for (let k = 0; k < carte.length; k++) {
   const c = carte[k];
-  if (SALVANDO) { map[c.id] = { b: c.scheda.slice(0, 1200), ts: now }; continue; }
+  // v7 21/08/2026 — lo STATO della scheda. `st` lo scrive solo il codice:
+  //   bozza    proposta, mai partita
+  //   spedita  mandata al gestionale, non confermata (v6)
+  //   salvata  CONFERMATA da una ricevuta del gestionale
+  // Una scheda `salvata` non esce piu' dal registro: ci resta col suo stato, dentro il
+  // TTL di 48h. E' quella memoria che mancava, e che faceva ristampare — e rimandare —
+  // i transfer gia' scritti a ogni salvataggio nuovo.
+  const _pre = map[c.id];
+  const _giaSalvata = !!(_pre && _pre.st === 'salvata');
+  if (SALVANDO) { map[c.id] = { b: c.scheda.slice(0, 1200), ts: now, st: (_pre && _pre.st) || 'bozza' }; continue; }
   const SEP = /\|\|\|/;
   let limiteSopra = k > 0 ? carte[k - 1].fine + 1 : 0;
   for (let i = c.inizio - 1; i >= limiteSopra; i--) if (SEP.test(righe[i])) { limiteSopra = i + 1; break; }
@@ -121,7 +136,11 @@ for (let k = 0; k < carte.length; k++) {
     c.scheda.split('\n').filter(l => !CAMPO.test(l)).some(afferma) ||
     coda.filter(suDiLei).some(afferma);
   if (dichiarataFatta) { delete map[c.id]; continue; }
-  map[c.id] = { b: c.scheda.slice(0, 1200), ts: now };
+  // Su una scheda gia' confermata NON si sovrascrive il testo: `b` deve restare quello che
+  // il gestionale ha davvero scritto. Se l'agente la ristampa cambiata, la differenza e' la
+  // prova della correzione — e la legge «Code in JavaScript», che alza intent = modifica.
+  if (_giaSalvata) { map[c.id].ts = now; continue; }
+  map[c.id] = { b: c.scheda.slice(0, 1200), ts: now, st: 'bozza' };
 }
 
 // ---- 2) righe sciolte «✅ … salvato: TR/…» / «annullato TR/…» → rimuovi ----
@@ -263,6 +282,7 @@ if (SALVANDO) {
     if (map[id]) {
       map[id].v = Date.now();
       map[id].sped = (map[id].sped || 0) + 1;
+      map[id].st = 'spedita';
     }
   }
 
@@ -274,7 +294,21 @@ if (SALVANDO) {
     for (const c of estraiCarte(String(norm.originalMessageText || ''))) provati.add(c.id);
   }
 
-  for (const id of provati) delete map[id];
+  // v7: quello che la RICEVUTA conferma non si cancella piu' — si marca `salvata` e resta.
+  // Cancellare era buttare via l'unica memoria di cosa e' gia' sul gestionale: senza,
+  // l'agente ristampa le vecchie schede e il payload le rimanda, e ad Agostino arriva la
+  // conferma di roba fatta ieri. (Domanda sua, 21/08: «com'e' possibile che per ogni nuovo
+  // transfer salvato mi rimanda anche i vecchi».)
+  for (const id of daRicevuta) {
+    if (!map[id]) map[id] = { b: '', ts: now };
+    map[id].st = 'salvata';
+    map[id].ts = now;
+    delete map[id].v;
+    delete map[id].sped;
+  }
+  // L'ultima rete (schede complete a schermo, nessuna ricevuta e nessun payload) NON e' una
+  // conferma del gestionale: li' si cancella come prima, non si dichiara `salvata`.
+  for (const id of provati) if (!daRicevuta.has(id)) delete map[id];
   var _diagnostica = {
     provati: provati.size,
     da_ricevuta: daRicevuta.size,
@@ -288,7 +322,10 @@ if (SALVANDO) {
 const keys = Object.keys(map).sort((a, b2) => (map[b2].ts || 0) - (map[a].ts || 0));
 for (const k of keys.slice(20)) delete map[k];
 
-const rimaste = Object.keys(map).sort((a, b2) => (map[b2].ts || 0) - (map[a].ts || 0));
+const tutte = Object.keys(map).sort((a, b2) => (map[b2].ts || 0) - (map[a].ts || 0));
+// Aperte = quelle su cui c'e' ancora qualcosa da fare. Una `salvata` resta nel registro ma
+// non e' una bozza: non va nel promemoria e non va ripresentata.
+const rimaste = tutte.filter((id) => (map[id].st || 'bozza') !== 'salvata');
 return [{ json: {
   chatd: 'BOZZE|' + chat,
   dati_json: JSON.stringify(map),
@@ -297,6 +334,7 @@ return [{ json: {
   salvando: SALVANDO,
   prove: (typeof _diagnostica !== 'undefined' ? _diagnostica : null),
   da_verificare: (typeof _daVerificare !== 'undefined' ? _daVerificare : []),
+  salvate: tutte.filter((id) => map[id].st === 'salvata'),
   bozze: rimaste.map((id) => ({
     id: id,
     scheda: map[id].b || '',

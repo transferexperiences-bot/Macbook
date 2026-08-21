@@ -78,12 +78,69 @@ const nelTurno = estraiSchede(daModello);
 // scriveva «✅ TR/... salvato» e nello stesso messaggio riproponeva la scheda, quella
 // scheda non veniva salvata. Rischio inaccettabile. Ora NON si esclude niente: un
 // eventuale doppione lo risolve Parse transfer, che deduplica per Id.
+// ============================================================================
+// 21/08/2026 — NON SI RIMANDA QUELLO CHE E' GIA' SCRITTO, IDENTICO.
+// Agostino: «com'e' possibile che per ogni nuovo transfer salvato mi rimanda anche i
+// vecchi». Perche' il payload e' TUTTO quello che l'agente ha stampato, e l'agente
+// ristampa le schede vecchie. Sul foglio non fanno danno (stesso Id, appendOrUpdate) ma
+// la conferma che arriva a lui rielenca roba di ieri, e il sistema sembra senza memoria.
+//
+// ⚠️ QUESTA NON E' LA REGOLA TOLTA IL 07/08. Quella escludeva gli Id che il MODELLO
+// dichiarava «gia' salvati» a parole: si fidava di una frase, e per questo perdeva
+// salvataggi veri. Questa si fida della RICEVUTA del gestionale — lo stato `salvata` nel
+// registro bozze lo scrive solo il codice, leggendo le righe che il gestionale dice di
+// aver scritto — e per di piu' esclude SOLO se la scheda e' rimasta identica.
+// Se e' cambiata anche di un campo e' una correzione, e passa: stesso Id, appendOrUpdate,
+// la riga si aggiorna. Chi legge fra un mese: non togliere questo blocco pensando di
+// riparare il guasto del 07/08. E' il caso opposto.
+//
+// Il confronto e' sui CAMPI, non sul testo grezzo: «Aggiorna Bozze» e questo nodo
+// ritagliano le schede con due funzioni diverse, e un ritaglio piu' lungo di una riga
+// avrebbe fatto sembrare «diversa» una scheda identica.
+function firmaScheda(scheda) {
+  const CAMPI = ['Data|Date', 'Ora|Time', 'Da|From', 'Per|To', 'Pax', 'Nome|Name',
+    'Fornitor\\w*|Supplier\\w*', 'Modalit[\u00e0a]|Mode', 'Tariffa|Fare', 'Acconto|Deposit',
+    'Volo|Flight', 'Autista|Driver', 'Veicolo|Vehicle', 'Cell\\.?|Phone|Telefono', 'Note|Notes'];
+  const out = [];
+  for (const nomi of CAMPI) {
+    const m = String(scheda || '').match(
+      new RegExp('^[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*(.*)$', 'imu'));
+    let v = m ? String(m[1]) : '';
+    v = v.replace(/\s*\ud83d\uddfa\ufe0f\s*Maps\s*/gu, ' ')     // la coda «🗺️ Maps»
+         .replace(/<\/?[a-z][^>]*>/gi, '')                   // eventuale HTML
+         .replace(/[\s\u00a0]+/g, ' ')
+         .replace(/[\u2014\u2013-]\s*$/, '')
+         .trim().toLowerCase();
+    out.push(nomi.split('|')[0] + '=' + v);
+  }
+  return out.join('|');
+}
+
+// il registro com'era all'INIZIO del turno: quello che il gestionale aveva gia' confermato
+const _salvate = {};
+try {
+  for (const r of $('Leggi Bozze').all()) {
+    const d = r.json && (r.json.Dati ?? r.json.dati);
+    if (!d) continue;
+    const reg = JSON.parse(String(d)) || {};
+    for (const id of Object.keys(reg)) {
+      if (reg[id] && reg[id].st === 'salvata') _salvate[id] = String(reg[id].b || '');
+    }
+  }
+} catch (e) {}
+
 const chiusi = new Set();
 const scelte = [];
 const visti = new Set();
+const ristampe = [];
 for (const c of nelTurno.concat(nelMessaggio)) {
   if (visti.has(c.id) || chiusi.has(c.id)) continue;
   visti.add(c.id);
+  if (Object.prototype.hasOwnProperty.call(_salvate, c.id)
+      && firmaScheda(_salvate[c.id]) === firmaScheda(c.scheda)) {
+    ristampe.push(c.id);   // gia' sul gestionale e identica: e' una ristampa, non si rimanda
+    continue;
+  }
   scelte.push(c);
 }
 
@@ -105,6 +162,7 @@ return [{ json: Object.assign({}, $json, {
   payload_origine: (nelTurno.length ? 'turno' : '') + (nelMessaggio.length ? (nelTurno.length ? '+messaggio' : 'messaggio') : ''),
   payload_esclusi: [...chiusi],
   payload_monche: monche.map((c) => c.id),
+  payload_ristampe: ristampe,
   payload_ritagliato: !!(scelte.length && !monche.length)
 }) }];
 

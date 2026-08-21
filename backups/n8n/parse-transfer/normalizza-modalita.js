@@ -1,3 +1,42 @@
+// ⛔⛔ NON METTERE QUESTO NODO IN PRODUZIONE COSÌ COM'È. ⛔⛔
+// Pubblicato il 21/08/2026 alle 09:31 e RITIRATO dieci minuti dopo (Parse transfer
+// riportato alla versione 85b571fe). Il motivo sta qui sotto, ed è un errore mio.
+//
+// Ho costruito la mappa dei sinonimi leggendo la §4.22 del prompt e NON ho letto la
+// riga 31, che è una regola di Agostino del 05/08/2026 e dice l'opposto:
+//
+//   «sul gestionale sono in uso Incassare, Fattura, Contanti, Carta, Sconto in fattura,
+//    Dalla struttura, Link. Sono tutti valori VALIDI: «Carta» e «Contanti» NON sono
+//    errori da correggere. ⛔ VIETATO trasformare Carta→Incassare, Contanti→Incassare
+//    o qualsiasi altra "normalizzazione": cambieresti in silenzio un dato di Agostino.»
+//
+// Questo nodo faceva esattamente la conversione vietata, su OGNI riga salvata.
+//
+// Il prompt si contraddice da solo: la §4.10 e la §4.22 dicono quattro valori, la riga 31
+// ne elenca sette. Non è una svista da sanare a tavolino — sono due regole scritte in due
+// momenti diversi per due situazioni diverse:
+//   · §4.22 serve a INTERPRETARE le parole di Agostino su un transfer NUOVO
+//     («paga in macchina» → Incassare);
+//   · riga 31 vieta di TOCCARE la modalità di un transfer che esiste già, soprattutto
+//     quando la si copia su un rientro;
+//   · riga 557 dice che sul RIENTRO la conversione Contanti/Carta → Incassare è giusta,
+//     ma la decide tool_rientro, non chi scrive la riga.
+//
+// Un nodo piazzato un attimo prima della scrittura non sa in quale dei tre casi si trova:
+// vede solo un valore. Per questo qui non ci va.
+//
+// COME SI FA DAVVERO, quando si riprende:
+//   · la traduzione dei sinonimi va DOVE si interpreta il linguaggio, cioè a monte, sul
+//     transfer nuovo — non sulla riga pronta;
+//   · sulla riga pronta si può solo VALIDARE: se la modalità non è fra le sette valide,
+//     si segnala e non si scrive in silenzio. Mai convertire.
+//   · e prima di tutto va chiesto ad Agostino quali sono le voci buone oggi, perché il
+//     prompt ne dichiara quattro in un punto e sette in un altro.
+//
+// Il codice sotto resta come traccia del lavoro fatto e del banco (43 prove verdi:
+// il banco era giusto, era sbagliata la regola che gli avevo dato).
+//
+// ---------------------------------------------------------------------------
 // NORMALIZZA MODALITÀ — 21/08/2026
 // Nodo: dopo «Assegna Id», prima delle due scritture su Google Sheets.
 // Workflow «Parse transfer» (IkFB29XmJJXQx1a9).

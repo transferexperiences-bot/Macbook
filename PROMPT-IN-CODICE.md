@@ -19,7 +19,42 @@ succede e basta.
 
 ---
 
-## A · Già garantite dal codice — si cancellano e basta
+> ## ⚠️ CORREZIONE 21/08/2026, ore 09:40
+>
+> **La tabella del gruppo A qui sotto è sbagliata.** L'ho scritta da una lettura veloce,
+> senza verificare che cosa il codice garantisca davvero. Verificandolo:
+>
+> - **Markdown** — provato sul codice vero: converte solo `**` `*` `__` `~~`.
+>   `#`, `>` e `---` **passano intatti**. La regola serve. Non si cancella.
+> - **Giorno della settimana** — `WEEKDAY_RX` corregge solo la forma `21/08/2026 (giovedì)`
+>   dentro il recap. «il 21 agosto è giovedì» scritto in una frase non lo tocca nessuno.
+>   Non si cancella.
+> - **Generazione Id** — `Assegna Id` garantisce che la RIGA abbia un Id, non che il recap
+>   mostri **lo stesso** Id. Cancellarla scollegherebbe il registro bozze. Non si cancella.
+> - **Policy, link, storage** — il codice le aggiunge ma non toglie quelle scritte dal
+>   modello: la regola evita i doppioni. Non si cancellano.
+>
+> **Del gruppo A resta viva una regola sola: §4.42, 312 caratteri.** Non 5.284.
+> Il gruppo B resta valido: lì la regola si sposta, non si cancella.
+>
+> ### E una trappola trovata sul campo, che vale per tutto il gruppo B
+>
+> Il primo tentativo su B1 (modalità di pagamento) è stato **pubblicato e ritirato dopo
+> dieci minuti**. Il prompt si contraddice: §4.10 e §4.22 dichiarano **quattro** valori e
+> mappano «Contanti»/«Carta» → «Incassare»; la riga 31 — regola di Agostino del 05/08 —
+> ne elenca **sette** e vieta espressamente quella conversione («cambieresti in silenzio
+> un dato di Agostino»); la riga 557 dice che sul rientro la conversione è giusta, ma la
+> decide `tool_rientro`.
+>
+> Non sono contraddizioni da sanare a tavolino: sono tre situazioni diverse. Un nodo
+> messo un attimo prima della scrittura vede solo un valore e non sa in quale si trova.
+>
+> **Regola che ne esce, e vale per ogni voce del gruppo B:** prima di spostare una regola
+> nel codice bisogna cercare **tutti** i punti del prompt che parlano di quella cosa, non
+> solo quello che l'ha suggerita. E dove il prompt si contraddice, si chiede ad Agostino
+> qual è la versione buona — non si sceglie.
+
+## A · ~~Già garantite dal codice — si cancellano e basta~~ (vedi correzione sopra)
 
 Qui il codice fa già la cosa giusta *dopo* che il modello ha risposto. La regola nel
 prompt non aggiunge niente: è peso morto che compete per l'attenzione con le regole vive.

@@ -51,10 +51,23 @@ if (intent === 'chat' && hasRecap && hasConfirmBtn && !isCancelFlow && !elencoDa
     campo(s, 'Da|From') && campo(s, 'Per|To') && campo(s, 'Tariffa|Fare'));
   const tariffaAperta = /Tariffa[^\n]*(?:DA DEFINIRE|da definire)/i.test(text)
     || /(^|\n)[^\p{L}\n]*[ \t]*Tariffa[ \t]*:[ \t]*0[ \t]*(?:€)?[ \t]*$/imu.test(text);
-  const soldiAperti = /(acconto|deposito|caparra|sumup|preventiv\w+|PREV-\d{4})/i.test(text);
+  // 21/08/2026, esecuzione 780488. Il freno «soldi in ballo» è scattato sulla parola
+  // «Acconto» dentro la riga di cortesia «Se vuoi puoi aggiungere: Autista, Veicolo,
+  // Acconto»: lì l'acconto NON c'è, è un campo che il bot si offre di riempire. Quella
+  // riga si toglie prima di cercare. Un acconto vero — «Acconto: 50» in scheda, o «gli ho
+  // preso 50 di caparra» in una frase — resta dov'è e frena come prima.
+  const senzaCortesia = String(text).replace(/(^|\n)[^\n]*Se vuoi puoi aggiung\w*[^\n]*/gi, '');
+  const soldiAperti = /(acconto|deposito|caparra|sumup|preventiv\w+|PREV-\d{4})/i.test(senzaCortesia);
+  // 21/08/2026, esecuzioni 780488 e 780489. Quando il bot dice «tolgo il secondo» o
+  // «elimino quello delle 13:30», nel recap resta SOLO la scheda sopravvissuta: la riga da
+  // togliere non c'è più, e quindi nessuno la cancella. Salvare da soli in quel turno vuol
+  // dire aggiornare una riga e lasciare l'altra sul gestionale dicendo «✅ confermato».
+  // Finché la cancellazione di una riga già scritta non passa da un comando vero, qui si
+  // chiede. È il caso in cui sbagliare costa: si tiene, non si indovina.
+  const toglieQualcosa = /\b(?:tolgo|levo|elimino|rimuovo|cancello|scarto|togliamo|eliminiamo)\b/i.test(text);
   const bloccante = text.indexOf('⛔') !== -1;
 
-  if (tutteComplete && !tariffaAperta && !soldiAperti && !bloccante) {
+  if (tutteComplete && !tariffaAperta && !soldiAperti && !bloccante && !toglieQualcosa) {
     intentNuovo = 'conferma';
     salvataggioDiretto = true;
   }

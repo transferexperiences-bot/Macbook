@@ -83,6 +83,50 @@ chiede('elenco letto dal foglio', SCHEDA({ coda: 'Booking 2 of 5' }));
   prova('un recap di sola lettura non salva niente', o.intent === 'chat' && !o.salvataggio_diretto, 'intent=' + o.intent);
 }
 
+console.log('\nLA PAROLA «ACCONTO» NON BASTA A FRENARE (esec. 780488, 21/08)');
+{
+  // Il bot chiude quasi ogni scheda con «Se vuoi puoi aggiungere: Autista, Veicolo, Acconto».
+  // Li' l'acconto NON c'e': e' un campo che si offre di riempire. Il 21/08 quella riga ha
+  // frenato due turni buoni di fila, e il salvataggio automatico non e' partito.
+  const cortesia = 'Se vuoi puoi aggiungere: Autista, Veicolo, Acconto. Altrimenti procedo col salvataggio.';
+  const o = esegui(SCHEDA({ coda: '' }).replace('[BUTTONS: Conferma | Annulla]', cortesia + '\n\n[BUTTONS: Conferma | Annulla]'));
+  prova('la riga di cortesia con «Acconto» non ferma il salvataggio',
+    o.intent === 'conferma' && o.salvataggio_diretto === true, 'intent=' + o.intent);
+}
+{
+  const o = esegui(SCHEDA({ coda: '💶 Acconto: 50€' }));
+  prova('un acconto VERO in scheda frena ancora', o.salvataggio_diretto === false);
+}
+{
+  const o = esegui(SCHEDA({ coda: 'Gli ho gia\' preso 50 di caparra.' }));
+  prova('una caparra detta a parole frena ancora', o.salvataggio_diretto === false);
+}
+{
+  const o = esegui(SCHEDA({ coda: 'Pagamento via SumUp.' }));
+  prova('SumUp frena ancora', o.salvataggio_diretto === false);
+}
+{
+  const cortesia = 'Se vuoi puoi aggiungere: Nome cliente, Cellulare. Altrimenti procedo col salvataggio.';
+  const o = esegui(SCHEDA({ coda: cortesia + '\n💶 Acconto: 100€' }));
+  prova('cortesia + acconto vero insieme: frena', o.salvataggio_diretto === false);
+}
+
+console.log('\nSE IL BOT DICE CHE TOGLIE QUALCOSA, CHIEDE (esec. 780488/780489, 21/08)');
+{
+  const testa = 'Ok: tariffa 60€ per il primo e tolgo il secondo (ALBERTI). Resta solo VICINI.\n\n';
+  const o = esegui(testa + SCHEDA());
+  prova('«tolgo il secondo» -> non salva da solo', o.salvataggio_diretto === false, 'intent=' + o.intent);
+}
+{
+  const o = esegui('Elimino quello delle 13:30 e tengo questo.\n\n' + SCHEDA());
+  prova('«elimino quello delle 13:30» -> non salva da solo', o.salvataggio_diretto === false);
+}
+{
+  const o = esegui('Ok, corretta la tariffa a 60€.\n\n' + SCHEDA({ tariffa: '60' }));
+  prova('una correzione che NON toglie niente salva ancora da sola',
+    o.intent === 'conferma' && o.salvataggio_diretto === true, 'intent=' + o.intent);
+}
+
 console.log('\n=============================');
 console.log('  ' + ok + ' passate, ' + ko + ' fallite');
 console.log('=============================');

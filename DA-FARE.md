@@ -73,6 +73,37 @@ Struttura: Pietra Blu
 TR-20260821-PROVA-non-e-un-transfer-vero
 ```
 
+### 21/08 pomeriggio — tre cose viste sul campo
+
+**1. Il bottone non compariva. Non era il codice: era che non avevo pubblicato.**
+Le prove manuali usano la **bozza**, le conferme vere usano la **versione pubblicata**. Avevo
+aggiunto il bottone e provato con la sonda (che va in manuale, quindi lo mostrava), ma non avevo
+pubblicato l'archivio. Da lì: prova col bottone, produzione senza.
+Regola da non dimenticare più: **dopo ogni `update_workflow` va `publish_workflow`, e la prova
+va fatta su una strada che usa la versione pubblicata.** Archivio ora attivo: `cbfe5b7b`.
+
+**2. La scheda arrivava doppia.** Nel nodo `gestionale` entrano due rami — quello diretto e
+quello che passa da `Set Cancellato (cambio driver)` + `Wait`. Quando cambia l'autista quel nodo
+gira due volte, e archiviava due volte (esecuzioni 779470 e 779472, a due secondi l'una
+dall'altra). Ora si archivia solo al primo giro (`$runIndex > 0` → non fa niente).
+
+**3. In archivio finiva la coda della scelta autista** — «🚐 Seleziona autista:» e la riga
+`Ref:`. In rubrica non servono: si tolgono. Tolta anche la tariffa quando sul gestionale è una
+formula (`=SE(INDIRETTO(...))`).
+
+Transfer webhook attivo: `339b05f9`.
+
+### ⛔ Il controllo incrociato è SPENTO (21/08)
+
+Agostino: *«non voglio che mandi più questo»*. Il rapporto orario era diventato un muro di testo
+che si ripeteva uguale ogni ora e veniva pure tagliato da Telegram.
+`SV · Controllo Strutture ↔ Gestionale` (`OIW5kMQKtYvprbdv`) è **disattivato**: non manda più
+niente. Il codice coi 14 campi resta lì, pronto.
+
+Se un domani lo si vuole riaccendere, prima va cambiato **cosa** manda: solo le cose **nuove**
+rispetto al giro prima, solo le 🔴, e le note tagliate a una riga. Così è un avviso, non un
+bollettino.
+
 ### La scheda si sposta: via da Prenotazioni, in archivio col bottone (21/08)
 
 Agostino: *«l'ultimo messaggio dovrebbe essere cancellato da prenotazioni e messo in storico

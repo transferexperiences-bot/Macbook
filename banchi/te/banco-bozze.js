@@ -114,10 +114,65 @@ console.log('\n1) 760661 — tre transfer confermati, tutti e tre sul gestionale
   console.log('   v5 (nuova):             ' + v5.n + ' bozza/e rimaste');
   prova('la v4 riproduce il guasto (lasciava aperto il transfer già salvato)',
     v4.n === 1 && v4.bozze[0].id === 'TR/18082026/G5HWU5BMPTIVTWY1');
-  prova('la v5 non lascia bozze aperte: niente promemoria, niente bottone doppio', v5.n === 0,
+  // ⚠️ REGOLA CAMBIATA il 21/08/2026 (v6). Fino alla v5 qui si pretendeva `n === 0`:
+  // «spedito» valeva quanto «ricevuto», e tutte e tre uscivano dal registro. Il 21/08
+  // (esecuzione 781233) quella regola ha fatto sparire due transfer veri: spediti in tre,
+  // ricevuta di uno, registro svuotato di tutti e tre.
+  // Dalla v6 lo scarto fra spediti e ricevuti RESTA in registro, marcato `da_verificare`.
+  // Il doppione che la v4 temeva oggi non è più possibile: «Assegna Id» garantisce l'Id su
+  // ogni riga e Google Sheets scrive in appendOrUpdate su quell'Id — rimandare la stessa
+  // scheda aggiorna la stessa riga. Tenere costa un promemoria, buttare costa un transfer.
+  prova('la v6 tiene il terzo, ma marcato «da verificare» — non come bozza mai partita',
+    v5.n === 1 && v5.bozze[0].id === 'TR/18082026/G5HWU5BMPTIVTWY1' && v5.bozze[0].da_verificare === true,
     JSON.stringify(v5.bozze));
-  prova('la v5 conta le prove di tutte e due le fonti', v5.prove && v5.prove.provati === 3 && v5.prove.da_ricevuta === 2,
+  prova('e lo dice anche a valle, in chiaro',
+    v5.prove && v5.prove.da_ricevuta === 2 && v5.prove.spediti === 3 &&
+    v5.prove.da_verificare.length === 1 && v5.da_verificare.length === 1,
     JSON.stringify(v5.prove));
+  prova('i due confermati dalla ricevuta escono davvero',
+    !v5.bozze.map(b => b.id).includes('TR/18082026/RT03SZHEGW3YORCP'),
+    JSON.stringify(v5.bozze.map(b => b.id)));
+}
+
+console.log('\n1-bis) 781233 — «salva tutte le bozze»: 3 spediti, la ricevuta ne porta 1');
+{
+  // Il guasto vero del 21/08 sera. Cala Ponte Hotel → Otella torna nella ricevuta (riga
+  // 1289); i due Masseria Tarsia Morisco ↔ Monopoli no. Con la v5 sparivano tutti e tre.
+  const I1 = 'TR/21082026/WCHHH6H8G4A5FJDW';
+  const I2 = 'TR/21082026/FFOPQU5EARO5XFRH';
+  const I3 = 'TR/21082026/H0IQMZ09HP0RZ21Y';
+  const reg = {};
+  for (const [id, tratta] of [[I1, 'Cala Ponte Hotel → Otella'],
+                              [I2, 'Masseria Tarsia Morisco → Monopoli'],
+                              [I3, 'Monopoli → Masseria Tarsia Morisco']]) {
+    reg[id] = { b: '🚐 TRANSFER\n📅 Data: 21/08/2026\n📍 ' + tratta + '\n🆔 Id: ' + id, ts: 1787332255653 };
+  }
+  const ctx = {
+    'Normalizer (kind/text/file_id)': [{ chat_id: '522233722', kind: 'callback',
+      text: 'salva tutte le bozze in sospeso', originalMessageText: '⏳ Restano 3 bozze aperte' }],
+    'Code in JavaScript': [{ agent_output_clean: '🚐 TRANSFER 1\n🆔 Id: ' + I1, intent: 'conferma' }],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: JSON.stringify(reg) }],
+    'Salva via Parse transfer (intent)': [{ rows: JSON.stringify([{ row_number: 1289, Id: I1 }]) }],
+    'Componi Payload Salvataggio': [{ payload_schede: [I1, I2, I3] }],
+  };
+  const r = esegui(V5, ctx);
+  const ids = r.bozze.map(b => b.id).sort();
+  prova('quello confermato dalla ricevuta esce', !ids.includes(I1), JSON.stringify(ids));
+  prova('i due NON confermati restano — non spariscono più',
+    ids.includes(I2) && ids.includes(I3), JSON.stringify(ids));
+  prova('e sono marcati «da verificare», non «bozza mai salvata»',
+    r.bozze.every(b => b.da_verificare === true && b.spedito_volte === 1),
+    JSON.stringify(r.bozze.map(b => ({ id: b.id, v: b.da_verificare, s: b.spedito_volte }))));
+  prova('la diagnostica dice esattamente cosa è successo',
+    r.prove.spediti === 3 && r.prove.da_ricevuta === 1 && r.prove.da_verificare.length === 2,
+    JSON.stringify(r.prove));
+  // rimandarli non crea doppioni: stesso Id, appendOrUpdate aggiorna la stessa riga
+  const ctx2 = JSON.parse(JSON.stringify(ctx));
+  ctx2['Leggi Bozze'] = [{ chatd: 'BOZZE|522233722', Dati: r.dati_json }];
+  ctx2['Salva via Parse transfer (intent)'] = [{ rows: JSON.stringify([{ row_number: 1290, Id: I2 }, { row_number: 1291, Id: I3 }]) }];
+  ctx2['Componi Payload Salvataggio'] = [{ payload_schede: [I2, I3] }];
+  const r2 = esegui(V5, ctx2);
+  prova('al secondo giro, confermati, il registro si svuota', r2.n === 0, JSON.stringify(r2.bozze));
 }
 
 console.log('\n2) 730335 — un Id CITATO in prosa non è un Id salvato');

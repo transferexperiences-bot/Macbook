@@ -22,10 +22,14 @@
 //     «⚠️ DA DEFINIRE». Stessa sorte per Data, Ora, Da, Per, Id. Qui i campi si leggono
 //     con `[^\p{L}\n]*`, che è la forma già usata in tutto il resto del workflow.
 //
-// La guardia interviene SOLO quando sa per certo che le righe scritte sono zero. Se la
-// ricevuta non si riesce a leggere, o il nodo del salvataggio non ha girato in questo
-// giro, non tocca niente: meglio lasciare passare il messaggio di prima che inventarne
-// uno sbagliato.
+// (3) 21/08 sera: la ricevuta torna INCOMPLETA — meno righe di quante schede sono state
+//     spedite. Fino a stasera passava per «tutto a posto». Vedi il blocco «chi è stato
+//     spedito e dalla ricevuta non torna».
+//
+// La guardia parla solo su prove: righe zero, righe monche, o scarto fra spedito e
+// confermato. Se la ricevuta non si riesce a leggere, o il nodo del salvataggio non ha
+// girato in questo giro, non tocca niente: meglio lasciare passare il messaggio di prima
+// che inventarne uno sbagliato.
 //
 // Banco: banchi/te/banco-guardia-salvataggio.js (dati veri di 777940 e 777827).
 const items = $input.all();
@@ -44,6 +48,75 @@ try {
   }
   righeScritte = n;
 } catch (e) { righeScritte = -1; }
+
+// ---- chi è stato spedito e dalla ricevuta non torna — 21/08/2026 ----------------
+// Esecuzione 781233, ore 19:14. Agostino preme «salva tutte le bozze in sospeso»: a Parse
+// transfer arrivano TRE transfer, la ricevuta ne riporta UNO (riga 1289, Cala Ponte Hotel
+// → Otella). A lui arriva «✅ Conferma transfer» di quello, e degli altri due — Masseria
+// Tarsia Morisco ↔ Monopoli, 55€ l'uno, quella sera stessa — nessuno dice niente.
+// La guardia scattava solo a righe ZERO. Uno su tre passava per «tutto a posto».
+//
+// Qui si confronta quello che è stato SPEDITO (payload_schede, prodotto dal codice di
+// «Componi Payload Salvataggio») con quello che la ricevuta CONFERMA. Lo scarto si dice.
+// Non si afferma che non sono stati scritti — non si sa: si dice che il gestionale non
+// li ha confermati, che restano in registro e come rimandarli.
+const _idsRicevuta = new Set();
+try {
+  for (const it of $('Salva via Parse transfer (intent)').all()) {
+    const raw = it.json && it.json.rows;
+    if (!raw) continue;
+    const arr = typeof raw === 'string' ? (raw.trim() ? JSON.parse(raw) : []) : raw;
+    for (const r of (Array.isArray(arr) ? arr : [arr])) {
+      const id = r && (r.Id || r.id);
+      if (id) _idsRicevuta.add(String(id).replace(/<\/?code>/g, '').trim());
+    }
+  }
+} catch (e) {}
+
+let _spediti = [];
+try {
+  _spediti = ($('Componi Payload Salvataggio').first().json.payload_schede || [])
+    .map((x) => String(x || '').trim()).filter(Boolean);
+} catch (e) { _spediti = []; }
+
+const _nonConfermati = _spediti.filter((id) => !_idsRicevuta.has(id));
+
+// per dire QUALI, non solo quanti: la tratta si pesca dal registro bozze, che in questo
+// punto del giro è ancora quello di prima del salvataggio.
+function _trattaDi(id) {
+  try {
+    for (const r of $('Leggi Bozze').all()) {
+      const d = r.json && (r.json.Dati ?? r.json.dati);
+      if (!d) continue;
+      const reg = JSON.parse(String(d)) || {};
+      const scheda = reg[id] && reg[id].b;
+      if (!scheda) continue;
+      const g = (nomi) => {
+        const m = String(scheda).match(
+          new RegExp('^[^\\p{L}\\n]*[ \\t]*(?:' + nomi + ')[ \\t]*:[ \\t]*(.+?)[ \\t]*$', 'imu'));
+        return m ? String(m[1]).replace(/\s*🗺️\s*Maps\s*$/u, '').trim() : '';
+      };
+      const da = g('Da|From'), per = g('Per|To'), ora = g('Ora|Time'), data = g('Data|Date');
+      const tratta = [da, per].filter(Boolean).join(' → ');
+      return [data, ora, tratta].filter(Boolean).join(' · ');
+    }
+  } catch (e) {}
+  return '';
+}
+
+function _avvisoNonConfermati() {
+  if (!_nonConfermati.length) return '';
+  const righe = ['⚠️ <b>' + _nonConfermati.length + (_nonConfermati.length === 1
+      ? ' scheda non confermata dal gestionale</b>' : ' schede non confermate dal gestionale</b>'),
+    'Ne ho mandate ' + _spediti.length + ', la ricevuta ne riporta ' + _idsRicevuta.size + '.'];
+  for (const id of _nonConfermati) {
+    const t = _trattaDi(id);
+    righe.push('• ' + (t || 'scheda senza descrizione') + '\n  <code>' + id + '</code>');
+  }
+  righe.push('Non so se sono state scritte. Restano in registro: dimmi «riprova» e le '
+    + 'rimando — stesso Id, quindi non si creano doppioni.');
+  return righe.join('\n');
+}
 
 // ---- caso 1: ha scritto, ma la riga è monca ------------------------------------
 // 21/08/2026, esecuzione 779301. Agostino manda un vocale: «Segna il transfer ORA da
@@ -85,17 +158,19 @@ if (righeScritte > 0) {
     }
   } catch (e) { return items; }
 
-  if (!monche.length) return items;
+  if (!monche.length && !_nonConfermati.length) return items;
 
-  const avviso = monche.map((m) => {
+  const avviso = [_avvisoNonConfermati(), monche.map((m) => {
     const tratta = [m.da, m.per].filter(Boolean).join(' → ');
     return '⚠️ <b>Salvato senza ' + m.manca + '</b>'
       + (tratta ? ' — ' + tratta : '')
       + '\nNon comparirà in nessuna lista del giorno.'
       + (m.id ? '\n<code>' + m.id + '</code>' : '');
-  }).join('\n\n');
+  }).join('\n\n')].filter(Boolean).join('\n\n');
 
-  const coda = '\n\nScrivi «ora» per mettere adesso, oppure dimmi giorno e ora.';
+  const coda = monche.length
+    ? '\n\nScrivi «ora» per mettere adesso, oppure dimmi giorno e ora.'
+    : '';
   const primo = (items[0] && items[0].json) || {};
   const testoPrima = (primo.telegram && primo.telegram.text) || '';
 
@@ -107,6 +182,7 @@ if (righeScritte > 0) {
       parse_mode: (j.telegram && j.telegram.parse_mode) || 'HTML',
     });
     j.salvataggio_monco = monche.map((m) => m.id).filter(Boolean);
+    j.salvataggio_non_confermato = _nonConfermati;
     return { json: j };
   });
 }

@@ -1,4 +1,9 @@
-// BOZZE LEDGER v5 — 18/08/2026 (v4: 14/08, v3: 07/08)
+// BOZZE LEDGER v6 — 21/08/2026 (v5: 18/08, v4: 14/08, v3: 07/08)
+// Perché v6: il 21/08 alle 19:14 (esecuzione 781233) tre transfer sono stati spediti a
+// Parse transfer e la ricevuta ne ha riportato UNO. La v5 li ha tolti dal registro tutti
+// e tre — «spedito» valeva quanto «ricevuto» — e due transfer di quella sera sono rimasti
+// fuori da tutte e due le parti. Vedi la sezione 3, punto 2b.
+//
 // Perché v5: il 18/08 alle 23:21 (esecuzione 760661) Agostino ha confermato TRE transfer
 // del 19/08 per Tedi tour operator. Parse transfer li ha scritti TUTTI E TRE
 // (righe 1135, 1136, 1137 del gestionale, verificate). Subito dopo il promemoria ha
@@ -212,9 +217,8 @@ for (const riga of righe) {
 // La (3) — le schede complete a schermo — resta l'ultima rete, solo se non c'è nient'altro:
 // una CITAZIONE di un Id non è mai una prova (guasto 730335 del 14/08).
 if (SALVANDO) {
-  const provati = new Set();
-
-  // 1) ricevuta dal gestionale
+  // 1) la ricevuta del gestionale: le righe che dice di aver scritto DAVVERO.
+  const daRicevuta = new Set();
   try {
     for (const it of $('Salva via Parse transfer (intent)').all()) {
       const rows = it.json && it.json.rows;
@@ -222,28 +226,62 @@ if (SALVANDO) {
       const arr = typeof rows === 'string' ? JSON.parse(rows) : rows;
       for (const r of (Array.isArray(arr) ? arr : [arr])) {
         const id = r && (r.Id || r.id);
-        if (id && ID1.test(String(id))) provati.add(String(id).trim());
+        if (id && ID1.test(String(id))) daRicevuta.add(String(id).trim());
       }
     }
   } catch (e) {}
-  const daRicevuta = provati.size;
 
-  // 2) gli Id davvero spediti: si SOMMANO alla ricevuta, non la sostituiscono
+  // 2) gli Id davvero spediti a Parse transfer (prodotti dal codice, non dal modello).
+  const spediti = new Set();
   try {
     for (const id of ($('Componi Payload Salvataggio').first().json.payload_schede || [])) {
-      if (id) provati.add(String(id).trim());
+      if (id) spediti.add(String(id).trim());
     }
   } catch (e) {}
 
-  // 3) ultima rete: le schede complete a schermo. MAI le citazioni.
-  if (!provati.size) {
+  const provati = new Set(daRicevuta);
+
+  // 2b) SPEDITO MA NON CONFERMATO — v6, 21/08/2026, esecuzione 781233.
+  // Agostino preme «salva tutte le bozze in sospeso»: a Parse transfer arrivano TRE
+  // transfer, la ricevuta ne riporta UNO (riga 1289). La v5 li toglieva tutti e tre dal
+  // registro, perché considerava «spedito» una prova quanto «ricevuto». I due transfer
+  // Masseria Tarsia Morisco ↔ Monopoli sono rimasti fuori da tutte e due le parti: né
+  // sul gestionale né in bozza. Spariti, e senza una parola.
+  //
+  // Spedito NON è salvato. È un terzo stato: non lo so. Qui non esce dal registro, si
+  // marca `v` (da verificare) e si conta quante volte è stato spedito.
+  //
+  // La paura della v4 — «se resta in registro me lo ripropone e faccio un doppione» —
+  // oggi non regge più: da stamattina «Assegna Id» garantisce che OGNI riga abbia il suo
+  // Id, e Google Sheets scrive in appendOrUpdate su quell'Id. Rimandare la stessa scheda
+  // aggiorna la stessa riga, non ne crea una seconda. Quindi tenere costa un promemoria
+  // di troppo, buttare costa un transfer. In dubbio si tiene.
+  const daVerificare = [];
+  for (const id of spediti) {
+    if (daRicevuta.has(id)) continue;
+    daVerificare.push(id);
+    if (map[id]) {
+      map[id].v = Date.now();
+      map[id].sped = (map[id].sped || 0) + 1;
+    }
+  }
+
+  // 3) ultima rete: le schede complete a schermo. Vale SOLO se non c'è né ricevuta né
+  // payload — cioè non si sa niente di questo turno. Una CITAZIONE di un Id non è mai
+  // una prova (guasto 730335 del 14/08).
+  if (!daRicevuta.size && !spediti.size) {
     for (const c of carte) provati.add(c.id);
     for (const c of estraiCarte(String(norm.originalMessageText || ''))) provati.add(c.id);
   }
 
   for (const id of provati) delete map[id];
-  // lo scarto fra spediti e ricevuti resta scritto: se ricompare, si sa dove guardare
-  var _diagnostica = { provati: provati.size, da_ricevuta: daRicevuta };
+  var _diagnostica = {
+    provati: provati.size,
+    da_ricevuta: daRicevuta.size,
+    spediti: spediti.size,
+    da_verificare: daVerificare
+  };
+  var _daVerificare = daVerificare;
 }
 
 // cap di sicurezza: i 20 più recenti
@@ -258,5 +296,13 @@ return [{ json: {
   chat_id: chat,
   salvando: SALVANDO,
   prove: (typeof _diagnostica !== 'undefined' ? _diagnostica : null),
-  bozze: rimaste.map((id) => ({ id: id, scheda: map[id].b || '' }))
+  da_verificare: (typeof _daVerificare !== 'undefined' ? _daVerificare : []),
+  bozze: rimaste.map((id) => ({
+    id: id,
+    scheda: map[id].b || '',
+    // true = spedito al gestionale che non l'ha confermato. NON è «non salvato»:
+    // è «non si sa». Va detto con parole diverse da una bozza mai partita.
+    da_verificare: !!map[id].v,
+    spedito_volte: map[id].sped || 0
+  }))
 } }];

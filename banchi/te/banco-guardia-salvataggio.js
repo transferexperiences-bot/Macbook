@@ -208,6 +208,65 @@ console.log('\n8) piu righe, solo una monca');
   prova('un Id solo marcato', out[0].json.salvataggio_monco.length === 1);
 }
 
+console.log('\n781233 — «salva tutte le bozze»: 3 spedite, la ricevuta ne porta 1');
+{
+  const I1 = 'TR/21082026/WCHHH6H8G4A5FJDW';
+  const I2 = 'TR/21082026/FFOPQU5EARO5XFRH';
+  const I3 = 'TR/21082026/H0IQMZ09HP0RZ21Y';
+  const reg = {};
+  reg[I1] = { b: '🚐 TRANSFER 1\n📅 Data: 21/08/2026\n🕐 Ora: 19:45\n📍 Da: Cala Ponte Hotel\n🎯 Per: Otella\n🆔 Id: ' + I1, ts: 1 };
+  reg[I2] = { b: '🚐 TRANSFER 2\n📅 Data: 21/08/2026\n🕐 Ora: da definire\n📍 Da: Masseria Tarsia Morisco\n🎯 Per: Monopoli\n🆔 Id: ' + I2, ts: 1 };
+  reg[I3] = { b: '🚐 TRANSFER 3\n📅 Data: 21/08/2026\n🕐 Ora: da concordare\n📍 Da: Monopoli\n🎯 Per: Masseria Tarsia Morisco\n🆔 Id: ' + I3, ts: 1 };
+  const ctx = {
+    'Salva via Parse transfer (intent)': [{ rows: JSON.stringify([
+      { row_number: 1289, Data: 'ven 21 agosto 2026', Time: '19:45', Id: I1,
+        'Transfer > Da': 'Cala Ponte Hotel', 'Transfer < Per': 'Otella' }]) }],
+    'Componi Payload Salvataggio': [{ payload_schede: [I1, I2, I3] }],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: JSON.stringify(reg) }],
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+  };
+  const out = esegui(ctx, [{ telegram: { text: '✅ <b>Conferma transfer</b>\n\nCala Ponte Hotel → Otella', parse_mode: 'HTML' } }]);
+  const t = out[0].json.telegram.text;
+  prova('non passa più zitto', /non confermate dal gestionale/.test(t), t.slice(0, 160));
+  prova('dice quante ne ha mandate e quante ne torna', /mandate 3/.test(t) && /riporta 1/.test(t), t.slice(0, 300));
+  prova('nomina le due che mancano, per tratta', /Masseria Tarsia Morisco → Monopoli/.test(t) && /Monopoli → Masseria Tarsia Morisco/.test(t), t);
+  prova('e i loro Id', t.indexOf(I2) !== -1 && t.indexOf(I3) !== -1);
+  prova('NON nomina quella confermata', t.indexOf(I1) === -1, t);
+  prova('non dichiara che non sono salvate: dice che non lo sa', /Non so se sono state scritte/.test(t));
+  prova('spiega che rimandarle non fa doppioni', /non si creano doppioni/.test(t));
+  prova('il messaggio di prima resta sotto, non si perde', /Conferma transfer/.test(t));
+  prova('lo espone anche a valle', JSON.stringify(out[0].json.salvataggio_non_confermato) === JSON.stringify([I2, I3]));
+}
+
+console.log('\nquando invece torna tutto, la guardia sta zitta');
+{
+  const I1 = 'TR/21082026/AAAAAAAAAAAAAAAA', I2 = 'TR/21082026/BBBBBBBBBBBBBBBB';
+  const ctx = {
+    'Salva via Parse transfer (intent)': [{ rows: JSON.stringify([
+      { row_number: 1, Data: 'ven 21 agosto 2026', Time: '10:00', Id: I1 },
+      { row_number: 2, Data: 'ven 21 agosto 2026', Time: '11:00', Id: I2 }]) }],
+    'Componi Payload Salvataggio': [{ payload_schede: [I1, I2] }],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: '{}' }],
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+  };
+  const dentro = [{ telegram: { text: '✅ Conferma transfer', parse_mode: 'HTML' } }];
+  const out = esegui(ctx, dentro);
+  prova('messaggio identico, nessun avviso', out[0].json.telegram.text === '✅ Conferma transfer', out[0].json.telegram.text);
+}
+
+console.log('\nse non si sa cosa è stato spedito, non si inventa un avviso');
+{
+  const I1 = 'TR/21082026/AAAAAAAAAAAAAAAA';
+  const ctx = {
+    'Salva via Parse transfer (intent)': [{ rows: JSON.stringify([{ row_number: 1, Data: 'ven 21 agosto 2026', Time: '10:00', Id: I1 }]) }],
+    'Componi Payload Salvataggio': [{}],
+    'Leggi Bozze': [{ chatd: 'BOZZE|522233722', Dati: '{}' }],
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+  };
+  const out = esegui(ctx, [{ telegram: { text: '✅ Conferma transfer', parse_mode: 'HTML' } }]);
+  prova('nessun payload = nessun avviso', out[0].json.telegram.text === '✅ Conferma transfer', out[0].json.telegram.text);
+}
+
 console.log('\n=============================');
 console.log('  ' + ok + ' passate, ' + ko + ' fallite');
 console.log('=============================');

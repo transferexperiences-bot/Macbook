@@ -73,6 +73,22 @@ Struttura: Pietra Blu
 TR-20260821-PROVA-non-e-un-transfer-vero
 ```
 
+### Il template: in archivio va la scheda identica
+
+Agostino, 21/08: *«per lo storico conferme usa sempre questo template»* — cioè la scheda che si
+vede già nel bot delle richieste, con davanti «Prenotazione confermata:».
+
+Quindi l'archivio **non compone più niente di suo**: prende il testo del messaggio Telegram su
+cui hai premuto il bottone (lo stesso che usa il nodo `Edit a text message`) e lo rimanda tale e
+quale. È anche l'unico modo perché resti allineato per sempre: se un domani la scheda cambia
+forma, cambia da sola anche in archivio.
+
+`Eseguito` mette davanti «Prenotazione eseguita:». La composizione a campi separati resta solo
+come ripiego per chi chiama senza testo.
+
+Provato: esecuzione **778516** → in archivio è arrivata la scheda identica (`message_id 7`).
+Versioni attive: archivio `42bd59c9`, Transfer webhook `3f0da90d`.
+
 **✅ COLLEGATO il 20/08, 21:0x.** Il flusso delle schede col ✅ non è `Prenotazioni Transfer 6.0`
 (quello è il bot di chat, 141 nodi e con dentro il lavoro di un'altra sessione) ma
 **`Transfer webhook`** (`MJHTq5MksSeUhKgX`, 87 nodi, nessuna bozza aperta). Lì la catena della

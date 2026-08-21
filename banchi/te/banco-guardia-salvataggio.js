@@ -138,6 +138,76 @@ console.log('\n4) la tariffa non si inventa mai');
     /non c'era nemmeno nella scheda/.test(out2[0].json.telegram.text), out2[0].json.telegram.text);
 }
 
+// ============================================================================
+// 5) 779301 — la riga finisce sul gestionale senza data e senza ora
+// Vocale «Segna il transfer ORA da Auraterrae…» trascritto «Segnal transfer URA…».
+// La riga 1271 e stata scritta con Data "" e Time "", e ad Agostino e arrivato
+// «Conferma transfer» senza un accenno.
+// ============================================================================
+console.log('\n5) 779301 — salvato senza data e ora: adesso lo dice');
+{
+  const RIGA_MONCA = JSON.stringify([{ row_number: 1271, Data: '', Time: '',
+    'Transfer > Da': 'Auraterrae', 'Transfer < Per': 'Cala Ponte Hotel',
+    Nome: 'URA', Tariffa: 35, Id: 'TR/21082026/LJJEH8ABQN6WO8AW' }]);
+  const conferma = { telegram: { text: '\u2705 <b>Conferma transfer</b>\n\n\ud83d\udcb6 Tariffa: 35\u20ac', parse_mode: 'HTML' }, replyMarkupJson: null };
+  const out = esegui({
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+    'Salva via Parse transfer (intent)': [{ rows: RIGA_MONCA }],
+  }, [conferma]);
+  const t = out[0].json.telegram.text;
+  prova('avvisa che manca data e ora', /Salvato senza data e ora/.test(t), t.slice(0, 80));
+  prova('dice che non comparira nelle liste', /nessuna lista del giorno/.test(t));
+  prova('mostra la tratta', /Auraterrae → Cala Ponte Hotel/.test(t), t);
+  prova('mostra l\'Id da correggere', /TR\/21082026\/LJJEH8ABQN6WO8AW/.test(t));
+  prova('offre la strada corta', /Scrivi «ora»/.test(t));
+  prova('e il recap di conferma resta sotto', /Conferma transfer/.test(t), t);
+  prova('marcato salvataggio_monco', Array.isArray(out[0].json.salvataggio_monco) &&
+    out[0].json.salvataggio_monco[0] === 'TR/21082026/LJJEH8ABQN6WO8AW');
+}
+
+console.log('\n6) manca una sola delle due');
+{
+  const conferma = { telegram: { text: 'ok', parse_mode: 'HTML' } };
+  const solo = (Data, Time) => esegui({
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+    'Salva via Parse transfer (intent)': [{ rows: JSON.stringify([{ row_number: 9,
+      Data: Data, Time: Time, 'Transfer > Da': 'A', 'Transfer < Per': 'B', Id: 'TR/21082026/XXXXXXXXXXXXXXXX' }]) }],
+  }, [conferma])[0].json.telegram.text;
+  prova('manca solo la data', /Salvato senza la data/.test(solo('', '10:00')), solo('', '10:00').slice(0, 60));
+  prova('manca solo l\'ora', /Salvato senza l'ora/.test(solo('21/08/2026', '')), solo('21/08/2026', '').slice(0, 60));
+}
+
+console.log('\n7) riga completa: non si tocca NIENTE');
+{
+  const RIGA_1250 = JSON.stringify([{ row_number: 1250, Data: 'ven 21 agosto 2026', Time: '11:05',
+    'Transfer > Da': 'Brindisi Airport', 'Transfer < Per': 'Masseria le Torri',
+    Tariffa: 140, Id: 'TR/21082026/FFF77OVFNDBGSEGX' }]);
+  const buona = { telegram: { text: '\u2705 <b>Conferma transfer</b>\n\n\ud83d\udcc5 ven 21 agosto 2026 ore 11:05', parse_mode: 'HTML' }, replyMarkupJson: null };
+  const out = esegui({
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+    'Salva via Parse transfer (intent)': [{ rows: RIGA_1250 }],
+  }, [buona]);
+  prova('il messaggio passa identico', out[0].json.telegram.text === buona.telegram.text);
+  prova('nessun marcatore', out[0].json.salvataggio_monco === undefined);
+  prova('nessun avviso', !/Salvato senza/.test(out[0].json.telegram.text));
+}
+
+console.log('\n8) piu righe, solo una monca');
+{
+  const DUE = JSON.stringify([
+    { row_number: 1269, Data: 'ven 21 agosto 2026', Time: '19:10', 'Transfer > Da': 'Bari Airport', 'Transfer < Per': 'Tre vigne', Id: 'TR/21082026/3C6AYQLRTQ0LID9X' },
+    { row_number: 1271, Data: '', Time: '', 'Transfer > Da': 'Auraterrae', 'Transfer < Per': 'Cala Ponte Hotel', Id: 'TR/21082026/LJJEH8ABQN6WO8AW' },
+  ]);
+  const out = esegui({
+    'Normalizer (kind/text/file_id)': [{ originalMessageText: '' }],
+    'Salva via Parse transfer (intent)': [{ rows: DUE }],
+  }, [{ telegram: { text: 'recap', parse_mode: 'HTML' } }]);
+  const t = out[0].json.telegram.text;
+  prova('avvisa solo per quella monca', (t.match(/Salvato senza/g) || []).length === 1, t);
+  prova('e nomina la sua tratta', /Auraterrae/.test(t) && !/Bari Airport/.test(t), t);
+  prova('un Id solo marcato', out[0].json.salvataggio_monco.length === 1);
+}
+
 console.log('\n=============================');
 console.log('  ' + ok + ' passate, ' + ko + ' fallite');
 console.log('=============================');

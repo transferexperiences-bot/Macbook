@@ -45,6 +45,72 @@ try {
   righeScritte = n;
 } catch (e) { righeScritte = -1; }
 
+// ---- caso 1: ha scritto, ma la riga è monca ------------------------------------
+// 21/08/2026, esecuzione 779301. Agostino manda un vocale: «Segna il transfer ORA da
+// Auraterrae…». La trascrizione consegna «Segnal transfer URA da Auratier…» — la parola
+// «ora» è finita dentro «transfer URA». L'agente scrive Nome: URA e lascia Data e Ora
+// VUOTE, poi salva: riga 1271 sul gestionale con Data "" e Time "".
+// A lui arriva «✅ Conferma transfer», senza un accenno.
+// Una riga senza data non compare in NESSUNA lista del giorno: nessun autista la vede.
+//
+// Il sistema lo sapeva già in due punti e ha scritto lo stesso:
+//   · «Componi Payload Salvataggio» aveva calcolato payload_monche con dentro quell'Id;
+//   · «Validate Fields» in Parse transfer aveva _missingFields: ["Data","Ora"].
+// Nessuno dei due valori viene letto da qualcuno.
+//
+// Qui NON si blocca il salvataggio: in «Validate Fields» c'è una decisione esplicita del
+// 02/05/2026 — «NON scartare mai: meglio salvare un transfer incompleto e correggerlo a
+// mano che droppare silenziosamente e perdere dati». Quella decisione però dà per scontato
+// che Agostino SAPPIA che è incompleto. Quello che mancava non era il blocco: era dirlo.
+// E non si riempie Data/Ora da soli: sarebbe indovinare su un dato suo.
+if (righeScritte > 0) {
+  const monche = [];
+  try {
+    for (const it of $('Salva via Parse transfer (intent)').all()) {
+      const raw = it.json && it.json.rows;
+      if (!raw) continue;
+      const arr = typeof raw === 'string' ? (raw.trim() ? JSON.parse(raw) : []) : raw;
+      for (const r of (Array.isArray(arr) ? arr : [arr])) {
+        if (!r) continue;
+        const data = String(r.Data || r.data || '').trim();
+        const ora = String(r.Time || r.Ora || r.ora || '').trim();
+        if (data && ora) continue;
+        monche.push({
+          id: String(r.Id || r.id || '').trim(),
+          manca: (!data && !ora) ? 'data e ora' : (!data ? 'la data' : 'l\'ora'),
+          da: String(r['Transfer > Da'] || r.Transfer_Da || '').trim(),
+          per: String(r['Transfer < Per'] || r.Transfer_Per || '').trim(),
+        });
+      }
+    }
+  } catch (e) { return items; }
+
+  if (!monche.length) return items;
+
+  const avviso = monche.map((m) => {
+    const tratta = [m.da, m.per].filter(Boolean).join(' → ');
+    return '⚠️ <b>Salvato senza ' + m.manca + '</b>'
+      + (tratta ? ' — ' + tratta : '')
+      + '\nNon comparirà in nessuna lista del giorno.'
+      + (m.id ? '\n<code>' + m.id + '</code>' : '');
+  }).join('\n\n');
+
+  const coda = '\n\nScrivi «ora» per mettere adesso, oppure dimmi giorno e ora.';
+  const primo = (items[0] && items[0].json) || {};
+  const testoPrima = (primo.telegram && primo.telegram.text) || '';
+
+  return items.map((it, i) => {
+    if (i !== 0) return it;
+    const j = Object.assign({}, it.json || {});
+    j.telegram = Object.assign({}, j.telegram, {
+      text: avviso + coda + (testoPrima ? '\n\n' + testoPrima : ''),
+      parse_mode: (j.telegram && j.telegram.parse_mode) || 'HTML',
+    });
+    j.salvataggio_monco = monche.map((m) => m.id).filter(Boolean);
+    return { json: j };
+  });
+}
+
 if (righeScritte !== 0) return items;
 
 // ---- da qui in giù: il gestionale non ha scritto niente ----

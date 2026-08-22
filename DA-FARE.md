@@ -96,6 +96,69 @@ la modifica di un rientro già salvato continuano a tenere il loro Id.
 codice in produzione e chiuso su quello nuovo.
 **Backup pre-patch:** `backups/n8n/ParseTransfer_pre_guardia_rientro_20260822.json`.
 
+## 0-ter. PRONTE MA NON PUBBLICATE — quattro correzioni sulle bozze (v8)
+
+Provate sul banco `banchi/te/banco-bozze-v8.js` (22 prove) piu i due banchi di stamattina
+rifatti girare sul codice v8 (19 prove). **41 verdi, nessuna pubblicata.**
+Backup pre-patch: `backups/n8n/Prenotazioni_6.0_pre_v8_20260822.json`
+(`versionId 627718d7-4a16-42bb-9191-48458d0ddfd1`).
+
+**A — `Inietta Storage`: REGRESSIONE della v7, la piu urgente.**
+Iniettava `Object.values(map)` per intero. Dalla v7 le schede salvate restano in registro
+come lapidi `st:'salvata'`, quindi da stamattina l'agente riceve **anche le schede gia sul
+gestionale come se fossero bozze aperte**. E la ragione per cui Agostino ha detto «non sta
+capendo qual e la bozza». Correzione: si inietta solo `st !== 'salvata'`.
+File: `banchi/te/node-inietta.new.js`.
+
+**B — schede scritte su UNA RIGA SOLA (esecuzione `788007`, 22/08 16:40).**
+L'agente ha stampato le due schede del tuk-tuk cosi:
+`📅 23/08/2026 · 🕐 15:30 · 📍 Polignano a Mare → 🎯 Cala Ponte Marina · … · 🆔 TR/…`
+Zero righe «Campo:», e il ritaglio ne pretende almeno tre: tutte e due invisibili al codice.
+Su «Salva subito» ne e partita UNA sola, e solo perche stava anche nel messaggio cliccato.
+Correzione: `espandiCompatte()` riapre la riga schiacciata in righe «Campo: valore» prima di
+ogni lettura, in `Aggiorna Bozze` e in `Componi Payload Salvataggio`. Il promemoria delle
+bozze resta al sicuro: e compatto ma senza Id, e senza Id la funzione non tocca niente.
+Misurato sui dati veri: prima 1 scheda su 2, dopo 2 su 2.
+
+**C — richieste descritte ma senza scheda (esecuzione `787808`, 22/08 16:08).**
+Richiesta vera di Davide per il 7 settembre — data, volo AF1288, cellulare, Dimora Brando.
+L'agente fa le domande giuste e **non stampa nessuna scheda**: nessun Id, nessuna bozza.
+Registro prima `{}`, registro dopo `{}`. Di quella richiesta non e rimasta traccia da nessuna
+parte. Confronto: il tuk-tuk delle 16:34, a cui mancava solo la tariffa, e diventato bozza
+perche li la scheda era stata stampata. Decideva l'impaginazione del modello.
+Correzione: un blocco di almeno tre righe «Campo: valore» **senza Id** viene trattenuto come
+`tipo:'richiesta'`. Non si salva mai da sola; sparisce quando arriva la scheda vera (firma =
+data + volo/cellulare/nome/struttura).
+
+**D — il promemoria non faceva capire quale bozza.**
+Scriveva solo la destinazione: su un andata/ritorno le due tratte hanno gli stessi due posti
+scambiati. Ora scrive `Da → Per`. E non dichiara piu «sul gestionale non c'e» per una bozza
+`da_verificare`, che al gestionale c'e stata spedita davvero: li non si sa, e va detto cosi.
+
+## 0-quater. Righe monche scritte sul gestionale — 22/08 (zona rossa, serve Agostino)
+
+Esecuzione `788297` (22/08, 17:15). Ricevuta alla mano, due righe entrate incomplete:
+
+| Riga | Data | Ora | Da → Per | Tariffa | Id |
+|---|---|---|---|---|---|
+| **1359** | sab 22 agosto | 17:45 | Sabbiadoro → **(vuoto)** | 60 | `TR/22082026/8CP5LITGZW4CBVHJ` |
+| **1360** | **(vuota)** | 15:30 | Polignano a Mare → Cala Ponte Marina | 30 | `TR/22082026/P4RII6CXR7K72UVO` |
+
+La 1359 non ha destinazione perche **la scheda dell'agente non aveva proprio la riga `🎯 Per:`**
+— il dato non e mai stato raccolto. La rete del 19/08 ha funzionato (`Componi Payload` ha visto
+la scheda monca, non si e fidato del ritaglio e ha spedito il testo intero), ma Parse transfer
+ha scritto lo stesso. La 1360 e la tuk-tuk andata rimasta indietro alle 16:40: si e salvata
+qui, ma senza data e con tariffa 30 invece di DA DEFINIRE (dal recap delle 16:34 era il 23/08).
+
+**Da chiedere ad Agostino:** dove andava la 1359, e conferma che la 1360 va rimessa al 23/08
+con tariffa DA DEFINIRE.
+
+**Correzione da fare (non ancora scritta):** `Validate Fields` in `Parse transfer` dichiara in
+testa «v3 (02/05/2026): NON scartare mai», riconosce che mancano Data / Da / Per e **le annota
+soltanto**, poi scrive. La regola «non scartare mai» e giusta — non si perde un salvataggio —
+ma una riga senza data o senza tratta non deve entrare in silenzio: va **trattenuta come bozza
+e detta**, non scritta monca.
+
 ## 1. Doppioni dalle strutture — `Transfer webhook` `MJHTq5MksSeUhKgX`
 **Prova:** 16/08, Suite 10/Giovì riga 134 (Zacche, 16/08 17:15, Monopoli Capitolo → Suite 10,
 60 €) entrata due volte: esecuzioni `742784` (16:47) e `742805` (16:50). Id

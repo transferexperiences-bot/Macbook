@@ -1,0 +1,34 @@
+{
+  "norm": {
+    "kind": "callback",
+    "text": "Salva subito",
+    "originalMessageText": "🚐 TRANSFER 2 — RITORNO\n📅 Data: 23/08/2026 (domenica)\n🕐 Ora: 18:00\n📍 Da: Cala Ponte Marina  🗺️ Maps\n🎯 Per: Polignano a Mare  🗺️ Maps\n🏢 Fornitori: Transfer Experience\n💳 Modalità: Incassare\n🚗 Veicolo: Tuk-tuk\n💰 Tariffa: DA DEFINIRE\n🆔 Id: TR/22082026/0B1HEYI1JES43M9E\n\nSe vuoi puoi aggiungere: Pax, Nome cliente, Cellulare e la Tariffa (importo). Altrimenti procedo col salvataggio.\n💬 Invia messaggio al cliente su WhatsApp (scegli tu il contatto)\n📲 Manda questi servizi a un altro contatto (scegli tu)\n⭐ Chiedi la recensione (scegli tu il contatto)",
+    "file_id": "",
+    "mime": "",
+    "chat_id": 522233722,
+    "message_id": 15886,
+    "callback_data": "Salva subito",
+    "Autista": "Agostino Narracci",
+    "AutistaRaw": "Agostino Narracci",
+    "MatchType": "direct",
+    "ChatId": "522233722"
+  },
+  "code": {
+    "agent_output_clean": "🚐 TRANSFER 1 — ANDATA\n📅 23/08/2026 · 🕐 15:30 · 📍 Polignano a Mare → 🎯 Cala Ponte Marina · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/P4RII6CXR7K72UVO\n\n |||\n\n🚐 TRANSFER 2 — RITORNO\n📅 23/08/2026 · 🕐 18:00 · 📍 Cala Ponte Marina → 🎯 Polignano a Mare · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/0B1HEYI1JES43M9E",
+    "chiave": [],
+    "telegram": {
+      "text": "🚐 TRANSFER 1 — ANDATA\n📅 23/08/2026 · 🕐 15:30 · 📍 Polignano a Mare → 🎯 Cala Ponte Marina · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/P4RII6CXR7K72UVO\n\n |||\n\n🚐 TRANSFER 2 — RITORNO\n📅 23/08/2026 · 🕐 18:00 · 📍 Cala Ponte Marina → 🎯 Polignano a Mare · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/0B1HEYI1JES43M9E",
+      "parse_mode": "HTML"
+    },
+    "intent": "conferma",
+    "id": "",
+    "replyMarkupJson": "{\"inline_keyboard\":[[{\"text\":\"💾 Salva subito\",\"callback_data\":\"Salva subito\"}]]}",
+    "salvataggio_diretto": false
+  },
+  "leggiBozze": {
+    "chatd": "BOZZE|522233722",
+    "Dati": "{\"TR/22082026/P4RII6CXR7K72UVO\":{\"b\":\"🚐 TRANSFER 1 — ANDATA\\n📅 Data: 23/08/2026 (domenica)\\n🕐 Ora: 15:30\\n📍 Da: Polignano a Mare\\n🎯 Per: Cala Ponte Marina\\n🚗 Veicolo: Tuk-tuk\\n🏢 Fornitori: Transfer Experience\\n💳 Modalità: Incassare\\n💰 Tariffa: DA DEFINIRE\\n🆔 Id: TR/22082026/P4RII6CXR7K72UVO\",\"ts\":1787409626472,\"f\":\"da=polignano a mare|data=23/08/2026 (domenica)|forn=transfer experience|moda=incassare|ora=15:30|per=cala ponte marina|tari=da definire|veic=tuk-tuk\"},\"TR/22082026/0B1HEYI1JES43M9E\":{\"b\":\"🚐 TRANSFER 2 — RITORNO\\n📅 Data: 23/08/2026 (domenica)\\n🕐 Ora: 18:00\\n📍 Da: Cala Ponte Marina\\n🎯 Per: Polignano a Mare\\n🚗 Veicolo: Tuk-tuk\\n🏢 Fornitori: Transfer Experience\\n💳 Modalità: Incassare\\n💰 Tariffa: DA DEFINIRE\\n🆔 Id: TR/22082026/0B1HEYI1JES43M9E\",\"ts\":1787409626472,\"f\":\"da=cala ponte marina|data=23/08/2026 (domenica)|forn=transfer experience|moda=incassare|ora=18:00|per=polignano a mare|tari=da definire|veic=tuk-tuk\"}}",
+    "lettura_ok": true
+  },
+  "aiOut": "Salvataggio in corso...\n\n🚐 TRANSFER 1 — ANDATA\n📅 23/08/2026 · 🕐 15:30 · 📍 Polignano a Mare → 🎯 Cala Ponte Marina · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/P4RII6CXR7K72UVO\n\n |||\n\n🚐 TRANSFER 2 — RITORNO\n📅 23/08/2026 · 🕐 18:00 · 📍 Cala Ponte Marina → 🎯 Polignano a Mare · 🚗 Tuk-tuk · 🏢 Transfer Experience · 💳 Incassare · 🆔 TR/22082026/0B1HEYI1JES43M9E\n\n[INTENT: conferma]"
+}

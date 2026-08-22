@@ -1,0 +1,37 @@
+{
+  "norm": {
+    "kind": "text",
+    "text": "[22/08/26, 16:00:12] Davide: Ago un transfer 7 settembre?\n[22/08/26, 16:00:47] TransferExperience: yes\n[22/08/26, 16:00:49] Davide: AF1288 il volo\n[22/08/26, 16:02:27] Davide: +1 000-000-0000\nper arco\ndimore di brando",
+    "originalMessageText": "[22/08/26, 16:00:12] Davide: Ago un transfer 7 settembre?\n[22/08/26, 16:00:47] TransferExperience: yes\n[22/08/26, 16:00:49] Davide: AF1288 il volo\n[22/08/26, 16:02:27] Davide: +1 000-000-0000\nper arco\ndimore di brando",
+    "file_id": "",
+    "mime": "",
+    "chat_id": 522233722,
+    "message_id": 15880,
+    "callback_data": "",
+    "Autista": "Agostino Narracci",
+    "AutistaRaw": "Agostino Narracci",
+    "MatchType": "direct",
+    "ChatId": "522233722"
+  },
+  "code": {
+    "agent_output_clean": "Ho letto la richiesta di Davide. Riepilogo:\n\n📅 Data: 07/09/2026 (lunedì)\n✈️ Volo: AF1288\n📞 Cell.: +1 000-000-0000\n🏢 Fornitore: Davide\n🏠 Struttura: Dimora Brando\n\n\"per arco\" + \"dimore di brando\" → interpreto il percorso come: pickup alla Dimora Brando → destinazione Arco (Arco Marchesale, Polignano). Mi confermi che è questo il verso, o è il contrario?\n\nMi servono anche: ora del transfer (o orario del volo, arrivo o partenza), numero passeggeri e tariffa.",
+    "chiave": [
+      "Dimora Brando → Arco",
+      "Arco → Dimora Brando"
+    ],
+    "telegram": {
+      "text": "Ho letto la richiesta di Davide. Riepilogo:\n\n📅 Data: 07/09/2026 (lunedì)\n✈️ Volo: AF1288\n📞 Cell.: +1 000-000-0000\n🏢 Fornitore: Davide\n🏠 Struttura: Dimora Brando\n\n\"per arco\" + \"dimore di brando\" → interpreto il percorso come: pickup alla Dimora Brando → destinazione Arco (Arco Marchesale, Polignano). Mi confermi che è questo il verso, o è il contrario?\n\nMi servono anche: ora del transfer (o orario del volo, arrivo o partenza), numero passeggeri e tariffa.",
+      "parse_mode": "HTML"
+    },
+    "intent": "chat",
+    "id": "",
+    "replyMarkupJson": "{\"inline_keyboard\":[[{\"text\":\"Dimora Brando → Arco\",\"callback_data\":\"Dimora Brando → Arco\"},{\"text\":\"Arco → Dimora Brando\",\"callback_data\":\"Arco → Dimora Brando\"}]]}",
+    "salvataggio_diretto": false
+  },
+  "leggiBozze": {
+    "chatd": "BOZZE|522233722",
+    "Dati": "{}",
+    "lettura_ok": true
+  },
+  "aiOut": "Ho letto la richiesta di Davide. Riepilogo:\n\n📅 Data: 07/09/2026 (lunedì)\n✈️ Volo: AF1288\n📞 Cell.: +1 000-000-0000\n🏢 Fornitore: Davide\n🏠 Struttura: Dimora Brando\n\n\"per arco\" + \"dimore di brando\" → interpreto il percorso come: pickup alla Dimora Brando → destinazione Arco (Arco Marchesale, Polignano). Mi confermi che è questo il verso, o è il contrario?\n\nMi servono anche: ora del transfer (o orario del volo, arrivo o partenza), numero passeggeri e tariffa.\n\n[BUTTONS: Dimora Brando → Arco | Arco → Dimora Brando]\n[INTENT: chat]"
+}

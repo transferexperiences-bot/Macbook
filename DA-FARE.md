@@ -1,4 +1,4 @@
-# Da fare — aggiornato 22/08/2026, mattina
+# Da fare — aggiornato 22/08/2026, sera
 
 Leggi prima `CLAUDE.md` (regole, zone di autonomia, trappole n8n). Qui c'è solo la coda
 di lavoro, in ordine. Ogni voce ha la prova da cui nasce: si riparte da lì, senza ripartire
@@ -51,12 +51,78 @@ server** dopo la pubblicazione.
 **Ancora da verificare in campo:** che dopo la pubblicazione il trigger Telegram sia rimasto
 agganciato (trappola del 16/08) e che il primo «Conferma tutti» vero scriva davvero.
 
-## 0. Parole sbagliate sulle bozze «spedite ma non confermate»
+## ✅ Fatto il 22/08 sera — bozze v8 e nessuna riga monca
+
+### `Prenotazioni Transfer 6.0` — bozze v8, pubblicata (`activeVersionId 566e261b-2fca-4e51-a400-ae6a345decc1`)
+
+Quattro nodi, dopo diff dal server (tre identici byte per byte, il quarto diverso solo per due
+righe di commento) e banco rifatto girare sul codice riletto: **41 prove verdi**.
+
+- **`Inietta Storage` — regressione mia della v7.** Iniettava `Object.values(map)` per intero:
+  dalla v7 le salvate restano in registro come lapidi, quindi dalle 09:58 l'agente riceveva
+  anche le schede già sul gestionale come bozze aperte. Prova: alle 17:22 proponeva di
+  cancellare `TR/22082026/P4RII6CXR7K72UVO`, scritto alle 17:15 (riga 1360). Ora si inietta
+  solo `st !== 'salvata'`.
+- **Schede su una riga sola** (esecuzione `788007`, 16:40). L'agente le stampava schiacciate
+  coi puntini, zero righe `Campo:`, e il ritaglio ne pretende tre: invisibili al codice, un
+  tuk-tuk salvato su due. `espandiCompatte()` riapre la riga prima di ogni lettura, in
+  `Aggiorna Bozze` e in `Componi Payload`. Sui dati veri: prima 1 scheda, dopo 2.
+- **Richieste senza scheda** (esecuzione `787808`, 16:08). La richiesta di Davide per il
+  7 settembre non lasciava traccia perché l'agente faceva le domande senza stampare una
+  scheda, e senza Id non nasce nessuna bozza. Ora un blocco di almeno tre righe `Campo:`
+  senza Id viene trattenuto come richiesta: non si salva mai da sola e sparisce quando arriva
+  la scheda vera.
+- **Promemoria**: tratta intera `Da → Per` invece della sola destinazione, niente più «sul
+  gestionale non c'è» per una spedita-non-confermata, e bottone «Riprendi» per le richieste.
+
+Banco: `banchi/te/banco-bozze-v8.js` (22 prove) + i due di stamattina rifatti girare sul v8.
+Backup: `backups/n8n/Prenotazioni_6.0_pre_v8_20260822.json`.
+
+### `Parse transfer` — nessuna riga monca entra più in silenzio
+
+`Parse transfer` `IkFB29XmJJXQx1a9`, nodo `Assegna Id` **v2**, pubblicato
+(`activeVersionId d3ec85b8-934f-4bd9-892e-44acfb46f730`).
+
+Una riga **nuova** senza `Data`, senza `Da` o senza `Per` non viene più scritta. `Validate
+Fields` se ne accorgeva già ma si limitava ad annotarlo — la sua regola «non scartare mai» è
+giusta, ma non scartare non vuol dire scrivere monco: una riga senza data non la trova
+`cerca_servizi`, non si modifica e non si cancella. Esiste sul gestionale e non esiste per
+nessuno.
+Non si perde niente: senza scrittura la ricevuta non la conferma, e il registro delle bozze
+la tiene come «spedita, non confermata» (v6 del 21/08), quindi torna davanti ad Agostino.
+Il perché sta nel campo `_non_scritta`, leggibile nei dati dell'esecuzione.
+
+⚠️ Vale **solo per le righe nuove**: una modifica porta l'Id e, per come è fatto il parser,
+non porta i campi che non stai cambiando. Bloccarla romperebbe ogni correzione di tariffa,
+autista o orario — e c'è una prova apposta sul banco.
+
+**Banco:** `banchi/te/banco-monche.js` — 12 prove, le due righe vere riprodotte sul codice in
+produzione e chiuse su quello nuovo.
+**Backup pre-patch:** `backups/n8n/ParseTransfer_pre_guardia_rientro_20260822.json`.
+
+## 0-ter. Parole sbagliate sulle bozze «spedite ma non confermate»
 `Bozze - Chiedi cosa salvare` scrive **«sul gestionale non c'è»** per ogni bozza aperta, anche
 per quelle marcate `da_verificare` — cioè spedite al gestionale che non le ha confermate. Lì
 non si sa, e dirlo come una certezza è la stessa famiglia di «mai dichiarare un salvataggio che
 non è avvenuto», al contrario. Il campo `da_verificare` esiste già nell'uscita di
 `Aggiorna Bozze` e il nodo non lo legge: servono due parole diverse per i due casi.
+
+## 0. SERVE AGOSTINO — due righe monche sul gestionale (22/08, esecuzione `788297`)
+
+Scritte alle 17:15 prima che la guardia esistesse. Il codice ora non le farebbe più entrare,
+ma queste due ci sono già e vanno corrette a mano.
+
+| Riga | Cosa c'è | Cosa manca |
+|---|---|---|
+| **1359** | Sabbiadoro → **(vuoto)**, 22/08 17:45, 2 pax, 60 €, Masseria le Torri, Incassare | **la destinazione** — non è mai stata raccolta, la scheda dell'agente non aveva la riga `🎯 Per:` |
+| **1360** | **(data vuota)**, 15:30, Polignano a Mare → Cala Ponte Marina, 30 € | **la data** (dal recap delle 16:34 era il **23/08/2026**) e la **tariffa**, che sulla scheda era `DA DEFINIRE` e non 30 |
+
+**Perché non le ho corrette io:** in questa sessione manca la chiave del service account
+(`TE_SA_KEY` o `/home/claude/gsheets/key.json`), quindi non posso scrivere sui fogli; e il
+connettore Drive di un foglio così grande restituisce solo una parte, quindi non riesco
+nemmeno a rileggerle per confermare lo stato attuale.
+**Serve:** la destinazione della 1359 (solo Agostino la sa) e la chiave, oppure le correggi
+a mano dal foglio.
 
 ## 0-bis. PRONTA MA NON PUBBLICATA — guardia rientro in `Parse transfer` `IkFB29XmJJXQx1a9`
 
@@ -95,69 +161,6 @@ la modifica di un rientro già salvato continuano a tenere il loro Id.
 **Banco:** `banchi/te/banco-guardia-rientro.js` — 15 prove, guasto `758399` riprodotto sul
 codice in produzione e chiuso su quello nuovo.
 **Backup pre-patch:** `backups/n8n/ParseTransfer_pre_guardia_rientro_20260822.json`.
-
-## 0-ter. PRONTE MA NON PUBBLICATE — quattro correzioni sulle bozze (v8)
-
-Provate sul banco `banchi/te/banco-bozze-v8.js` (22 prove) piu i due banchi di stamattina
-rifatti girare sul codice v8 (19 prove). **41 verdi, nessuna pubblicata.**
-Backup pre-patch: `backups/n8n/Prenotazioni_6.0_pre_v8_20260822.json`
-(`versionId 627718d7-4a16-42bb-9191-48458d0ddfd1`).
-
-**A — `Inietta Storage`: REGRESSIONE della v7, la piu urgente.**
-Iniettava `Object.values(map)` per intero. Dalla v7 le schede salvate restano in registro
-come lapidi `st:'salvata'`, quindi da stamattina l'agente riceve **anche le schede gia sul
-gestionale come se fossero bozze aperte**. E la ragione per cui Agostino ha detto «non sta
-capendo qual e la bozza». Correzione: si inietta solo `st !== 'salvata'`.
-File: `banchi/te/node-inietta.new.js`.
-
-**B — schede scritte su UNA RIGA SOLA (esecuzione `788007`, 22/08 16:40).**
-L'agente ha stampato le due schede del tuk-tuk cosi:
-`📅 23/08/2026 · 🕐 15:30 · 📍 Polignano a Mare → 🎯 Cala Ponte Marina · … · 🆔 TR/…`
-Zero righe «Campo:», e il ritaglio ne pretende almeno tre: tutte e due invisibili al codice.
-Su «Salva subito» ne e partita UNA sola, e solo perche stava anche nel messaggio cliccato.
-Correzione: `espandiCompatte()` riapre la riga schiacciata in righe «Campo: valore» prima di
-ogni lettura, in `Aggiorna Bozze` e in `Componi Payload Salvataggio`. Il promemoria delle
-bozze resta al sicuro: e compatto ma senza Id, e senza Id la funzione non tocca niente.
-Misurato sui dati veri: prima 1 scheda su 2, dopo 2 su 2.
-
-**C — richieste descritte ma senza scheda (esecuzione `787808`, 22/08 16:08).**
-Richiesta vera di Davide per il 7 settembre — data, volo AF1288, cellulare, Dimora Brando.
-L'agente fa le domande giuste e **non stampa nessuna scheda**: nessun Id, nessuna bozza.
-Registro prima `{}`, registro dopo `{}`. Di quella richiesta non e rimasta traccia da nessuna
-parte. Confronto: il tuk-tuk delle 16:34, a cui mancava solo la tariffa, e diventato bozza
-perche li la scheda era stata stampata. Decideva l'impaginazione del modello.
-Correzione: un blocco di almeno tre righe «Campo: valore» **senza Id** viene trattenuto come
-`tipo:'richiesta'`. Non si salva mai da sola; sparisce quando arriva la scheda vera (firma =
-data + volo/cellulare/nome/struttura).
-
-**D — il promemoria non faceva capire quale bozza.**
-Scriveva solo la destinazione: su un andata/ritorno le due tratte hanno gli stessi due posti
-scambiati. Ora scrive `Da → Per`. E non dichiara piu «sul gestionale non c'e» per una bozza
-`da_verificare`, che al gestionale c'e stata spedita davvero: li non si sa, e va detto cosi.
-
-## 0-quater. Righe monche scritte sul gestionale — 22/08 (zona rossa, serve Agostino)
-
-Esecuzione `788297` (22/08, 17:15). Ricevuta alla mano, due righe entrate incomplete:
-
-| Riga | Data | Ora | Da → Per | Tariffa | Id |
-|---|---|---|---|---|---|
-| **1359** | sab 22 agosto | 17:45 | Sabbiadoro → **(vuoto)** | 60 | `TR/22082026/8CP5LITGZW4CBVHJ` |
-| **1360** | **(vuota)** | 15:30 | Polignano a Mare → Cala Ponte Marina | 30 | `TR/22082026/P4RII6CXR7K72UVO` |
-
-La 1359 non ha destinazione perche **la scheda dell'agente non aveva proprio la riga `🎯 Per:`**
-— il dato non e mai stato raccolto. La rete del 19/08 ha funzionato (`Componi Payload` ha visto
-la scheda monca, non si e fidato del ritaglio e ha spedito il testo intero), ma Parse transfer
-ha scritto lo stesso. La 1360 e la tuk-tuk andata rimasta indietro alle 16:40: si e salvata
-qui, ma senza data e con tariffa 30 invece di DA DEFINIRE (dal recap delle 16:34 era il 23/08).
-
-**Da chiedere ad Agostino:** dove andava la 1359, e conferma che la 1360 va rimessa al 23/08
-con tariffa DA DEFINIRE.
-
-**Correzione da fare (non ancora scritta):** `Validate Fields` in `Parse transfer` dichiara in
-testa «v3 (02/05/2026): NON scartare mai», riconosce che mancano Data / Da / Per e **le annota
-soltanto**, poi scrive. La regola «non scartare mai» e giusta — non si perde un salvataggio —
-ma una riga senza data o senza tratta non deve entrare in silenzio: va **trattenuta come bozza
-e detta**, non scritta monca.
 
 ## 1. Doppioni dalle strutture — `Transfer webhook` `MJHTq5MksSeUhKgX`
 **Prova:** 16/08, Suite 10/Giovì riga 134 (Zacche, 16/08 17:15, Monopoli Capitolo → Suite 10,
@@ -222,8 +225,18 @@ se un bot non riceve niente da troppo tempo.
   usano `rules.rules` invece di `rules.values`; `Answer Callback Query` ha `operation` non valida.
 
 ## Serve un gesto di Agostino (non aggirabile da dentro la sessione)
-- **Rete:** aggiungere `transfer.app.n8n.cloud` ai domini consentiti dell'ambiente. Senza,
-  il ponte non è chiamabile e le scritture sul gestionale devono passare dai bot.
+- **La chiave del service account** `claude-gestionale@api-drive-506108.iam.gserviceaccount.com`.
+  Verificato il 22/08 sera: `sheets.googleapis.com`, `oauth2.googleapis.com` e
+  `www.googleapis.com` **sono raggiungibili** da dentro la sessione (HTTP 400/404, cioè
+  rispondono). Quindi per scrivere sui fogli manca **solo** il `key.json`: né `TE_SA_KEY` né
+  `/home/claude/gsheets/key.json` esistono qui. Con quello, la skill `api-fogli-google`
+  funziona subito e le righe monche si correggono da qui.
+- **Rete:** `transfer.app.n8n.cloud` NON è fra i domini consentiti — verificato il 22/08 sera,
+  il proxy risponde `connect_rejected`. Quindi il ponte non è chiamabile. (L'MCP n8n invece
+  funziona: passa da un'altra strada. Leggere e modificare i workflow si può, chiamare il
+  webhook del ponte no.)
+- Il connettore Drive **legge** ma di un foglio grande come il gestionale restituisce solo una
+  parte: non serve per verificare una riga specifica.
 - **Orario del rientro** del punto 3.2.
 
 ## Deciso da Agostino, non riaprire

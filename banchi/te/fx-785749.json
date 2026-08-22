@@ -1,0 +1,34 @@
+{
+  "norm": {
+    "kind": "callback",
+    "text": "Conferma tutti",
+    "originalMessageText": "📲 Manda questi servizi a un altro contatto (scegli tu)\n⭐ Chiedi la recensione (scegli tu il contatto)",
+    "file_id": "",
+    "mime": "",
+    "chat_id": 522233722,
+    "message_id": 15868,
+    "callback_data": "Conferma tutti",
+    "Autista": "Agostino Narracci",
+    "AutistaRaw": "Agostino Narracci",
+    "MatchType": "direct",
+    "ChatId": "522233722"
+  },
+  "code": {
+    "agent_output_clean": "Salvataggio in corso...",
+    "chiave": [],
+    "telegram": {
+      "text": "Salvataggio in corso...",
+      "parse_mode": "HTML"
+    },
+    "intent": "conferma",
+    "id": "",
+    "replyMarkupJson": null,
+    "salvataggio_diretto": false
+  },
+  "leggiBozze": {
+    "chatd": "BOZZE|522233722",
+    "Dati": "{\"TR/21082026/YO2CGXFL0VC8P9RV\":{\"b\":\"🚐 TRANSFER 1\\n📅 Data: 25/08/2026 (martedì)\\n🕐 Ora: 06:15\\n📍 Da: Masseria le Torri\\n🎯 Per: Brindisi Airport\\n✈️ Volo: FR7686\\n🏢 Fornitori: Masseria le Torri\\n💳 Modalità: Incassare\\n💰 Tariffa: 150,00€\\n🆔 Id: TR/21082026/YO2CGXFL0VC8P9RV\",\"ts\":1787390247987},\"TR/22082026/X8TCG157HIC4IVCJ\":{\"b\":\"🚐 TRANSFER 2\\n📅 Data: 22/08/2026 (sabato)\\n🕐 Ora: 11:00\\n📍 Da: Masseria Tarsia Morisco\\n🎯 Per: Polignano a Mare\\n🏢 Fornitori: Masseria Tarsia Morisco\\n💳 Modalità: Incassare\\n🚖 Autista: Giuseppe Fanelli\\n💰 Tariffa: 50\\n🆔 Id: TR/22082026/X8TCG157HIC4IVCJ\",\"ts\":1787390247987},\"TR/22082026/VCJ5I0L6UYMRD4OA\":{\"b\":\"🚐 TRANSFER 3\\n📅 Data: 22/08/2026 (sabato)\\n🕐 Ora: 16:30\\n📍 Da: Masseria Tarsia Morisco\\n🎯 Per: Bari Airport\\n🏢 Fornitori: Masseria Tarsia Morisco\\n💳 Modalità: Incassare\\n💰 Tariffa: 120\\n🆔 Id: TR/22082026/VCJ5I0L6UYMRD4OA\",\"ts\":1787390247987},\"TR/22082026/ND0658AYD6YQM160\":{\"b\":\"🚐 TRANSFER 4 — ANDATA\\n📅 Data: 23/08/2026 (domenica)\\n🕐 Ora: 01:00\\n📍 Da: Sanctuary\\n🎯 Per: Badawï\\n👥 Pax: 3\\n🏢 Fornitori: Puglia Consierge\\n💳 Modalità: Fattura\\n💰 Tariffa: 150\\n🆔 Id: TR/22082026/ND0658AYD6YQM160\",\"ts\":1787390247987},\"TR/22082026/B6L4UUJGI2VF6V86\":{\"b\":\"🚐 TRANSFER 5 — RITORNO\\n📅 Data: 23/08/2026 (domenica)\\n🕐 Ora: 07:00\\n📍 Da: Badawï\\n🎯 Per: Masseria Tufaia\\n👥 Pax: 3\\n🏢 Fornitori: Puglia Consierge\\n💳 Modalità: Fattura\\n💰 Tariffa: 150\\n🆔 Id: TR/22082026/B6L4UUJGI2VF6V86\",\"ts\":1787390247987},\"TR/22082026/KNT0LNDYSKCN1AQG\":{\"b\":\"🚐 TRANSFER 6 — ANDATA\\n📅 Data: 22/08/2026 (sabato)\\n🕐 Ora: 11:47\\n📍 Da: Masseria le Torri\\n🎯 Per: Sabbiadoro\\n🏢 Fornitori: Masseria le Torri\\n💳 Modalità: Incassare\\n💰 Tariffa: 55\\n🆔 Id: TR/22082026/KNT0LNDYSKCN1AQG\",\"ts\":1787390247987},\"TR/22082026/SGZ4E65J0KAXJKDK\":{\"b\":\"🚐 TRANSFER 7 — RITORNO\\n📅 Data: 22/08/2026 (sabato)\\n📍 Da: Sabbiadoro\\n🎯 Per: Masseria le Torri\\n🏢 Fornitori: Masseria le Torri\\n💳 Modalità: Incassare\\n💰 Tariffa: 55\\n📝 Note: Ora da concordare col cliente\\n🆔 Id: TR/22082026/SGZ4E65J0KAXJKDK\",\"ts\":1787390247987}}",
+    "lettura_ok": true
+  },
+  "aiOut": "Salvataggio in corso...\n\n[INTENT: conferma]"
+}

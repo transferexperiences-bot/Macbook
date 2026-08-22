@@ -1,8 +1,62 @@
-# Da fare — aggiornato 16/08/2026, sera
+# Da fare — aggiornato 22/08/2026, mattina
 
 Leggi prima `CLAUDE.md` (regole, zone di autonomia, trappole n8n). Qui c'è solo la coda
 di lavoro, in ordine. Ogni voce ha la prova da cui nasce: si riparte da lì, senza ripartire
 da zero.
+
+## ✅ Fatto il 22/08 — il registro delle bozze ora sa dire «questa è già salvata»
+
+**Il guasto, raccontato da Agostino:** «seppur abbia confermato dei transfer prima, continui a
+rimetterli in mezzo e a richiedere conferma; molti salvataggi non partono in automatico».
+
+**Le prove, tutte del 22/08 su `NT4lxIxyBAl5lHpN`:**
+
+| Ora | Esecuzione | Gesto | Schede spedite | Bozze rimaste |
+|---|---|---|---|---|
+| 09:06 | `785609` | conferma | 3 (ricevuta 3/3) | 0 |
+| 09:07 | `785614` | conferma | 5 (ricevuta 5/5) | 0 |
+| 09:16 | `785719` | messaggio normale | — | **7** |
+| 09:27 | `785749` | «Conferma tutti» | **0** | 7 |
+| 09:30 | `785765` | bottone «salva tutte» | 7 | 0 |
+
+**Causa unica:** lo stato «questo è salvato» non esisteva. Veniva ricostruito ogni turno
+leggendo il testo che il modello aveva appena scritto. Da lì i due sintomi:
+1. l'agente ristampa un recap → `Aggiorna Bozze` rimette in coda **anche le schede già
+   salvate** (alle 09:16 sono rientrate tutte e 5 le salvate alle 09:07);
+2. il payload da spedire era ritagliato dalle schede **ristampate in quel turno**
+   (`payload_origine: "turno"`). Alle 09:27 l'agente ha risposto solo «Salvataggio in
+   corso...» → payload vuoto → **zero righe scritte**. Col bottone ha ristampato le 7 schede
+   e si sono salvate. Stessi transfer, stesso intent: cambiava solo se il modello ristampava.
+
+Nessun doppione e nessun dato perso: `appendOrUpdate` sull'Id ha aggiornato le stesse righe.
+
+**Correzione (zona rossa, autorizzata da Agostino il 22/08), pubblicata:**
+`versionId = activeVersionId = 627718d7-4a16-42bb-9191-48458d0ddfd1`.
+- `Aggiorna Bozze` **v7**: chi è confermato dalla **ricevuta** di Parse transfer non viene più
+  cancellato dal registro ma marcato `st:'salvata'`. Una ristampa identica non lo riapre; un
+  cambio della **firma** dei campi sì — quella è una modifica vera. Cap contato separatamente:
+  20 aperte + 30 salvate, così una lapide non spinge fuori una bozza viva.
+- `Componi Payload Salvataggio`: se il modello **non ristampa nessuna scheda** e l'intento è
+  `conferma`, le schede si prendono **dal registro** invece di spedire prosa al gestionale.
+  Solo `conferma`, e solo le bozze **aperte**.
+- La marcatura la dà **solo la ricevuta**: il testo del modello che dice «salvato» continua a
+  far dimenticare la scheda, non a dichiararla salva (resta la rete del guasto `730335`).
+
+**Banco:** `banchi/te/banco-registro.js` (guasto riprodotto + correzione) e
+`banchi/te/banco-regressioni.js` (12 prove sulle reti già pagate: `730335`, `781233`, scarti,
+compatibilità col registro vecchio). 19 prove su 19, fatte girare **sul codice riletto dal
+server** dopo la pubblicazione.
+**Backup pre-patch:** `backups/n8n/Prenotazioni_6.0_pre_registro_20260822.json`.
+
+**Ancora da verificare in campo:** che dopo la pubblicazione il trigger Telegram sia rimasto
+agganciato (trappola del 16/08) e che il primo «Conferma tutti» vero scriva davvero.
+
+## 0. Parole sbagliate sulle bozze «spedite ma non confermate»
+`Bozze - Chiedi cosa salvare` scrive **«sul gestionale non c'è»** per ogni bozza aperta, anche
+per quelle marcate `da_verificare` — cioè spedite al gestionale che non le ha confermate. Lì
+non si sa, e dirlo come una certezza è la stessa famiglia di «mai dichiarare un salvataggio che
+non è avvenuto», al contrario. Il campo `da_verificare` esiste già nell'uscita di
+`Aggiorna Bozze` e il nodo non lo legge: servono due parole diverse per i due casi.
 
 ## 1. Doppioni dalle strutture — `Transfer webhook` `MJHTq5MksSeUhKgX`
 **Prova:** 16/08, Suite 10/Giovì riga 134 (Zacche, 16/08 17:15, Monopoli Capitolo → Suite 10,

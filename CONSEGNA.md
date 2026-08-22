@@ -4,7 +4,7 @@ Per chi riprende il lavoro in una sessione nuova, o per chi lo prende in mano la
 Non ripete `CLAUDE.md` né `DA-FARE.md`: dice **in che ordine si leggono**, **cos'è vero oggi**
 e **cosa si controlla prima di toccare qualcosa**.
 
-Ultimo stato verificato con le prove: **16/08/2026, sera**. Tutto ciò che riguarda n8n va
+Ultimo stato verificato con le prove: **22/08/2026, mattina**. Tutto ciò che riguarda n8n va
 riletto dal server all'inizio della sessione: da qui non si vede.
 
 ## Ordine di lettura
@@ -31,13 +31,26 @@ n8n Cloud (`transfer.app.n8n.cloud`), il gestionale su Google Sheets.
 Storia finora (tre commit): backup di `Transfer webhook` prima della patch doppioni, regole e
 permessi, coda di lavoro.
 
-## Stato al 16/08/2026
+## Stato al 22/08/2026
+
+**22/08 — registro delle bozze (zona rossa, autorizzata).** Il registro non sapeva dire
+«questa è già salvata»: le schede confermate rientravano in coda al primo recap, e una
+«Conferma tutti» non spediva niente se il modello non ristampava le schede. Corretto e
+**pubblicato** (`activeVersionId 627718d7-4a16-42bb-9191-48458d0ddfd1`): `Aggiorna Bozze` v7
+marca `st:'salvata'` sulla ricevuta invece di cancellare, e `Componi Payload Salvataggio`
+costruisce il payload dal registro quando il modello non ristampa nulla. Prove e banco in
+`DA-FARE.md` e `banchi/te/`. **Da verificare in campo:** il primo «Conferma tutti» vero e il
+trigger Telegram dopo la pubblicazione.
 
 **Fatto e in repo:**
 - Backup di `Transfer webhook` (`MJHTq5MksSeUhKgX`) prima di qualsiasi patch:
   `backups/n8n/TW_pre_dedup_20260814.json` — token verificati redatti (`TOKEN_REDATTO`).
 - Regole di lavoro e permessi scritti (`CLAUDE.md`, `.claude/settings.json`).
 - Coda di lavoro con le prove (`DA-FARE.md`).
+- Banco offline in `banchi/te/`: `harness.js` riproduce il contesto n8n (`$`, `$json`,
+  `$input`) attorno al codice di un nodo; `banco-registro.js` e `banco-regressioni.js`
+  girano su dati veri di esecuzione. Si lanciano con `node banchi/te/banco-registro.js`.
+- Backup pre-patch di Prenotazioni 6.0 (`backups/n8n/Prenotazioni_6.0_pre_registro_20260822.json`).
 
 **Fatto su n8n, ma non basta:** le regole del rientro sono state riscritte **solo nella
 descrizione** di `tool_rientro` dentro `Prenotazioni`. Vanno portate nel codice (`DA-FARE` §2):

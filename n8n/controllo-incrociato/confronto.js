@@ -285,13 +285,117 @@ function teConfronta_(strutture, gestionale, oggi, adesso) {
   };
 }
 
+// =====================================================================
+// SOLO LE COSE NUOVE  (21/08/2026)
+// =====================================================================
+//
+// PERCHÉ. Agostino: «non voglio che mandi più questo». Il rapporto usciva ogni
+// ora uguale a sé stesso — le stesse note, gli stessi doppioni, le stesse righe
+// di prova — e Telegram lo tagliava pure a metà. Un avviso che si ripete uguale
+// non è un avviso: è rumore, e dopo due giorni non lo legge più nessuno.
+//
+// COSA CAMBIA. Si manda solo quello che non era già stato detto, e nel corpo
+// vanno solo le 🔴. Le arancioni (note, tariffe) diventano un conteggio in fondo.
+// Se non c'è niente di nuovo, non si manda niente.
+//
+// LA MEMORIA. `$getWorkflowStaticData('global')` di n8n: sopravvive fra
+// un'esecuzione e l'altra. Chiave = Id + campo + i due valori: se il valore
+// cambia, è una cosa nuova e si torna a dirla.
+//
+// UNA COSA ROSSA CHE RESTA SBAGLIATA SI RIPETE UNA VOLTA AL GIORNO. Tacere per
+// sempre su un orario sbagliato sarebbe peggio del rumore.
+
+var TE_RICORDA_MS      = 7 * 24 * 3600 * 1000;   // dopo una settimana si dimentica
+var TE_RIPETI_GRAVE_MS = 24 * 3600 * 1000;       // le rosse tornano una volta al giorno
+
+function teChiaveDiff_(id, d) {
+  return 'D|' + id + '|' + d.campo + '|' + teNorm_(d.strutture) + '|' + teNorm_(d.gestionale);
+}
+
+/**
+ * Toglie quello che era già stato detto e mette le arancioni da parte.
+ * Funzione pura: la memoria entra ed esce come parametro, così si prova offline.
+ *
+ * @param {Object} esito    quello che torna da teConfronta_
+ * @param {Object} memoria  { chiave: quando } — viene aggiornata
+ * @param {number} adesso   Date.now()
+ */
+function teSoloNuove_(esito, memoria, adesso) {
+  memoria = memoria || {};
+  adesso = adesso || Date.now();
+
+  function giaDetta(chiave, scadenza) {
+    var quando = memoria[chiave];
+    if (quando && (adesso - quando) < scadenza) return true;
+    memoria[chiave] = adesso;
+    return false;
+  }
+
+  var discordanti = [], minori = 0;
+  (esito.discordanti || []).forEach(function (r) {
+    var gravi = [];
+    (r.differenze || []).forEach(function (d) {
+      var chiave = teChiaveDiff_(r.Id, d);
+      if (d.avviso) {
+        // arancione: si conta una volta sola, poi silenzio per una settimana
+        if (!giaDetta(chiave, TE_RICORDA_MS)) minori++;
+        return;
+      }
+      if (!giaDetta(chiave, TE_RIPETI_GRAVE_MS)) gravi.push(d);
+    });
+    if (gravi.length) {
+      var copia = {};
+      for (var k in r) copia[k] = r[k];
+      copia.differenze = gravi;
+      copia.grave = true;
+      discordanti.push(copia);
+    }
+  });
+
+  var visti = {};
+  var doppioni = (esito.doppioni || []).filter(function (d) {
+    if (visti[d.Id]) return false;                 // lo stesso Id su due righe struttura
+    visti[d.Id] = true;
+    return !giaDetta('X|' + d.Id + '|' + d.quante, TE_RIPETI_GRAVE_MS);
+  });
+
+  var mancanti = (esito.mancanti || []).filter(function (m) {
+    return !giaDetta('M|' + m.Id, TE_RICORDA_MS);
+  });
+
+  // Pulizia: quello che non si rivede da una settimana esce di memoria.
+  for (var c in memoria) {
+    if ((adesso - memoria[c]) > TE_RICORDA_MS) delete memoria[c];
+  }
+
+  var niente = !discordanti.length && !doppioni.length && !mancanti.length;
+  return {
+    guardate: esito.guardate,
+    senzaData: esito.senzaData,
+    discordanti: discordanti,
+    doppioni: doppioni,
+    mancanti: mancanti,
+    minori: minori,
+    tutto_a_posto: niente,
+    // Le minori da sole non fanno partire un messaggio: si contano e basta.
+    daAvvisare: !niente
+  };
+}
+
+/** Le note lunghe non devono mangiarsi il messaggio. */
+function teCorto_(v, max) {
+  var t = teS_(v);
+  if (t.length <= max) return t;
+  return t.slice(0, max - 1).replace(/\s+\S*$/, '') + '…';
+}
+
 /** Il messaggio. Deve bastare a correggere a mano, senza aprire n8n. */
 function teRapporto_(esito, oggi) {
   if (esito.tutto_a_posto) {
-    return '✅ Strutture e gestionale coincidono — ' + esito.guardate + ' servizi ancora da svolgere controllati.';
+    return '✅ Niente di nuovo — ' + esito.guardate + ' servizi ancora da svolgere controllati.';
   }
-  var r = ['🔎 CONTROLLO STRUTTURE ↔ GESTIONALE',
-    esito.guardate + ' servizi ancora da svolgere (dal ' + oggi + ' in poi, ora passata esclusa).', ''];
+  var quante = esito.discordanti.length + esito.doppioni.length + esito.mancanti.length;
+  var r = ['🔎 CONTROLLO — ' + quante + (quante === 1 ? ' cosa nuova' : ' cose nuove'), ''];
 
   if (esito.doppioni.length) {
     r.push('🔴 DOPPIONI SUL GESTIONALE (' + esito.doppioni.length + ')');
@@ -305,10 +409,11 @@ function teRapporto_(esito, oggi) {
   if (esito.discordanti.length) {
     r.push('🔴 DATI DIVERSI (' + esito.discordanti.length + ') — comanda la struttura');
     esito.discordanti.forEach(function (d) {
-      r.push('• ' + (d.Nome || '—') + ' · ' + (d.Fornitore || '—') + ' · ' + d.Da + ' → ' + d.Per);
+      r.push('• ' + (d.Nome || '—') + ' · ' + (d.Fornitore || '—') + ' · ' +
+        teCorto_(d.Da, 28) + ' → ' + teCorto_(d.Per, 28));
       d.differenze.forEach(function (x) {
-        r.push('   ' + (x.avviso ? '⚠️' : '❗️') + ' ' + x.campo +
-          ': struttura «' + (x.strutture || '—') + '» · gestionale «' + (x.gestionale || '—') + '»');
+        r.push('   ❗️ ' + x.campo + ': struttura «' + teCorto_(x.strutture, 60) +
+          '» · gestionale «' + teCorto_(x.gestionale, 60) + '»');
       });
       r.push('  ' + d.Id);
     });
@@ -319,13 +424,19 @@ function teRapporto_(esito, oggi) {
     r.push('🟠 NON TROVATI SUL GESTIONALE (' + esito.mancanti.length + ')');
     r.push('Può essere normale: transfer mai confermato o annullato.');
     esito.mancanti.forEach(function (m) {
-      r.push('• ' + m.Data + ' ' + m.Ora + ' · ' + (m.Nome || '—') + ' · ' + m.Da + ' → ' + m.Per +
-        ' · ' + (m.Fornitore || '—') + ' (' + (m.Stato || '—') + ')');
+      r.push('• ' + m.Data + ' ' + m.Ora + ' · ' + (m.Nome || '—') + ' · ' +
+        teCorto_(m.Da, 24) + ' → ' + teCorto_(m.Per, 24) + ' · ' + (m.Fornitore || '—'));
       r.push('  ' + m.Id);
     });
+    r.push('');
   }
 
-  return r.join('\n');
+  if (esito.minori) {
+    r.push('+ ' + esito.minori + (esito.minori === 1 ? ' differenza minore' : ' differenze minori') +
+      ' (note, tariffe): non le elenco.');
+  }
+
+  return r.join('\n').replace(/\n+$/, '');
 }
 
 /** Telegram si ferma a 4096 caratteri: meglio un rapporto tagliato che nessuno. */
@@ -344,14 +455,21 @@ var adesso = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Rom
 var oggi = teDue_(adesso.getDate()) + '/' + teDue_(adesso.getMonth() + 1) + '/' + adesso.getFullYear();
 var oraAdesso = teDue_(adesso.getHours()) + ':' + teDue_(adesso.getMinutes());
 
-var esito = teConfronta_(strutture, gestionale, oggi, oraAdesso);
+var tutto = teConfronta_(strutture, gestionale, oggi, oraAdesso);
+
+// La memoria di quello che è già stato detto. Vive dentro n8n e sopravvive fra
+// un'esecuzione e l'altra: senza, il rapporto tornerebbe a ripetersi ogni ora.
+var statica = $getWorkflowStaticData('global');
+if (!statica.viste) statica.viste = {};
+var esito = teSoloNuove_(tutto, statica.viste, Date.now());
 
 return [{
   json: {
     oggi: oggi,
     oraAdesso: oraAdesso,
     ...esito,
-    daAvvisare: !esito.tutto_a_posto,
+    guardateInTutto: tutto.guardate,
+    discordantiInTutto: tutto.discordanti.length,
     rapporto: teTaglia_(teRapporto_(esito, oggi), 3900)
   }
 }];

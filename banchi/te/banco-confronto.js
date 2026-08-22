@@ -14,9 +14,11 @@ exports.teConfronta_ = teConfronta_;
 exports.teRapporto_  = teRapporto_;
 exports.teData_      = teData_;
 exports.teAncoraDaFare_ = teAncoraDaFare_;
+exports.teSoloNuove_ = teSoloNuove_;
+exports.teCorto_     = teCorto_;
 exports.teOra_       = teOra_;
 `)(puro);
-const { teConfronta_, teRapporto_, teData_, teOra_, teAncoraDaFare_ } = puro;
+const { teConfronta_, teRapporto_, teData_, teOra_, teAncoraDaFare_, teSoloNuove_, teCorto_ } = puro;
 
 let ko = 0;
 function prova(nome, atteso, effettivo) {
@@ -270,6 +272,84 @@ prova('volo diverso → si segnala', ['Volo'], conf({ Volo: 'FR7838' }, { Volo: 
   const g = { ...GES, Note: '' };                    // GES ha data e ora diverse
   const r = teConfronta_([s], [g], '17/08/2026', '08:00');
   prova('con anche l\'ora sbagliata → rosso', true, r.discordanti[0].grave);
+}
+
+
+// =====================================================================
+// Solo le cose nuove (21/08) — «non voglio che mandi più questo»
+// =====================================================================
+console.log('\n-- si dice una volta, non ogni ora --');
+{
+  const ORA = 1000 * 60 * 60;
+  const t0 = new Date('2026-08-21T09:00:00Z').getTime();
+  const s = { ...STR, Data: '17/08/2026', Time: '09:00', Note: 'seggiolino' };
+  const g = { ...GES, Data: '17/08/2026', Time: '10:00', Note: '' };
+  const mem = {};
+
+  const primo = teSoloNuove_(teConfronta_([s], [g], '17/08/2026', '08:00'), mem, t0);
+  prova('la prima volta si dice', 1, primo.discordanti.length);
+  prova('   e nel corpo va solo la rossa', ['Ora'], primo.discordanti[0].differenze.map((d) => d.campo));
+  prova('   la nota diventa un conteggio', 1, primo.minori);
+  prova('   quindi si avvisa', true, primo.daAvvisare);
+
+  const secondo = teSoloNuove_(teConfronta_([s], [g], '17/08/2026', '08:00'), mem, t0 + ORA);
+  prova('un\'ora dopo, uguale → silenzio', false, secondo.daAvvisare);
+  prova('   niente discordanti', 0, secondo.discordanti.length);
+  prova('   e nemmeno il conteggio delle minori', 0, secondo.minori);
+
+  const dopo25 = teSoloNuove_(teConfronta_([s], [g], '17/08/2026', '08:00'), mem, t0 + 25 * ORA);
+  prova('dopo 24 ore la rossa torna (è ancora sbagliata)', 1, dopo25.discordanti.length);
+  prova('   ma la nota no, quella resta zitta una settimana', 0, dopo25.minori);
+}
+
+console.log('\n-- se il valore cambia, è una cosa nuova --');
+{
+  const t0 = new Date('2026-08-21T09:00:00Z').getTime();
+  const s = { ...STR, Data: '17/08/2026', Time: '09:00' };
+  const mem = {};
+  teSoloNuove_(teConfronta_([s], [{ ...GES, Data: '17/08/2026', Time: '10:00' }], '17/08/2026', '08:00'), mem, t0);
+  const cambiata = teSoloNuove_(teConfronta_([s], [{ ...GES, Data: '17/08/2026', Time: '11:00' }], '17/08/2026', '08:00'), mem, t0 + 60000);
+  prova('l\'ora è cambiata di nuovo → si torna a dirlo', 1, cambiata.discordanti.length);
+}
+
+console.log('\n-- doppioni e mancanti --');
+{
+  const t0 = new Date('2026-08-21T09:00:00Z').getTime();
+  const s = { ...STR, Data: '17/08/2026', Time: '17:30' };
+  const mem = {};
+  // stesso Id su due righe del gestionale
+  const due = teSoloNuove_(teConfronta_([s], [GES, GES], '17/08/2026', '08:00'), mem, t0);
+  prova('doppione detto una volta', 1, due.doppioni.length);
+  const ancora = teSoloNuove_(teConfronta_([s], [GES, GES], '17/08/2026', '08:00'), mem, t0 + 3600000);
+  prova('   e non ripetuto un\'ora dopo', 0, ancora.doppioni.length);
+
+  const mem2 = {};
+  const manca = teSoloNuove_(teConfronta_([s], [], '17/08/2026', '08:00'), mem2, t0);
+  prova('mancante detto una volta', 1, manca.mancanti.length);
+  prova('   e non ripetuto', 0,
+    teSoloNuove_(teConfronta_([s], [], '17/08/2026', '08:00'), mem2, t0 + 3600000).mancanti.length);
+}
+
+console.log('\n-- il messaggio resta corto --');
+{
+  const t0 = new Date('2026-08-21T09:00:00Z').getTime();
+  const lunga = 'x'.repeat(400);
+  const s = { ...STR, Data: '17/08/2026', Time: '09:00', Note: lunga };
+  const g = { ...GES, Data: '17/08/2026', Time: '10:00', Note: '' };
+  const e = teSoloNuove_(teConfronta_([s], [g], '17/08/2026', '08:00'), {}, t0);
+  const testo = teRapporto_(e, '17/08/2026');
+  prova('la nota lunghissima non finisce nel messaggio', false, testo.indexOf(lunga) !== -1);
+  prova('   compare come conteggio', true, testo.indexOf('1 differenza minore') !== -1);
+  // dieci caratteri in tutto, puntini compresi
+  prova('nota tagliata con i puntini', '123456789…', teCorto_('123456789 abcdefg', 10));
+  prova('taglia sulla parola, non a metà', 'ciao…', teCorto_('ciao mondo bello', 8));
+}
+
+console.log('\n-- niente di nuovo, niente messaggio --');
+{
+  const e = teSoloNuove_(teConfronta_([], [], '17/08/2026', '08:00'), {}, Date.now());
+  prova('non si avvisa', false, e.daAvvisare);
+  prova('   e lo dice chiaro', true, teRapporto_(e, '17/08/2026').indexOf('Niente di nuovo') !== -1);
 }
 
 console.log(`\n${ko === 0 ? 'Tutte le prove passano.' : ko + ' prove FALLITE.'}`);

@@ -109,7 +109,28 @@ formula (`=SE(INDIRETTO(...))`).
 
 Transfer webhook attivo: `339b05f9`.
 
-### ⛔ Il controllo incrociato è SPENTO (21/08)
+### 🔎 Il controllo incrociato è RIACCESO, ma parla solo quando serve (22/08)
+
+Agostino: *«vai»*. Riacceso e pubblicato: `OIW5kMQKtYvprbdv` versione attiva `fc543afc`.
+
+Cosa è cambiato nel nodo `Confronta` (`n8n/controllo-incrociato/confronto.js`):
+
+- **Solo le cose nuove.** Ogni differenza già detta viene ricordata su
+  `$getWorkflowStaticData('global')` con chiave `Id|campo|valore struttura|valore gestionale`.
+  Le 🔴 si ripetono al massimo **una volta al giorno**, le minori restano zitte per **una
+  settimana**. I doppioni si contano per Id.
+- **Solo le 🔴 nel corpo.** Le minori (note, tariffe) diventano una riga di conteggio:
+  `+ N differenze minori: non le elenco`.
+- **Note e testi tagliati** sulla parola, così niente muri di testo.
+- **Silenzio quando non c'è niente**: `daAvvisare: false`, non parte nessun messaggio.
+
+Prova vera, esecuzione `786695` (22/08 13:08): **7 cose nuove**, messaggio di ~1.000 caratteri
+(prima era oltre 4.000 e Telegram lo tagliava). Al giro dopo, se non cambia niente, **non manda
+nulla**.
+
+Banco: `banchi/te/banco-confronto.js`, 16 prove nuove sul «solo le cose nuove», tutte verdi.
+
+<details><summary>Com'era prima: ⛔ Il controllo incrociato è SPENTO (21/08)</summary>
 
 Agostino: *«non voglio che mandi più questo»*. Il rapporto orario era diventato un muro di testo
 che si ripeteva uguale ogni ora e veniva pure tagliato da Telegram.
@@ -119,6 +140,8 @@ niente. Il codice coi 14 campi resta lì, pronto.
 Se un domani lo si vuole riaccendere, prima va cambiato **cosa** manda: solo le cose **nuove**
 rispetto al giro prima, solo le 🔴, e le note tagliate a una riga. Così è un avviso, non un
 bollettino.
+
+</details>
 
 ### La scheda si sposta: via da Prenotazioni, in archivio col bottone (21/08)
 

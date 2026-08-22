@@ -58,6 +58,44 @@ non si sa, e dirlo come una certezza è la stessa famiglia di «mai dichiarare u
 non è avvenuto», al contrario. Il campo `da_verificare` esiste già nell'uscita di
 `Aggiorna Bozze` e il nodo non lo legge: servono due parole diverse per i due casi.
 
+## 0-bis. PRONTA MA NON PUBBLICATA — guardia rientro in `Parse transfer` `IkFB29XmJJXQx1a9`
+
+**Chiesto da Agostino il 22/08:** «nel costruire i transfer di ritorno voglio la certezza che
+non vengono mai più sovrascritte le andate, cioè sempre Id nuovi».
+
+**Perché non basta quello che c'è.** `Tool - Rientro` è blindato — non stampa mai l'Id
+dell'andata e lo ripete in tre regole — ma protegge solo quando il modello usa quel tool.
+I due guasti sono passati lo stesso: il 16/08 (`742264`) il modello ha chiamato
+`cerca_servizi` invece di `tool_rientro` e ha riusato l'Id dell'andata con `intent: modifica`;
+il 18/08 (`758399`) l'Id è finito nel testo e `appendOrUpdate` ha sovrascritto l'andata delle
+16:45 Pietra Blu → Città di Bari di LADANOV IGOR. In `Assegna Id` c'è ancora scritto «se l'Id
+c'è, non si tocca»: un Id in arrivo viene creduto sulla parola.
+
+**La correzione, scritta e provata, NON pubblicata.** In `Assegna Id`, prima di lasciar
+passare un Id, si legge la riga che quell'Id ha davvero sul gestionale (nodo nuovo
+`Leggi Riga Id (guardia rientro)`, lettura mirata sull'Id come `Get row(s) in sheet`). Se
+quello che si sta per scrivere è il **percorso inverso** di quella riga, non è una modifica:
+è un rientro con addosso l'Id della sua andata → Id nuovo, riga nuova. Seconda prova: il
+marcatore «Rientro dell'andata delle …» che `Tool - Rientro` scrive nelle Note. Se il foglio
+non risponde vale il solo marcatore.
+Una modifica vera non rovescia tutti e due i capi del viaggio: orario, destinazione, tariffa e
+la modifica di un rientro già salvato continuano a tenere il loro Id.
+
+**Cosa manca per andare in produzione** (nessuna di queste è stata fatta):
+1. `addNode` `Leggi Riga Id (guardia rientro)` (googleSheets 4.7, credenziale
+   `N9CXGL5m4YIdjyR3`, filtro su `Id`, `returnFirstMatch`, **`alwaysOutputData: true`** — senza
+   quello, quando il filtro non trova niente il nodo non emette item e `Assegna Id` non gira
+   più: si fermerebbero TUTTI i salvataggi di transfer nuovi), `onError:
+   continueRegularOutput`, `retryOnFail`, `maxTries 2`.
+2. Ricablare `Code in JavaScript` → nodo nuovo → `Assegna Id` (togliere il collegamento
+   diretto).
+3. `setNodeParameter` `Assegna Id` `/jsCode` = `banchi/te/node-assegna-id.new.js`.
+4. `publish_workflow`, poi rilettura dal server, diff e banco fatto girare sul codice riletto.
+
+**Banco:** `banchi/te/banco-guardia-rientro.js` — 15 prove, guasto `758399` riprodotto sul
+codice in produzione e chiuso su quello nuovo.
+**Backup pre-patch:** `backups/n8n/ParseTransfer_pre_guardia_rientro_20260822.json`.
+
 ## 1. Doppioni dalle strutture — `Transfer webhook` `MJHTq5MksSeUhKgX`
 **Prova:** 16/08, Suite 10/Giovì riga 134 (Zacche, 16/08 17:15, Monopoli Capitolo → Suite 10,
 60 €) entrata due volte: esecuzioni `742784` (16:47) e `742805` (16:50). Id

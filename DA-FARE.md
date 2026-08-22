@@ -1,4 +1,4 @@
-# Da fare — aggiornato 16/08/2026, sera
+# Da fare — aggiornato 18/08/2026, sera
 
 Leggi prima `CLAUDE.md` (regole, zone di autonomia, trappole n8n). Qui c'è solo la coda
 di lavoro, in ordine. Ogni voce ha la prova da cui nasce: si riparte da lì, senza ripartire
@@ -19,16 +19,58 @@ di `Smart Write Struttura`, esecuzioni `729824`/`729828`). Solo Id, mai confront
 (regola di Agostino: «una struttura può inserire transfer identici, comanda l'Id»).
 **Backup:** `backups/n8n/TW_pre_dedup_20260814.json`.
 
-## 2. Codice del rientro — `f3Y46avI5O8dEnYn` (ora accessibile via MCP)
-**Prova:** esecuzione `742264` del 16/08 15:31 — una richiesta di rientro è diventata la
-**modifica dell'andata**: chiamato `cerca_servizi` invece di `tool_rientro`, riusato l'Id
-`TR/07082026/SSD1XU4R9NS80YGD` con `intent: modifica`, ereditati autista (Giovanni Vito
-Antonio) e veicolo. La scrittura è avvenuta davvero (`Parse transfer` esecuzione `742281`).
-**Fatto finora:** riscritte le regole nella descrizione di `tool_rientro` dentro Prenotazioni.
-Non basta: vanno messe nel codice.
-1. Rientro = **sempre riga nuova con Id nuovo**, mai `intent: modifica`.
-2. **Autista e veicolo vuoti** salvo conferma esplicita di Agostino in quel momento.
-3. La **destinazione detta da Agostino vince** su quella dedotta dall'andata.
+## 1-bis. Bozze che tornano a chiedere conferma — **FATTO il 18/08**
+**Prova:** esecuzione `760661` (18/08, 23:21). Tre transfer del 19/08 per Tedi tour operator
+confermati insieme; `Parse transfer` li ha scritti tutti e tre (righe **1135, 1136, 1137** del
+gestionale, verificate rileggendo il foglio). Subito dopo il promemoria ha scritto «⏳ Resta 1
+bozza aperta — sul gestionale non c'è» e ha rimesso il bottone *Salva* su
+`TR/18082026/G5HWU5BMPTIVTWY1`, già salvato.
+**Causa:** in `Aggiorna Bozze` (sezione 3) la ricevuta di `Parse transfer` (campo `rows`)
+conteneva **due righe su tre** — mancava proprio quella che aveva già la tariffa (380) — e il
+codice leggeva `payload_schede` **solo se la ricevuta era vuota** (`if (!provati.size)`).
+Ricevuta non vuota ma incompleta → il terzo non usciva dal registro.
+**Correzione (v5):** `provati` è l'**unione** di ricevuta e `payload_schede`. Resta la
+protezione del 14/08 (`730335`): una citazione di un Id in prosa non è mai una prova.
+**Pubblicato:** `Prenotazioni Transfer 6.0` versione `69e9744a-85e4-43a9-9e06-62532bd0e7ab`
+(indietro: `481223f5-16e3-40e4-8ad4-48f61390117c`).
+**Banco:** `banchi/te/banco-bozze.js` — 9/9, con la v4 ricostruita che riproduce il guasto.
+**Da tenere d'occhio:** perché la ricevuta di `Parse transfer` arriva incompleta. Il campo
+`rows` nasce da `Get row(s) in sheet` (`returnFirstMatch: true`) e nel turno del 760661 ha
+riportato solo i due transfer arrivati **senza** tariffa. Non è stato toccato.
+
+## 2. Codice del rientro — `f3Y46avI5O8dEnYn` — **FATTO il 18/08**
+Pubblicato: `Tool - Rientro` versione `9edb3fd9-2a14-44b9-a52a-0bd22c247188`
+(per tornare indietro: `restore_workflow_version` alla `cef25980-839e-4130-b975-37a32e9fa611`).
+`Prenotazioni Transfer 6.0` versione `481223f5-16e3-40e4-8ad4-48f61390117c`
+(indietro: `f76ac9b7-1f36-41f3-a283-af5759c57d83`).
+Codice e banco nel repo: `backups/n8n/tool-rientro/trova-rientro.js`, `banchi/te/banco-rientro.js`
+(39 prove, tutte verdi, con i dati veri delle esecuzioni).
+
+Cosa è stato corretto, con le prove:
+- **L'Id dell'andata usciva nei testi.** `758399` (18/08 17:39): la scheda diceva
+  «↩️ Andata: 16:45 · Id TR-20260818-47a6fd0f…», il modello di `Parse transfer` ha ripreso
+  quell'Id, `appendOrUpdate` fa match sull'Id → ha **aggiornato la riga 1114** invece di
+  aggiungerne una: l'andata 16:45 Pietra Blu → Città di Bari di LADANOV IGOR **non esiste più**
+  (ed è rimasto l'autista dell'andata, Claudio Moccia). Ora nessun Id compare più in `scheda`,
+  `avvisi`, `istruzioni`, `Note` del recap: sta solo nel campo dati `id_andata_solo_riferimento`.
+- **Liste lunghe di candidati.** `755902`: 4 andate da scegliere a mano con nome e destinazione
+  che ne indicavano una; `758295`: 6 andate, solo 2 partivano da Pietra Blu. Ora il codice
+  restringe con ora (l'andata parte prima del rientro, stesso giorno), destinazione detta e nome
+  del cliente nella frase; ogni filtro entra solo se lascia almeno un candidato e viene scritto
+  in `come_ho_scelto` e negli avvisi. Se restano in due o più sceglie sempre Agostino.
+- **Destinazione inventata.** `755905`: `recap_da_salvare` conteneva «Per: avratere di Dashka
+  Potanis» con l'avviso «✅ l'hai detta tu». Ora una destinazione presa dalla frase vale solo se
+  somiglia a un posto che sul gestionale esiste (colonne Da/Per + Fornitori); altrimenti si butta,
+  si usa quella dedotta e lo si dice.
+- **Descrizioni degli strumenti**: `tool_rientro` ha ora la regola «nel messaggio di salvataggio
+  non deve comparire nessun Id»; `cerca_servizi` dice di non essere la strada per un rientro.
+
+## 2-bis. Guardia dentro `Parse transfer` `IkFB29XmJJXQx1a9` — **zona rossa, serve il via**
+Le correzioni sopra tolgono l'Id dai testi, ma **chi scrive non si difende da solo**: `Google
+Sheets1` è `appendOrUpdate` con match su `Id`, quindi qualunque testo che contenga un Id
+esistente aggiorna quella riga. Difesa proposta: se il recap dice «Nuovo transfer» e l'Id
+arrivato esiste già su una riga con **Da/Per/Time diversi**, non aggiornare — generare un Id
+nuovo e segnalarlo. Tocca il salvataggio: non si fa senza l'ok di Agostino.
 
 ## 3. Riparazione dati sul gestionale (zona rossa — Agostino ha già dato il via il 16/08)
 1. Riga `TR/07082026/SSD1XU4R9NS80YGD` → `Transfer_Per` torna **Bari Airport**
@@ -36,6 +78,13 @@ Non basta: vanno messe nel codice.
 2. Creare il **rientro** come riga nuova: **Sabbiadoro → Serafini**, 16/08, Id nuovo,
    **autista e veicolo vuoti**. *Orario ancora da chiedere ad Agostino.*
    Ordine obbligatorio: prima il ripristino, poi il rientro.
+3. **Riga 1114 (18/08, zona rossa, non ancora toccata).** L'Id
+   `TR-20260818-47a6fd0f-9819-4bde-acf3-9e2ef23a78bd` adesso contiene il RIENTRO
+   (18:32, Città di Bari → Pietra Blu). L'ANDATA che c'era prima va rimessa come riga a sé:
+   **16:45, Pietra Blu → Città di Bari, LADANOV IGOR, 3 pax, cell 17189092369, Pietra Blu,
+   125,00 €, Incassare, autista Claudio Moccia**, note «L'ospite deve recarsi alla cattedrale».
+   Il rientro delle 18:32 va tenuto, ma con un **Id nuovo** e **autista vuoto**
+   (adesso si porta dietro Claudio Moccia, che era dell'andata).
 
 ## 4. Buffer messaggi su Orca — `UAz4R93BWh9VuLiR`
 Orca **non ha nessun buffer**: N messaggi = N risposte. Prova: 16/08 14:38:33, quattro
@@ -81,3 +130,281 @@ se un bot non riceve niente da troppo tempo.
 sta nel nodo `Auth Check` del workflow `0DVJEFcjGb8eTUmj`, **non** va committato).
 Operazioni utili: `sheets_read` (`sheet_id` + `sheet_name`), `sheets_upsert` (match sull'**Id**),
 `sheets_append`, `sheets_batch_append`.
+
+## 3 — Tariffa: il prezzo lo mette il listino, non le parole del prompt  🔴 da approvare
+
+**Prova.** Esecuzione `760628` del 18/08 alle 21:20 (Tedi tour operator, tre transfer in un
+colpo): TRANSFER 1 con `Tariffa: 380`, TRANSFER 2 e TRANSFER 3 **senza nessuna riga
+Tariffa**, `intent: conferma` — salvati a prezzo vuoto. In quell'esecuzione `calcola_tariffa`
+non è mai stato chiamato. L'obbligo di chiamarlo vive solo nella descrizione del tool
+(«Chiamalo SEMPRE prima di mostrare la scheda»): parole, e le parole il modello le salta.
+Stesso guasto già in CLAUDE.md fra i verificati (`730883`).
+
+**Rimedio, pronto e provato, non pubblicato.** Tre nodi fra `Guardia Data` e `Switch (intent)`:
+
+```
+Guardia Data → Schede senza tariffa → IF ci sono tariffe da calcolare?
+                   ├─ sì → Calcola tariffa mancante (APv3ZqEizY1HnPia) → Rimetti le tariffe
+                   └─ no ────────────────────────────────────────────→ Rimetti le tariffe
+                                                                          → Switch (intent)
+```
+
+* `backups/n8n/prenotazioni/schede-senza-tariffa.js`
+* `backups/n8n/prenotazioni/rimetti-le-tariffe.js`
+* banco `banchi/te/banco-tariffe.js` — 56 casi verdi, costruiti su `760628`, `769329`,
+  `769098`, `768734`.
+
+Il prezzo entra in **tutti e tre i testi** (mostrato, Telegram, `recap_verificato`): scriverlo
+solo nel messaggio vorrebbe dire mostrarlo e non salvarlo. Se il listino non copre la tratta,
+la scheda resta senza prezzo e **il salvataggio si ferma**: si chiede quel prezzo e basta.
+
+**Perché serve il via libera.** Zona rossa n. 1 (un prezzo calcolato finisce su una riga vera
+del gestionale) e n. 4 (cambia come funziona un salvataggio). Da fare insieme: puntare
+`Aggiorna Bozze` su `Rimetti le tariffe` invece che su `Code in JavaScript`, altrimenti il
+registro delle bozze legge un intent vecchio.
+
+**Quanto vale.** Sulle chat vere (gen-mag, 1.897 schede) il prezzo mancava nel 53% dei casi e
+433 schede non sono mai più ricomparse con un prezzo. Quei numeri sono del vecchio formato —
+l'export finisce il 09/05 — ma `760628` dice che il buco c'è ancora.
+
+## 4 — Una tariffa inventata a quattro cifre su una riga vera  🔴 da approvare
+
+**Prova.** Esecuzione `760628` → `760632` (Parse transfer) → `760644` (listino), 18/08 21:20.
+Transfer `TR/18082026/RT03SZHEGW3YORCP`: **Savelletri → Polignano a Mare**, una trentina di
+chilometri. Sul gestionale è finito a **1.080 €**. Il calcolo, parola per parola:
+
+```
+dettaglio.da = { prezzo: 1080, mode: 'comune+raggio', dest: 'Roma APT' }
+kmGaragePickup: 520.1   kmCorsa: 519.8   kmTot: 1040.1   matchEsatto: false
+```
+
+**La catena.** La partenza era scritta come link corto di Maps (`maps.app.goo.gl/…`).
+
+1. `Prepara Ricerche`: se il link non si risolve, ripiega su una ricerca con l'indirizzo
+   ripulito — che di un link è la **stringa vuota** — più `, Italia`. Si geocodifica l'Italia
+   e la partenza diventa il centro del Paese.
+2. `Calcola Tariffa`: il comune viene cercato nel listino con un confronto morbido
+   (`l.includes(key) || key.includes(l)`). «roma» entra dentro «roma apt» → risponde il
+   prezzo dell'**aeroporto di Roma**.
+3. `Applica Tariffa` (Parse transfer) segna `_route: 'conferma'` perché `matchEsatto: false`,
+   ma **scrive lo stesso** la tariffa sulla riga: il `_route` serve solo a mandare un
+   messaggio dopo. La riga nasce con un prezzo che non ha scelto nessuno.
+
+Non è «tariffa mancante»: è peggio. Una tariffa mancante si vede; una tariffa inventata a
+quattro cifre sembra una tariffa.
+
+**Rimedio, pronto e provato, non pubblicato.**
+`backups/n8n/calcola-tariffa/guardia-luogo.js` — tre domande prima di dare un prezzo:
+il luogo si è risolto davvero; la corsa sta entro 300 km da casa; il listino ha risposto per
+la tratta giusta (un comune non prende il prezzo di un posto particolare dentro quel comune:
+«Roma» non è «Roma APT», «Bari» non è «Bari Airport» — il contrario sì, «Polignano a Mare»
+può prendere la riga «Polignano»). Se una risponde male non esce un prezzo, esce un
+`warning`: la strada che il sistema già conosce (`_route: 'zero'` → `Parcheggia Tariffa0` →
+si chiede ad Agostino).
+
+Banco `banchi/te/banco-guardia-luogo.js`, 15 casi verdi, fra cui i prezzi giusti che non si
+devono muovere (Bar Rotolo → Cala Ponte 60 €) e le corse lunghe vere (Polignano → Amalfi
+800 € di listino esatto: non si tocca).
+
+**Da decidere insieme, ed è la domanda vera:** una stima non esatta deve finire sulla riga?
+Oggi ci finisce e il messaggio arriva dopo. Le alternative sono parcheggiarla come si fa già
+con la tariffa a zero, oppure scriverla marcata (Nota `⚠️ stima`) perché non venga scambiata
+per un prezzo deciso.
+
+**Nota su quanto è frequente.** Nel gestionale di agosto (916 righe scritte dal bot) le
+tariffe vuote o a zero sono 10, l'1%: `Calcola Tariffa Gate` dentro Parse transfer il buco lo
+tappa quasi sempre. Il problema non è la quantità, è che quando sbaglia sbaglia in grande e
+in silenzio.
+
+## 5 — «Non si riesce ad avere prezzi corretti»: misurato, e ora è acceso  ✅ 20/08 08:16
+
+Domanda di Agostino, 20/08 all'una di notte. Misurata sulle righe vere del gestionale
+(1.101 righe con un prezzo), non a naso.
+
+### Perché oggi sbaglia
+
+Il listino `Generico` ha **62 destinazioni**. I transfer veri vanno in centinaia di posti che
+lì dentro non ci sono: hotel, trulli, ristoranti, link di Maps. Quando il nome non c'è, il
+motore **non dice «non lo so»**: ripiega su un confronto morbido fra nomi
+(`nome.includes(riga) || riga.includes(nome)`) e poi sui chilometri. Da lì arrivano i numeri
+assurdi, e non sono rari — sono un intero modo di sbagliare:
+
+| quello che succede | prezzo vero | prezzo calcolato |
+|---|---|---|
+| «stazione» somiglia a «Stazione di Bari» | 10 € | 120 € |
+| «roma» (link di Maps non risolto) somiglia a «Roma APT» | ~135 € | **1.080 €** |
+| «Peschiera → Savelletri» prezzato come tratta da Polignano | 40 € | 95 € |
+
+Quanto vale il calcolo di oggi, sulle righe vere:
+
+* prezzo preso col nome **esatto**: azzecca il numero nel **20%** dei casi
+* prezzo preso per **somiglianza**: **4%**
+* tratte che il listino non copre proprio: **33%** delle righe
+
+### Il listino che esiste già e nessuno ha scritto
+
+I prezzi giusti ci sono: sono sulle righe che Agostino ha accettato. Raggruppando per
+**fornitore + tratta (senza verso) + fascia pax**, e riportando a giorno il supplemento
+notturno (×1,2 prima delle 7):
+
+* **142 tratte** hanno sempre lo stesso prezzo → sono righe di listino pronte
+* coprono il **51%** delle righe con un prezzo
+
+Messo alla prova **onestamente** (per giudicare una riga il listino viene ricostruito senza
+quella riga e senza le sue gemelle dello stesso giorno — `banchi/te/banco-listino-imparato.js`):
+
+* risponde sul **33%** delle righe
+* e quando risponde dà **il numero identico nel 93% dei casi**
+
+Contro il 20% del calcolo attuale. Gli sbagli che restano sono da 5-10 € su corse corte che
+Agostino prezza a mano di volta in volta.
+
+### Cosa propongo
+
+1. **Prima si guarda lo storico.** Fornitore + tratta + fascia pax: se quella corsa è già
+   stata fatta almeno due volte allo stesso prezzo, quello è il prezzo. Nessun indovinello.
+2. **Poi il listino del fornitore, e solo per nome esatto.**
+3. **Se nessuno dei due risponde, si dice che non si sa e si chiede.** Niente confronto
+   morbido, niente chilometri: è lì che nascono i 1.080 €.
+4. **Il Pax vuoto si legge dal veicolo** (Sprinter = 9, Vito = 7): oggi un Pax vuoto vale 1 e
+   prende la colonna più economica. Cambia la fascia sul 3% delle righe.
+
+Il listino imparato si aggiorna da solo: ogni tratta prezzata due volte diventa una riga.
+
+### Fatto e pubblicato (con l'ok di Agostino, 20/08)
+
+Le 142 righe stanno nella tabella dati n8n **«Listino imparato»** (`X0sGTo1c1U5aHjjo`, progetto
+`QBb49wu2rmLX0wgk`) — non in una scheda del foglio perché il ponte Claude sa creare un foglio
+nuovo, non una scheda dentro un foglio esistente. La tabella si corregge dalla UI di n8n; se
+Agostino preferisce il foglio, basta che crei la scheda vuota e ci si sposta in un colpo.
+
+In `Calcola Tariffa Prenotazioni` (`APv3ZqEizY1HnPia`) due nodi nuovi dopo `Calcola Tariffa`:
+`Leggi listino imparato` → `Applica listino imparato`. Versione attiva **`30e823b8`** (prima
+era `758a42f6`). Il nodo sta dentro un `try`: se la tabella non risponde o una riga è malata,
+passa intatto il prezzo di prima — sta in mezzo alla strada che porta una riga sul gestionale.
+
+**Interruttore:** svuotare la tabella spegne tutto senza toccare il codice.
+
+**Misurato prima di accendere:** rigiocato su tutte le 1.132 righe vere con un prezzo, il
+listino imparato risponde su metà e **conferma il prezzo già scritto nel 98% dei casi**; ne
+cambierebbe 13, mediana 5 €.
+
+**Banchi:** `banchi/te/banco-applica-imparato.js` (22 verdi, due dei quali sono l'inciampo),
+`banchi/te/simula-imparato.js`, `banchi/te/banco-listino-imparato.js`, `banchi/te/banco-listino.js`,
+`banchi/te/impara-listino.js`.
+
+### Quello che resta da decidere
+
+Il punto 3 — «se nessuno risponde, si dice che non si sa» — **non** è stato fatto: oggi il
+motore, quando non trova, indovina ancora (confronto morbido, poi chilometri). Toglierlo
+farebbe crescere di molto le domande, e il numero vero non lo so finché non ho i listini dei
+singoli fornitori. La `guardia-luogo.js` del punto 4 copre intanto i casi assurdi, ed è
+ancora da approvare.
+
+## 6 — Orca: le vCard le leggeva come un CSV  ✅ 20/08 10:20
+
+**Prova.** Esecuzione `772535` del 20/08 alle 09:54. Agostino manda il contatto
+`Ivan Deluxe Nemeth.vcf` e Orca risponde, con parole sue:
+
+> «mi è arrivata solo la vcard ma senza dati leggibili (vedo solo "VERSION:3.0", niente
+> nome/telefono/email)»
+
+Il nome e il numero erano dentro il file. Al posto del lettore c'era un `Extract From File`
+**senza operazione impostata**: n8n ripiega sul CSV, prende `BEGIN:VCARD` come intestazione
+di colonna e `VERSION:3.0` come unico dato, e butta tutto il resto. Prenotazioni Transfer 6.0
+il lettore giusto ce l'ha dal 07/08; Orca no.
+
+**Fatto.** Nodo nuovo `Leggi la vCard` al posto di `Extract vCard`. Legge nome, telefoni,
+email, azienda, ruolo e note; regge le righe piegate, il quoted-printable con gli accenti e
+il prefisso `itemN.` di iOS; prende il binario in tre modi diversi perché in n8n quale
+funzioni dipende da come gira il nodo. Se non riesce a leggerlo lo dice invece di inventare.
+
+Versione attiva **`6b40b3e0`**. Banco `banchi/te/banco-vcard.js`, 15 casi verdi.
+
+## 7 — Orca: due risposte per un gruppo di messaggi  🟡 da sistemare
+
+**Prova.** Stesso momento, 20/08 09:54:03. Agostino manda insieme un contatto, una frase
+(«No 7 / 3 ore. a 740€») e un vocale da 34 secondi. Partono quattro esecuzioni; due passano
+il buffer e vanno avanti **in parallelo**:
+
+* `772535` — il contatto, che si prende anche la frase;
+* `772537` — il vocale, da solo, con `text` vuoto.
+
+Il buffer fa quello per cui è stato scritto («un allegato va sempre avanti»: due binari non
+si possono unire in un turno solo), ma i due turni **corrono insieme** e nessuno dei due vede
+l'altro: stessa memoria, scritta da tutte e due. Agostino riceve due risposte, ognuna con
+metà della storia.
+
+**Rimedio da valutare:** mettere in fila gli allegati invece di farli correre — il secondo
+allegato aspetta che il primo abbia finito, così almeno se lo trova in memoria. Costa attesa
+(il secondo turno arriverebbe dopo ~45 s invece che subito) e va deciso con Agostino.
+
+## 8 — Orca non creava più i messaggi per il cliente  ✅ 20/08 10:45
+
+**Agostino, 20/08:** «orchestratore fa schifo… non crea neanche messaggi per parlare con il
+cliente, è proprio pessimo». Aveva ragione, e la causa è di una riga.
+
+**Prova.** Esecuzione `772543` delle 09:54. Il prompt chiede al modello di racchiudere il
+messaggio cliente fra `[[WA_MSG]]` e `[[/WA_MSG]]`, seguiti da `[[WA_TEL:numero]]`.
+`Code Parser Intent` cerca **esattamente** quelle doppie quadre, e quando le trova costruisce
+il link «💬 Invia su WhatsApp» col messaggio già dentro. Il modello ha scritto invece:
+
+```
+<WA_MSG> … </WA_MSG>    <WA_TEL></WA_TEL>
+```
+
+Le quadre non c'erano. Il parser non ha riconosciuto niente, quindi:
+1. **nessun link WhatsApp** — cioè la cosa per cui Orca esiste;
+2. i tag sono rimasti nel testo e Agostino se li è visti in chat, in mezzo al messaggio.
+
+**Perché non si risolve nel prompt.** Perché nel prompt c'era già, e il modello l'ha
+disatteso lo stesso. È la regola di CLAUDE.md: quello che conta lo produce il codice.
+
+**Fatto.** Nodo nuovo `Normalizza i marcatori` fra `Risposta vuota?` e `Code Parser Intent`:
+riscrive i marcatori noti (`WA_MSG`, `WA_TEL`, `SUMUP`, `INTENT`, `BUTTONS`) nella forma che
+il parser capisce, comunque il modello li abbia incartati — doppie quadre, quadre singole,
+angolari, graffe, tonde — e non tocca nient'altro, tag HTML compresi.
+
+**Provato da capo a fondo** sul testo vero dell'esecuzione: prima nessun link, dopo
+
+```
+💬 <a href="https://wa.me/393335551234?text=Gentile%20Cliente%2C…">Invia su WhatsApp</a>
+```
+
+Versione attiva **`2fa74186`**. Banco `banchi/te/banco-marcatori.js`, 22 casi verdi.
+
+Il campo `marcatori_raddrizzati` dice, esecuzione per esecuzione, se è servito: se resta
+sempre `true`, il modello continua a sbagliare le parentesi e vale la pena rivedere il prompt.
+
+## 9 — Orca chiedeva ad Agostino cose che sa solo il cliente  ✅ 20/08 11:10
+
+**Agostino, 20/08:** «non mi piace faccia domande che dovrebbe fare direttamente al cliente,
+inutile chiedere a me».
+
+**Prova.** Esecuzione `772543`. Orca prepara il messaggio per il cliente e poi chiude con:
+
+> «Serve: nome, numero, struttura/punto di ritiro. E confermi italiano o inglese?»
+
+Il punto di ritiro lo sa il cliente, non Agostino. La lingua si deduce dal numero, e la regola
+è già scritta nel prompt sotto STILE E TONO. Agostino finisce a fare da centralino fra il bot
+e il cliente, per dati che non ha.
+
+**Fatto.** Nodo `Regola: chiedilo al cliente` fra `Unisci memoria` e `AI Agent Orca`. Attacca
+al prompt la divisione dei ruoli:
+
+* **Agostino** decide: se si fa, prezzo, sconto, acconto, mezzo, autista, disponibilità,
+  accordi con la struttura.
+* **Il cliente** sa tutto il resto: come si chiama, dove alloggia, da dove parte, a che ora,
+  quanti sono, le valigie, il volo.
+* Se il dato manca e lo sa il cliente → la domanda va **dentro** il messaggio al cliente, e il
+  messaggio si scrive lo stesso invece di aspettare.
+
+Sta in un nodo a parte perché il prompt vive dentro `Unisci memoria`, 80 KB di codice: là
+dentro una regola non si rilegge e non si prova.
+
+**E si misura.** `Normalizza i marcatori` scrive `domande_da_cliente` a ogni turno: elenca i
+dati del cliente che Orca ha chiesto ad Agostino (le domande dentro il messaggio al cliente
+non contano). Non corregge niente — riscrivere la prosa del modello è peggio del male. Se il
+campo resta pieno turno dopo turno, la regola scritta non ha preso e si cambia strada.
+
+Versione attiva **`c4fcac60`**. Banco `banchi/te/banco-marcatori.js`, 28 casi verdi.

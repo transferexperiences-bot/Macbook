@@ -273,6 +273,10 @@ main{padding:12px;}
 .plblk.plsel{box-shadow:0 0 0 3px #1668c1}
 .plblk.plnoaut{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)}
 .plgap{position:absolute;height:16px;border-radius:3px;text-align:center;z-index:1;overflow:hidden}
+/* le ore in chiaro sopra la barra: quando finisce · quanto ci mette · quando è sul posto */
+.plora{position:absolute;height:12px;line-height:12px;font-size:9.5px;font-weight:600;
+  color:#5b6670;background:var(--card);padding:0 3px;border-radius:3px;white-space:nowrap;z-index:2}
+.plora.plarr{color:#1c7a45;background:#eaf6ee}
 .plgap i{font-style:normal;font-size:9.5px;color:#3c4650;line-height:16px;white-space:nowrap}
 .plgvia{background:repeating-linear-gradient(135deg,#b9c3cc 0 4px,#cdd5db 4px 8px);opacity:.95}
 .plgvia i{color:#2b3a45;font-weight:700}
@@ -3099,22 +3103,51 @@ function renderPlancia_() {
           + (attesa > 0 ? ' · ' + fmtDur(attesa) + ' di attesa' : '')
           + ' · riparte alle ' + fmtMin(B.startMin)
           + (stretto ? ' — margine sotto i ' + fmtDur(tt.buffer) : '');
-        var top = Math.round(alt / 2 - 8);
+        var top = Math.round(alt / 2 - 8), oy = Math.max(0, top - 13);
+        var wv = Math.max(3, Math.round(via * px)), arrSopra = false;
         if (via > 0) {
-          var wv = Math.max(3, Math.round(via * px));
           b += '<div class="plgap plgvia' + (stretto ? ' plgno' : '') + '" data-m0="' + f + '" data-m1="' + arrivo + '"'
             + ' style="left:' + Math.round((f - sc.m0) * px) + 'px;width:' + wv + 'px;top:' + top + 'px"'
             + ' title="' + esc(titolo) + '">'
             + (wv >= 62 ? '<i>🚗 ' + fmtDur(via) + '</i>' : '') + '</div>';
+          /* L'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Va SOTTO
+             la barra: la fine sta sopra, il viaggio in mezzo, l'arrivo sotto — così le tre
+             cose si leggono in fila e non si accavallano mai, nemmeno quando il viaggio è
+             una strisciolina di dieci pixel. Se dentro la barra non ci stanno i minuti,
+             se li porta dietro questa etichetta. */
+          var tArr = 'arrivo ' + fmtMin(arrivo) + (wv >= 62 ? '' : ' · ' + fmtDur(via));
+          if ((B.startMin - arrivo) * px >= tArr.length * 5.4 + 10) {
+            b += '<div class="plora plarr" data-m0="' + arrivo + '" style="left:' + Math.round((arrivo - sc.m0) * px)
+              + 'px;top:' + (top + 18) + 'px" title="' + esc(titolo) + '">' + tArr + '</div>';
+            arrSopra = true;
+          }
         }
         if (attesa > 0) {
           var wa = Math.max(3, Math.round(attesa * px));
           b += '<div class="plgap plgatt" data-m0="' + arrivo + '" data-m1="' + B.startMin + '"'
             + ' style="left:' + Math.round((arrivo - sc.m0) * px) + 'px;width:' + wa + 'px;top:' + top + 'px"'
             + ' title="' + esc(titolo) + '">'
-            + (wa >= 128 ? '<i>⏳ ' + fmtDur(attesa) + ' · sul posto ' + fmtMin(arrivo) + '</i>'
+            /* se l'ora d'arrivo è già scritta sopra — o se non ci si sposta, e allora è
+               la stessa ora della fine — qui basta quanto si aspetta */
+            + (wa >= 128 && !arrSopra && via > 0 ? '<i>⏳ ' + fmtDur(attesa) + ' · sul posto ' + fmtMin(arrivo) + '</i>'
               : (wa >= 54 ? '<i>⏳ ' + fmtDur(attesa) + '</i>' : '')) + '</div>';
         }
+      }
+    }
+    /* L'ora in cui il servizio finisce, scritta subito dopo il blocco: sulla plancia
+       si legge l'inizio e si indovina la fine. Si scrive solo se c'è spazio prima del
+       blocco successivo, altrimenti si accavallerebbe con la sua ora di partenza. */
+    if (nr === 1) {
+      for (var qf = 0; qf < srt.length; qf++) {
+        var S1 = srt[qf], S2 = srt[qf + 1];
+        var fin1 = plFine(S1);
+        if (S1.startMin < 0 || fin1 > sc.m1) continue;
+        var spazio = ((S2 ? S2.startMin : sc.m1) - fin1) * px;
+        var tFin = 'fine ' + fmtMin(fin1);
+        if (spazio < tFin.length * 5.4 + 10) continue;
+        b += '<div class="plora plofin" data-m0="' + fin1 + '" style="left:' + Math.round((fin1 - sc.m0) * px)
+          + 'px;top:' + Math.max(0, Math.round(alt / 2 - 8) - 13) + 'px"'
+          + ' title="' + esc((S1.nome || S1.da) + ' finisce alle ' + fmtMin(fin1)) + '">' + tFin + '</div>';
       }
     }
     srt.forEach(function (s) {

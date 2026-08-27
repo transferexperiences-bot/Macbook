@@ -662,6 +662,50 @@ const SEED=`(function(){
   t('e non copre la piazzola',              !pm1.copre, pm1);
   t('nessuno scroll orizzontale',           pm1.ov<=2, pm1.ov);
 
+  console.log('\n=== 9decies. PLANCIA: fine · viaggio · arrivo previsto ===');
+  await p.close();p=await nuova(1400,900);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(()=>{PL_ARM=null;PEND={};PL_GAP=true;plZoom(1);plZoom(1);});await p.waitForTimeout(400);
+  const ore=await p.evaluate(()=>{
+    var lane=[].slice.call(document.querySelectorAll('.pllane')).filter(function(l){
+      return l.getAttribute('data-v')==='Vito 1';})[0];
+    var fine=[].slice.call(lane.querySelectorAll('.plora.plofin'));
+    var arr=[].slice.call(lane.querySelectorAll('.plora.plarr'));
+    var srt=DATA.services.filter(function(s){return s.veicolo==='Vito 1'&&s.startMin>=0;})
+      .sort(function(a,b){return a.startMin-b.startMin;});
+    var A=srt[0],B=srt[1],t=trf(A.id,B.id);
+    return {fine:fine.map(function(n){return n.textContent;}),
+            arr:arr.map(function(n){return n.textContent;}),
+            attesaTxt:[].slice.call(lane.querySelectorAll('.plgatt i')).map(function(n){return n.textContent;}),
+            viaggioTxt:[].slice.call(lane.querySelectorAll('.plgvia i')).map(function(n){return n.textContent;}),
+            attesoFine:'fine '+fmtMin(plFine(A)), attesoArr:'arrivo '+fmtMin(plFine(A)+t.min), via:t.min, viaTxt:fmtDur(t.min),
+            yFine:Math.round(fine[0].getBoundingClientRect().top),
+            yArr:arr.length?Math.round(arr[0].getBoundingClientRect().top):null,
+            yBarra:Math.round((lane.querySelector('.plgvia')||lane.querySelector('.plgatt')).getBoundingClientRect().top),
+            xFine:Math.round(fine[0].getBoundingClientRect().left),
+            xBlocco:Math.round(lane.querySelector('.plblk').getBoundingClientRect().right)};});
+  t('dopo ogni servizio c\'è la sua ora di fine', ore.fine.indexOf(ore.attesoFine)>=0, ore);
+  t('e sta subito dopo il blocco, non altrove',  Math.abs(ore.xFine-ore.xBlocco)<=6, ore);
+  t('poi l\'ora in cui è sul pick-up del servizio dopo',
+    ore.arr.length>0&&ore.arr[0].indexOf(ore.attesoArr)>=0, ore);
+  t('la fine sta sopra la barra e l\'arrivo sotto, non si accavallano',
+    ore.yFine<ore.yBarra&&ore.yArr>ore.yBarra, ore);
+  // il tempo di viaggio sta dentro la barra se ci sta, altrimenti se lo porta l'etichetta
+  t('e il tempo di viaggio è scritto una volta sola',
+    (ore.viaggioTxt.join(' ').indexOf(ore.viaTxt)>=0) !== (ore.arr[0].indexOf(ore.viaTxt)>=0), 
+    {viaggio:ore.viaggioTxt,arrivo:ore.arr,via:ore.viaTxt});
+  t('l\'attesa non ripete l\'ora d\'arrivo',
+    ore.attesaTxt.every(function(x){return x.indexOf('sul posto')<0;}), ore.attesaTxt);
+  // con lo zoom le ore restano appese al minuto giusto
+  await p.evaluate(()=>plZoom(-1));await p.waitForTimeout(300);
+  const ore2=await p.evaluate(()=>{
+    var n=document.querySelector('.plora.plofin');
+    return {m0:+n.getAttribute('data-m0'), testo:n.textContent};});
+  t('ogni ora è ancorata al suo minuto (si sposta con lo zoom)',
+    ore2.m0>0&&ore2.testo==='fine '+('0'+Math.floor(ore2.m0/60)).slice(-2)+':'+('0'+(ore2.m0%60)).slice(-2), ore2);
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+
   console.log('\n=== 9nonies. PLANCIA sul telefono: il vassoio si vede subito ===');
   await p.evaluate(()=>{PL_ARM=null;PEND={};render();});await p.waitForTimeout(250);
   const vt=await p.evaluate(()=>{

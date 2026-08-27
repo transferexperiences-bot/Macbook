@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (135 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (142 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -386,7 +386,13 @@ prende dopo). Se sul servizio l'autista c'è già, **non si tocca**. Il salvatag
 gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
 giornata, e `💾 Salva tutto` deve restare a portata di pollice.
 
-Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
+Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia),
+e le tre ore che servono si leggono in fila: **`fine 10:00`** sopra la barra, subito dopo il
+blocco · **`🚗 30m`** dentro la barra del viaggio · **`arrivo 10:30`** sotto, dove il viaggio
+finisce e comincia l'attesa. Sopra e sotto perché così non si accavallano mai, nemmeno quando
+il viaggio è una strisciolina di dieci pixel; se dentro la barra i minuti non ci stanno, se li
+porta dietro l'etichetta dell'arrivo (`arrivo 10:30 · 30m`). Ogni etichetta è ancorata al suo
+minuto (`data-m0`), quindi si sposta da sola con lo zoom.
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
 margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
 il servizio successivo compare una riga d'avviso sotto la corsia, e sulla riga da cui il
@@ -413,7 +419,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **299 controlli automatici, tutti verdi.**
+libera. **306 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -421,7 +427,7 @@ Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) s
 **9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista ·
 **9quinquies** il trascinamento non resta appeso · **9sexies** autista dal mezzo e barra
 del salvataggio · **9septies** il pennello autista · **9octies** i cancellati non occupano niente ·
-**9nonies** il vassoio sul telefono.
+**9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo.
 
 Da fare fuori dal codice:
 

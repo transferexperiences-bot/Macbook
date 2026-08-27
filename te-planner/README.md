@@ -13,7 +13,7 @@ Web app Google Apps Script per organizzare i transfer di Transfer Experience.
 
 ```bash
 npm i -D playwright && npx playwright install chromium   # solo per i test end-to-end
-./run-tests.sh                                           # 299 controlli
+./run-tests.sh                                           # 306 controlli
 python3 tools/build-preview.py && open preview.html      # la app in locale, con dati finti
 ```
 

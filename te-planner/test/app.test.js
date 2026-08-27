@@ -703,8 +703,20 @@ const SEED=`(function(){
     return {m0:+n.getAttribute('data-m0'), testo:n.textContent};});
   t('ogni ora è ancorata al suo minuto (si sposta con lo zoom)',
     ore2.m0>0&&ore2.testo==='fine '+('0'+Math.floor(ore2.m0/60)).slice(-2)+':'+('0'+(ore2.m0%60)).slice(-2), ore2);
+  // sul telefono la giornata sta in 390px: le scritte si accorciano invece di sparire
   await p.close();p=await nuova(390,844);
-  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(PLSEED);await p.waitForTimeout(350);
+  const oreTel=await p.evaluate(()=>({
+    fine:[].slice.call(document.querySelectorAll('.plora.plofin')).map(function(n){return n.textContent;}),
+    arr:[].slice.call(document.querySelectorAll('.plora.plarr')).map(function(n){return n.textContent;}),
+    dentro:[].slice.call(document.querySelectorAll('.plora')).every(function(n){
+      var r=n.getBoundingClientRect(), l=n.parentNode.getBoundingClientRect();
+      return r.top>=l.top-1&&r.bottom<=l.bottom+1;}),
+    ov:document.documentElement.scrollWidth-document.documentElement.clientWidth}));
+  t('anche sul telefono le ore di fine ci sono', oreTel.fine.length>0, oreTel);
+  t('e almeno un arrivo, magari in forma corta', oreTel.arr.length>0, oreTel);
+  t('le scritte restano dentro la corsia',       oreTel.dentro, oreTel);
+  t('e non allargano la pagina',                 oreTel.ov<=2, oreTel.ov);
 
   console.log('\n=== 9nonies. PLANCIA sul telefono: il vassoio si vede subito ===');
   await p.evaluate(()=>{PL_ARM=null;PEND={};render();});await p.waitForTimeout(250);

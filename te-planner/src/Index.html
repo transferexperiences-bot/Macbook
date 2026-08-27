@@ -2434,6 +2434,15 @@ function plScontro(s, veic) {
   return w;
 }
 function plSegno(m) { return (m > 0 ? '+' : '') + fmtDur(m); }
+/* La prima scritta che ci sta nei pixel disponibili, dalla più completa alla più secca.
+   Sul telefono la giornata intera sta in 390 px: «arrivo 10:25 · 25m» non entra quasi mai,
+   ma «▸10:25» sì — e quell'ora è il motivo per cui si guarda la plancia. Meglio corta che
+   assente. Le larghezze sono stimate sul carattere della plancia (9,5px). */
+function plEtich(scritte, spazio) {
+  for (var i = 0; i < scritte.length; i++)
+    if (spazio >= scritte[i].length * 5.4 + 10) return scritte[i];
+  return '';
+}
 /* conCatena = calcola anche da dove arriva il mezzo e cosa succede a valle.
    Si chiede solo per le piazzole del servizio armato: farlo per ogni blocco di ogni
    riga significherebbe ricostruire la catena quaranta volte per disegno. */
@@ -3115,8 +3124,12 @@ function renderPlancia_() {
              cose si leggono in fila e non si accavallano mai, nemmeno quando il viaggio è
              una strisciolina di dieci pixel. Se dentro la barra non ci stanno i minuti,
              se li porta dietro questa etichetta. */
-          var tArr = 'arrivo ' + fmtMin(arrivo) + (wv >= 62 ? '' : ' · ' + fmtDur(via));
-          if ((B.startMin - arrivo) * px >= tArr.length * 5.4 + 10) {
+          var tArr = plEtich(wv >= 62
+            ? ['arrivo ' + fmtMin(arrivo), '▸' + fmtMin(arrivo)]
+            : ['arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via), 'arrivo ' + fmtMin(arrivo),
+               '▸' + fmtMin(arrivo) + ' ' + fmtDur(via), '▸' + fmtMin(arrivo)],
+            (B.startMin - arrivo) * px);
+          if (tArr) {
             b += '<div class="plora plarr" data-m0="' + arrivo + '" style="left:' + Math.round((arrivo - sc.m0) * px)
               + 'px;top:' + (top + 18) + 'px" title="' + esc(titolo) + '">' + tArr + '</div>';
             arrSopra = true;
@@ -3143,8 +3156,8 @@ function renderPlancia_() {
         var fin1 = plFine(S1);
         if (S1.startMin < 0 || fin1 > sc.m1) continue;
         var spazio = ((S2 ? S2.startMin : sc.m1) - fin1) * px;
-        var tFin = 'fine ' + fmtMin(fin1);
-        if (spazio < tFin.length * 5.4 + 10) continue;
+        var tFin = plEtich(['fine ' + fmtMin(fin1), fmtMin(fin1)], spazio);
+        if (!tFin) continue;
         b += '<div class="plora plofin" data-m0="' + fin1 + '" style="left:' + Math.round((fin1 - sc.m0) * px)
           + 'px;top:' + Math.max(0, Math.round(alt / 2 - 8) - 13) + 'px"'
           + ' title="' + esc((S1.nome || S1.da) + ' finisce alle ' + fmtMin(fin1)) + '">' + tFin + '</div>';

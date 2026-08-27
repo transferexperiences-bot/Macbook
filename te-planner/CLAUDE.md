@@ -343,8 +343,9 @@ una piazzola) o dalla scheda. **Assegnando un mezzo, l'autista viene dietro**: q
 guidava quel mezzo prima di questo servizio (o, se prima non c'è nessuno, il primo che lo
 prende dopo). Se sul servizio l'autista c'è già, **non si tocca**. Il salvataggio è una barra
 gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
-giornata, e `💾 Salva tutto` deve restare a portata di pollice. Fra un
-servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
+giornata, e `💾 Salva tutto` deve restare a portata di pollice.
+
+Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
 margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
 il servizio successivo compare una riga d'avviso sotto la corsia, e sulla riga da cui il

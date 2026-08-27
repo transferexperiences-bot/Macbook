@@ -7,14 +7,13 @@ Web app Google Apps Script per organizzare i transfer di Transfer Experience.
 - Contesto completo per lavorarci: **[CLAUDE.md](CLAUDE.md)**.
 - Cosa è stato corretto e perché: [docs/REVISIONE_v5.md](docs/REVISIONE_v5.md),
   [docs/ASSEGNA.md](docs/ASSEGNA.md) (scheda Assegna e consiglio autista),
-  [docs/CATENE.md](docs/CATENE.md) (motore delle catene per la Plancia — **leggi l'avviso
-  sulle due copie della app**).
+  [docs/CATENE.md](docs/CATENE.md) (catene e tempi quando sposti un servizio in Plancia).
 
 ## Per iniziare
 
 ```bash
 npm i -D playwright && npx playwright install chromium   # solo per i test end-to-end
-./run-tests.sh                                           # 184 controlli
+./run-tests.sh                                           # 203 controlli
 python3 tools/build-preview.py && open preview.html      # la app in locale, con dati finti
 ```
 

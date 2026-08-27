@@ -2,17 +2,19 @@
    BLOCCO DA INCOLLARE dentro src/Index.html, nel <script>, subito prima di
    `/* ---------- viste ---------- *\/`.
 
-   Motore delle catene per la Plancia: dato un servizio e una destinazione
-   ipotetica (mezzo o autista) dice da dove arriva, con che margine, cosa si
-   rompe a valle, cosa si libera sulla catena di partenza e come cambia il
-   rientro in garage. Più la finestra dei voli (atterraggio + 20') e le ore
-   dell'autista.
+   Motore delle catene: dato un servizio e una destinazione ipotetica (mezzo o
+   autista) dice da dove arriva, con che margine, cosa si rompe a valle, cosa si
+   libera sulla catena di partenza e come cambia il rientro in garage. Più la
+   finestra dei voli (atterraggio + 20') e le ore dell'autista.
 
    Dipende solo da roba che c'è già: trf(), conflict(), stessoLuogoUI(),
-   normLuogoUI(), isCanc(), garageInfo(), STRETTO. Non chiama il backend, non
-   scrive niente, non introduce un secondo motore di fattibilità.
+   normLuogoUI(), isCanc(), garageInfo(), plFine(), STRETTO. Non chiama il
+   backend, non scrive niente, non introduce un secondo motore di fattibilità.
 
-   Copiato da te-planner/src/Index.html — 84 controlli in test/motore.test.js.
+   NB: perché la finestra dei voli valga in tutta la app, conflict() deve
+   confrontare con `S.startMin + finestraInizio(S)` (vedi docs/CATENE.md).
+
+   Copiato da te-planner/src/Index.html — coperto da test/motore.test.js.
    ============================================================================ */
 
 /* ---------- catene: cosa si rompe (o si libera) se sposto questo servizio ----------
@@ -49,9 +51,9 @@ function catenaDi(chiave,valore,escludiId){
 /* Il collegamento fra due servizi consecutivi della stessa catena: quando il mezzo è
    materialmente sul pick-up del secondo, e quanto margine resta. */
 function trattaFra(A,B){
-  if(!A||!B||A.endMin<0||B.startMin<0)return null;
+  if(!A||!B||A.startMin<0||B.startMin<0)return null;
   var t=trf(A.id,B.id);
-  var arrivo=A.endMin+t.min;
+  var arrivo=plFine(A)+t.min;
   var fin=finestraInizio(B);
   // trf() quando non ha la coppia in DATA.transfers torna 30 minuti di default: è una
   // stima, e va detto invece di spacciarla per un tempo Maps
@@ -67,19 +69,20 @@ function rientroCatena(giro){var g=garageInfo(giro);return g?g.at:null;}
    dove il mezzo/autista è adesso e a che ora è sul pick-up · il margine col segno ·
    cosa succede al servizio successivo di quella catena · cosa si libera su quella di
    partenza · come cambia il rientro in garage. Non tocca niente: sola lettura. */
-function catenaIpotesi(S,chiave,valore){
+function catenaIpotesi(S,chiave,valore,salta){
   var out={chiave:chiave,da:String(S[chiave]||''),a:String(valore||''),
            arrivo:null,daDove:null,trasf:0,buffer:0,margine:null,stima:false,
            finestra:finestraInizio(S),k:'libero',sovrapposti:[],aValle:[],liberati:[],
            rientro:{prima:null,dopo:null},rientroOrigine:{prima:null,dopo:null}};
   if(!S||S.startMin<0)return out;
   var giro=catenaDi(chiave,out.a,S.id);
+  if(salta)giro=giro.filter(function(P){return !salta(P);});
   var prev=null,next=null,i;
   for(i=0;i<giro.length;i++){
     var P=giro[i];
-    if(P.startMin<S.endMin&&P.endMin>S.startMin){out.sovrapposti.push(P);continue;}
-    if(P.endMin<=S.startMin&&(!prev||P.endMin>prev.endMin))prev=P;
-    if(P.startMin>=S.endMin&&(!next||P.startMin<next.startMin))next=P;
+    if(P.startMin<plFine(S)&&plFine(P)>S.startMin){out.sovrapposti.push(P);continue;}
+    if(plFine(P)<=S.startMin&&(!prev||plFine(P)>plFine(prev)))prev=P;
+    if(P.startMin>=plFine(S)&&(!next||P.startMin<next.startMin))next=P;
   }
   // 1. da dove arriva e a che ora è sul posto
   if(prev){
@@ -105,9 +108,10 @@ function catenaIpotesi(S,chiave,valore){
   // 3. cosa si libera sulla catena di partenza
   if(out.da&&out.da!==out.a){
     var vecchio=catenaDi(chiave,out.da,S.id),pO=null,nO=null;
+    if(salta)vecchio=vecchio.filter(function(P){return !salta(P);});
     vecchio.forEach(function(P){
-      if(P.endMin<=S.startMin&&(!pO||P.endMin>pO.endMin))pO=P;
-      if(P.startMin>=S.endMin&&(!nO||P.startMin<nO.startMin))nO=P;
+      if(plFine(P)<=S.startMin&&(!pO||plFine(P)>plFine(pO)))pO=P;
+      if(P.startMin>=plFine(S)&&(!nO||P.startMin<nO.startMin))nO=P;
     });
     if(nO){
       var prima=trattaFra(S,nO),dopo=pO?trattaFra(pO,nO):null;
@@ -123,7 +127,13 @@ function catenaIpotesi(S,chiave,valore){
   out.rientro.dopo=rientroCatena(giro.concat([S]));
   return out;
 }
-function plCatena(S,veicoloIpotetico){return catenaIpotesi(S,'veicolo',veicoloIpotetico);}
+/* Sulla catena del MEZZO i servizi dello stesso autista non contano come intralcio:
+   viaggiano insieme, la fattibilità è già quella dell'autista. Stessa esenzione che
+   c'è nel menù del dettaglio e in plScontro. */
+function plCatena(S,veicoloIpotetico){
+  return catenaIpotesi(S,'veicolo',veicoloIpotetico,function(P){
+    return !!(S.autista&&P.autista===S.autista);});
+}
 function plCatenaAutista(S,autistaIpotetico){return catenaIpotesi(S,'autista',autistaIpotetico);}
 
 /* Ore dell'autista: dalla prima partenza all'ultimo rientro in garage. Non è un divieto,

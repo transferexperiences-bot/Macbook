@@ -48,8 +48,8 @@ src/Code.gs           backend: legge il foglio, calcola durate e incastri, scriv
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (84 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (57 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (74 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -170,7 +170,14 @@ Due regole che vivono lì dentro:
 
 Quando manca un dato **non si inventa**: senza servizio precedente `daDove` è `'garage'` e
 `arrivo`/`margine` restano `null` (base → pick-up non è in `_CacheTratte`); se `trf()` ha usato
-i 30 minuti di default, `stima` è `true` e va scritto a schermo. Dettagli in `docs/CATENE.md`.
+i 30 minuti di default, `stima` è `true` e va scritto a schermo.
+
+`plVerifica(s, veic, conCatena)` è il verdetto della Plancia. Con `conCatena` decide **dalla
+catena**, e dà lo stesso sì/no di `plScontro()` (stessa regola, stesse tratte) ma con il motivo
+giusto: si accavalla · non ci arriva · **ci arriva ma poi salta il servizio dopo**. Senza
+`conCatena` resta la via corta, che serve per i controlli in massa (un blocco per riga, le
+schede del vassoio): ricostruire la catena quaranta volte a ogni disegno costa.
+Dettagli in `docs/CATENE.md`.
 
 ### Cosa manda `getPlanData(dateISO)` alla app
 
@@ -236,6 +243,16 @@ zone, leggi `docs/REVISIONE_v5.md`.
     sempre su un autista fermo a casa invece di allungare il giro di chi era già fuori.
     Chi oggi non lavora va **in fondo e marcato** (`⚠️`, gruppo `💤 Oggi non lavorano`),
     mai mescolato ai disponibili.
+12. **Preview non rigenerata.** `test/app.test.js` gira su `preview.html`: dopo ogni modifica a
+    `src/Index.html` va rifatta con `python3 tools/build-preview.py`, o i test passano (o
+    falliscono) sulla versione precedente. È già successo: mezz'ora a inseguire un bug che
+    nel codice era già corretto. `./run-tests.sh` la rigenera da solo — il rischio c'è solo
+    lanciando `node test/app.test.js` a mano.
+13. **«Occupato» quando il mezzo è liberissimo.** Se sposti un servizio dove ci sta ma il
+    servizio *successivo* di quel mezzo non si raggiunge più, `conflict()` lo vede come
+    conflitto e la Plancia diceva «occupato: si libera alle 15:45» indicando un servizio che
+    non c'entrava. Il verdetto è lo stesso, ma il motivo va detto per quello che è: *ci
+    arriva, ma poi le 14:00 saltano per 35 minuti*.
 
 ---
 
@@ -286,6 +303,16 @@ si vede una per volta, con i due bottoni in alto (🕐 Da assegnare · 🚹 Giri
 un servizio nella coda si passa da soli ai giri, con una striscia gialla che ricorda quale
 servizio si sta piazzando; assegnato, si torna alla coda per il prossimo.
 
+**🎛 Plancia** — una riga per mezzo, il tempo sull'asse X, i servizi come blocchi colorati per
+autista; sotto, il vassoio di quelli senza mezzo. Si assegna in tre modi: trascinando il
+blocco, toccandolo (si «arma» e su ogni mezzo compare una piazzola) o dalla scheda. Fra un
+servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
+Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
+margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
+il servizio successivo compare una riga d'avviso sotto la corsia, e sulla riga da cui il
+servizio se ne va si legge **cosa si libera**. La miniatura `#plcard` aggiunge catena,
+rientro in garage e giornata dell'autista oltre le 12 ore.
+
 **⏳ Flotta** — autisti e mezzi raggruppati per stato (*Impegnati ora / Liberi ora / Non
 disponibili*) con contatori cliccabili. Un mezzo occupato è rosso, con barra di
 avanzamento, chi lo guida, quando e dove si libera, e l'ora di rientro in garage.
@@ -303,15 +330,14 @@ Fatto: revisione completa v4→v5 (12 bug), rientro in garage, layout desktop, v
 filtri autisti e mezzi, Flotta ridisegnata, ordinamento per mezzo, candidato mezzo,
 bug delle catene "stesso luogo". Poi (18/08): **scheda 🧩 Assegna** (giri a sinistra, coda per
 ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non stava lavorando.
-Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) per l'handoff
-della Plancia. **184 controlli automatici, tutti verdi.**
+Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
+**dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
+l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
+libera. **203 controlli automatici, tutti verdi.**
 
-⚠️ **Attenzione: esistono due copie della app.** L'handoff della Plancia (scheda 🎛, `.pllane`,
-`plDurata()`, 148 controlli) parla di una versione che **qui non c'è**: lo zip da cui nasce
-questa cartella ha un commit solo e nessuna traccia di Plancia. Prima di lavorare
-sull'interfaccia della Plancia serve il `src/Index.html` vero di Apps Script — vedi
-`docs/CATENE.md`. Il punto che si scontra è `test/app.test.js` **sezione 8**: di là è la
-Plancia, di qua la scheda Assegna.
+Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
+**riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
+**8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px.
 
 Da fare fuori dal codice:
 

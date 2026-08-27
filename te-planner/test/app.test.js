@@ -262,6 +262,103 @@ const SEED=`(function(){
   const m2=await p.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   t('nessuno scroll orizzontale a 390px', m2<=2, m2);
 
+  console.log('\n=== 9. PLANCIA: le catene quando sposti un servizio ===');
+  await p.close();p=await nuova(1440,1000);
+  const PLSEED=`(function(){
+    function mk(id,st,dur,da,per,aut,vei,extra){
+      var s=JSON.parse(JSON.stringify(DATA.services[0]));
+      s.id=id;s.startMin=st;s.durMin=dur;s.endMin=st+dur;
+      s.time=('0'+Math.floor(st/60)).slice(-2)+':'+('0'+(st%60)).slice(-2);
+      s.da=da;s.per=per;s.autista=aut;s.veicolo=vei;s.nome='Cliente '+id;s.volo='';
+      s.stato='';s.allert='';s.pax=3;s.rientroMin=20;
+      if(extra)for(var k in extra)s[k]=extra[k];
+      return s;}
+    DATA.services=[
+      mk('A',480,120,'Bari','Monopoli','Marco Rossi','Vito 1'),
+      mk('C',840,60,'Alberobello','Bari','Marco Rossi','Vito 1'),
+      mk('B',480,120,'Bari','Monopoli','Luca Verdi','Mercedes V'),
+      mk('S',660,120,'Ostuni','Matera','',''),
+      mk('V',900,60,'Aeroporto di Bari','Ostuni','','',{volo:'FR8826'}),
+      mk('P',820,45,'Bari','Bari','Giovanni Leo','Vito 2')];
+    DATA.transfers={'A->S':{min:35,buffer:15},'S->C':{min:80,buffer:15},'A->C':{min:60,buffer:15},
+      'B->S':{min:35,buffer:15},'S->V':{min:60,buffer:15},'B->V':{min:60,buffer:15},
+      'P->V':{min:40,buffer:10},'V->P':{min:40,buffer:10},'A->V':{min:60,buffer:15}};
+    _BYID_SRC=null;PEND={};PL_ARM=null;setTab('plancia');})()`;
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(()=>{plArma('S');});await p.waitForTimeout(300);
+  const c1=await p.evaluate(()=>{
+    var S=DATA.services.filter(x=>x.id==='S')[0];
+    var buono=plVerifica(S,'Mercedes V',true), rotto=plVerifica(S,'Vito 1',true);
+    var slot=document.querySelector('.plrow.plcanmid .plslot');
+    return {arrivo:buono.cat.arrivo,margine:buono.cat.margine,k:buono.k,breve:buono.breve,
+            slotTxt:slot?slot.textContent:'',slotCls:slot?slot.className:'',
+            rottoOk:rotto.ok,rottoBreve:rotto.breve,rottoMsg:rotto.msg,
+            avv:(document.querySelector('.plavv')||{}).textContent||'',
+            pend:Object.keys(PEND).length};});
+  t('la piazzola dice a che ora il mezzo è sul pick-up', c1.arrivo===635&&/10:35/.test(c1.slotTxt), c1);
+  t('e il margine col segno',                            /\+10m/.test(c1.slotTxt)&&c1.margine===10, c1);
+  t('10 minuti di margine = ambra, non verde',           c1.k==='stretto'&&/plsmid/.test(c1.slotCls), c1);
+  t('se rompe il servizio dopo, il verdetto è rosso',    c1.rottoOk===false&&/poi salta 14:00/.test(c1.rottoBreve), c1);
+  t('e non dice più "occupato" ma il motivo vero',       /non si raggiunge più/.test(c1.rottoMsg)&&/35m/.test(c1.rottoMsg), c1.rottoMsg);
+  t('l\'avviso a valle compare sotto la riga',           /14:00/.test(c1.avv)&&/35m/.test(c1.avv), c1.avv);
+  t('finché non assegni non si scrive niente',           c1.pend===0, c1.pend);
+
+  const c2=await p.evaluate(()=>{
+    var S=DATA.services.filter(x=>x.id==='S')[0];
+    S.veicolo='Vito 1';_BYID_SRC=null;plArma(null);plArma('S');
+    var lib=plCatena(S,'').liberati[0];
+    return {free:(document.querySelector('.plfree')||{}).textContent||'',
+            guadagno:lib?lib.guadagno:null,era:lib?lib.era:''};});
+  await p.waitForTimeout(200);
+  t('sulla riga di provenienza si vede cosa si libera',
+    /si libera/.test(c2.free)&&/\+/.test(c2.free)&&c2.guadagno===200, c2);
+  t('e che quel servizio torna raggiungibile', c2.era==='rotto'&&/raggiungibile/.test(c2.free), c2);
+
+  const c3=await p.evaluate(()=>{
+    var S=DATA.services.filter(x=>x.id==='S')[0];S.veicolo='';_BYID_SRC=null;
+    var V=DATA.services.filter(x=>x.id==='V')[0];
+    var conVolo=plVerifica(V,'Vito 2',true);
+    V.volo='';_BYID_SRC=null;
+    var senzaVolo=plVerifica(V,'Vito 2',true);
+    V.volo='FR8826';_BYID_SRC=null;
+    return {conVolo:conVolo.ok,conK:conVolo.k,conMsg:conVolo.msg,margine:conVolo.cat?conVolo.cat.margine:null,
+            senzaVolo:senzaVolo.ok,finestra:finestraInizio(V)};});
+  t('col volo dall\'aeroporto ci arriva lo stesso (bagagli)',
+    c3.conVolo===true&&c3.finestra===20&&c3.margine===-15, c3);
+  t('ma è ambra, non verde, e lo scrive',  c3.conK==='stretto'&&/bagagli/.test(c3.conMsg), c3);
+  t('senza volo lo stesso incastro è rosso', c3.senzaVolo===false, c3);
+
+  const c4=await p.evaluate(()=>{
+    // stesso autista su due mezzi: viaggiano insieme, non è un conflitto (non deve regredire)
+    var S=DATA.services.filter(x=>x.id==='S')[0];
+    S.autista='Marco Rossi';S.startMin=480;S.endMin=600;_BYID_SRC=null;
+    var r=plVerifica(S,'Vito 1',true);
+    S.autista='';S.startMin=660;S.endMin=780;_BYID_SRC=null;
+    return r.ok;});
+  t('due servizi dello stesso autista restano compatibili', c4===true, c4);
+
+  const c5=await p.evaluate(()=>{
+    var S=DATA.services.filter(x=>x.id==='S')[0];
+    S.da='Monopoli';_BYID_SRC=null;                 // B finisce a Monopoli: stesso posto
+    var r=plVerifica(S,'Mercedes V',true);
+    S.da='Ostuni';_BYID_SRC=null;
+    return {trasf:r.cat.trasf,buffer:r.cat.buffer,arrivo:r.cat.arrivo};});
+  t('stesso luogo: trasferimento 0 e buffer 0 anche qui', c5.trasf===0&&c5.buffer===0&&c5.arrivo===600, c5);
+
+  console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(()=>plArma('S'));await p.waitForTimeout(300);
+  const pm1=await p.evaluate(()=>{
+    var c=document.getElementById('plcard'),r=c.getBoundingClientRect();
+    var slot=document.querySelector('.plslot'),rs=slot?slot.getBoundingClientRect():null;
+    return {dentro:r.left>=0&&r.right<=window.innerWidth&&r.bottom<=window.innerHeight+1,
+            copre:!!(rs&&rs.bottom>r.top&&rs.top<r.bottom&&rs.right>r.left&&rs.left<r.right),
+            ov:document.documentElement.scrollWidth-document.documentElement.clientWidth};});
+  t('la miniatura resta dentro lo schermo', pm1.dentro, pm1);
+  t('e non copre la piazzola',              !pm1.copre, pm1);
+  t('nessuno scroll orizzontale',           pm1.ov<=2, pm1.ov);
+
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();
   for(const [w,h] of [[1920,1080],[1440,900],[1024,768],[768,900],[390,844]]){

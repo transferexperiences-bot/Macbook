@@ -282,4 +282,20 @@ eq('stesso luogo → trasferimento 0 e buffer 0',
     F.setDATA(Object.assign({},pl,{services:[X,Y],transfers:{'X1->Y1':{min:30,buffer:15}}}));
     var r=F.plCatena(Y,'Vito 1');return [r.trasf,r.buffer,r.margine];})(), [0,0,0]);
 
+sezione('La finestra dei bagagli vale per tutta la app, non solo per la Plancia');
+// il mezzo è sul posto alle 10:20, il volo atterra alle 10:10: il cliente è al nastro
+const PRE=srv({id:'PRE',time:'09:00',startMin:540,durMin:60,endMin:600,da:'Bari',per:'Bari',veicolo:'Vito 1'});
+const ARR=srv({id:'ARR',time:'10:10',startMin:610,durMin:60,endMin:670,
+  da:'Aeroporto di Bari',per:'Ostuni',volo:'FR8826',veicolo:''});
+const SENZAVOLO=srv({id:'ARR',time:'10:10',startMin:610,durMin:60,endMin:670,
+  da:'Aeroporto di Bari',per:'Ostuni',volo:'',veicolo:''});
+const vol={date:'2026-08-18',today:'2026-08-18',weekday:'martedì',nowMin:-1,bufferDefault:15,
+  services:[PRE,ARR],transfers:{'PRE->ARR':{min:10,buffer:10},'ARR->PRE':{min:10,buffer:10}},
+  autisti:[],veicoli:[{nome:'Vito 1',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'}],
+  rents:[],prossimi:[],luoghiNomi:[],fornitori:[],base:'Polignano a Mare'};
+F.setDATA(vol);
+eq('col volo ci arriva (sul posto 10:20, decolla il buffer alle 10:20)', F.conflict(PRE,ARR), null);
+F.setDATA(Object.assign({},vol,{services:[PRE,SENZAVOLO]}));
+t('senza volo lo stesso incastro è un conflitto', !!F.conflict(PRE,SENZAVOLO), true);
+
 bilancio();

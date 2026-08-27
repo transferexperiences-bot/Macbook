@@ -417,6 +417,13 @@ main{padding:12px;}
   border-bottom:1px solid var(--bordo)}
 .plavv.rotto{background:#fdecea;color:#8c1a17}
 .plavv.stretto{background:#fff3e2;color:#8a4b00}
+/* 19. il salvataggio non deve restare in cima alla pagina mentre si lavora a metà giornata */
+/* sopra il messaggino, che sta a 80px: se si coprono a vicenda non si salva più niente */
+.plsalva{position:fixed;left:10px;right:10px;bottom:88px;z-index:15;margin:0;
+  box-shadow:0 8px 26px rgba(11,61,102,.28);align-items:center}
+@media (min-width:820px){
+  .plsalva{left:50%;right:auto;transform:translateX(-50%);width:auto;bottom:88px}
+}
 /* 18. il vassoio è una colonna a destra che scorre, non una striscia in fondo alla pagina */
 .plmain{display:grid;gap:12px;align-items:start}
 @media (min-width:900px){ .plmain{grid-template-columns:minmax(0,1fr) 250px} }
@@ -1111,10 +1118,13 @@ function azioni(s){
   return a?'<span class="azioni">'+a+'</span>':'';
 }
 /* la barra gialla dei salvataggi in sospeso: uguale in Servizi e in Assegna */
-function barraPend(){
+/* cls = classe in più. In Plancia la barra sta fissa in fondo allo schermo: si assegna
+   scorrendo la giornata, e il salvataggio deve restare a portata di pollice invece di
+   essere rimasto in cima alla pagina. */
+function barraPend(cls){
   var nP=Object.keys(PEND).length;
   if(!nP)return '';
-  return '<div class="sommario" style="background:#fff8e6;border:1px solid #f0d9a8">'
+  return '<div class="sommario '+(cls||'')+'" style="background:#fff8e6;border:1px solid #f0d9a8">'
     +'<span>🕐 <b>'+nP+'</b> da salvare</span>'
     +'<button class="chip verde" style="border:none" onclick="salvaTutto(false)">💾 Salva tutto</button>'
     +'<button class="chip ambra" style="border:none" onclick="salvaTutto(true)">📋 Salva + Recap</button>'
@@ -2450,18 +2460,42 @@ function plEtichetta(esito, centro, tot) {
   if (centro - w / 2 >= 0 && centro + w / 2 <= tot) return esc(t);
   return plSegnoK(esito);
 }
+/* Chi guida quel mezzo in giornata: l'ultimo che l'aveva prima di questo servizio, e se
+   prima non c'è nessuno il primo che lo prende dopo. Serve solo a proporre: se l'autista
+   sul servizio c'è già, non si tocca. */
+function plUltimoAutista(veic, S) {
+  var giro = srvDi('veicolo', veic).filter(function (P) { return P.id !== S.id && P.autista; });
+  if (!giro.length) return '';
+  var prima = null, dopo = null, vicino = null, dist = 1e9;
+  giro.forEach(function (P) {
+    if (plFine(P) <= S.startMin) { if (!prima || plFine(P) > plFine(prima)) prima = P; }
+    else if (P.startMin >= plFine(S)) { if (!dopo || P.startMin < dopo.startMin) dopo = P; }
+    var d = Math.abs(P.startMin - S.startMin);
+    if (d < dist) { dist = d; vicino = P; }     // servizi accavallati: il più vicino d'orario
+  });
+  var q = prima || dopo || vicino;
+  return q ? q.autista : '';
+}
 function plSposta(s, veic) {
   if (!s) return;
   if ((veic || '') === (s.veicolo || '')) { PL_ARM = null; render(); return; }
   var r = veic ? plVerifica(s, veic) : { ok: true };
-  PEND[s.id] = { autista: s.autista || '', veicolo: veic || '' };
+  // l'autista lo porta dietro il mezzo, ma solo se il servizio non ce l'ha già:
+  // quello che hai messo tu resta quello che hai messo tu
+  var aut = s.autista || '', preso = '';
+  if (!aut && veic) { preso = plCon(function () { return plUltimoAutista(veic, s); }); aut = preso; }
+  PEND[s.id] = { autista: aut, veicolo: veic || '' };
   s.veicolo = veic || '';
-  if (s.orig) s.orig.veicolo = veic || '';   // la copia di domani e la riga vera restano allineate
+  s.autista = aut;
+  if (s.orig) { s.orig.veicolo = veic || ''; s.orig.autista = aut; }
   PL_ARM = null;
   render();
   if (!veic) { toast('🕐 ' + (s.nome || s.da) + ' torna fra i da assegnare'); return; }
-  toast((r.ok ? '🕐 ' : '⚠️ ') + (s.nome || s.da) + ' → ' + veic
-    + (r.ok ? '' : ' · forzato: ' + r.msg) + ' · salva dalla barra in alto');
+  // corto: la barra gialla del salvataggio è lì sotto e si vede, non serve ripeterlo —
+  // e un messaggio lungo sul telefono va a capo quattro volte e le finisce sopra
+  toast((r.ok ? '🕐 ' : '⚠️ forzato · ') + veic
+    + (preso ? ' · con ' + preso + ' (ultimo che l\'aveva)' : '')
+    + (r.ok ? '' : ' · ' + r.breve));
 }
 function plArma(id) { PL_ARM = (PL_ARM === id) ? null : id; render(); }
 function plArmato() {
@@ -2817,7 +2851,7 @@ function renderPlancia_() {
   righe.forEach(function (r, i) { r._i = i; });
   righe.sort(function (a, b) { return plPeso(a) - plPeso(b) || a._i - b._i; });
 
-  h += barraPend();
+  h += barraPend('plsalva');
   h += '<div class="plbar">'
     + '<div class="plzoom"><button onclick="plZoom(-1)" title="Riduci">−</button>'
     + '<button onclick="plZoom(0)" title="Tutta la giornata">adatta</button>'
@@ -3080,7 +3114,17 @@ function renderRent(){
 }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function toast(t){var e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(function(){e.style.display='none';},3500);}
+/* Il messaggino si mette sempre SOPRA la barra gialla del salvataggio, misurandola: sul
+   telefono un messaggio lungo va a capo tre volte e, a quota fissa, le finiva addosso —
+   e la barra coperta vuol dire assegnazioni che non si salvano. */
+function toast(t){
+  var e=document.getElementById('toast');
+  e.textContent=t;
+  var b=document.querySelector('.plsalva');
+  e.style.bottom=b?(Math.round(window.innerHeight-b.getBoundingClientRect().top)+12)+'px':'';
+  e.style.display='block';
+  setTimeout(function(){e.style.display='none';},3500);
+}
 
 /* avvio veloce: prima i dati incorporati nella pagina, poi l'ultima schermata
    salvata sul telefono, e solo come ultima spiaggia la chiamata classica */

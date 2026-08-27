@@ -458,6 +458,71 @@ const SEED=`(function(){
   t('un trascinamento rimasto acceso su un blocco sparito viene chiuso',
     fuori.drag===null&&fuori.righe>2, fuori);
 
+  console.log('\n=== 9sexies. PLANCIA: l\'autista lo porta dietro il mezzo, e si salva ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_DRAG=null;setDue(false);render();});await p.waitForTimeout(250);
+  const au=await p.evaluate(()=>{
+    var out={};
+    // 1. servizio senza autista e senza mezzo → prende l'ultimo autista di quel mezzo
+    var s=DATA.services.filter(x=>!x.veicolo&&!x.autista)[0];
+    out.atteso=plUltimoAutista('Vito 1',s);
+    plSposta(s,'Vito 1');
+    var d=DATA.services.filter(x=>x.id===s.id)[0];
+    out.senzaAutista={aut:d.autista,vei:d.veicolo,pend:PEND[s.id]};
+    d.autista='';d.veicolo='';delete PEND[s.id];
+    // 2. servizio con l'autista messo a mano → non si tocca
+    d.autista='Pietro Salvi';
+    plSposta(d,'Vito 1');
+    out.autistaMio={aut:d.autista,pend:PEND[d.id]};
+    d.autista='';d.veicolo='';delete PEND[d.id];
+    // 3. mezzo che oggi non lavora → resta senza autista, non si inventa nessuno
+    var fermo=DATA.veicoli.filter(v=>DATA.services.filter(x=>x.veicolo===v.nome).length===0)[0];
+    out.mezzoFermo=fermo?fermo.nome:null;
+    if(fermo){ plSposta(d,fermo.nome); out.senzaGiro={aut:d.autista,vei:d.veicolo};
+               d.autista='';d.veicolo='';delete PEND[d.id]; }
+    render();
+    return out;});
+  t('assegnando il mezzo prende l\'ultimo autista che ce l\'aveva',
+    au.senzaAutista.aut===au.atteso&&au.atteso!==''&&au.senzaAutista.pend.autista===au.atteso, au);
+  t('e l\'autista finisce in sospeso insieme al mezzo',
+    au.senzaAutista.pend.veicolo==='Vito 1', au.senzaAutista);
+  t('l\'autista messo a mano non viene sovrascritto',
+    au.autistaMio.aut==='Pietro Salvi'&&au.autistaMio.pend.autista==='Pietro Salvi', au.autistaMio);
+  t('su un mezzo che oggi non lavora non si inventa un autista',
+    !au.mezzoFermo||au.senzaGiro.aut==='', au);
+
+  const bar=await p.evaluate(()=>{
+    var s=DATA.services.filter(x=>!x.veicolo)[0];
+    plSposta(s,'Vito 1');
+    var b=document.querySelector('.plsalva');
+    if(!b)return {c:false};
+    var st=getComputedStyle(b),r=b.getBoundingClientRect();
+    return {c:true,pos:st.position,visibile:r.bottom<=window.innerHeight+1&&r.top>0,
+            testo:b.textContent.replace(/\s+/g,' ').trim(),
+            salva:!!b.querySelector('[onclick*="salvaTutto(false)"]'),
+            recap:!!b.querySelector('[onclick*="salvaTutto(true)"]'),
+            annulla:!!b.querySelector('[onclick*="annullaPend"]')};});
+  t('assegnato un mezzo, la barra per salvare c\'è',  bar.c&&bar.salva&&bar.recap&&bar.annulla, bar);
+  t('e sta fissa a schermo, non in cima alla pagina', bar.pos==='fixed'&&bar.visibile, bar);
+  await p.evaluate(()=>{PEND={};DATA.services.forEach(function(s){});render();});await p.waitForTimeout(200);
+  t('senza niente in sospeso la barra sparisce',
+    await p.evaluate(()=>!document.querySelector('.plsalva')), null);
+  // un messaggio lungo sul telefono va a capo tre volte: se copre la barra, non si salva
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(()=>{setTab('plancia');
+    var s=DATA.services.filter(x=>!x.veicolo)[0];plSposta(s,'Vito 1');
+    toast("⚠️ forzato · Mercedes V · con Nicola D'Amico (ultimo che l'aveva) · poi salta 14:00");});
+  await p.waitForTimeout(350);
+  const cop=await p.evaluate(()=>{
+    var b=document.querySelector('.plsalva').getBoundingClientRect();
+    var to=document.getElementById('toast').getBoundingClientRect();
+    var tb=document.querySelector('.tabs').getBoundingClientRect();
+    var sovr=function(x,y){return !(x.bottom<=y.top||x.top>=y.bottom);};
+    return {toast:Math.round(to.height),coperta:sovr(b,to),suiTab:sovr(b,tb),
+            dentro:b.top>0&&b.bottom<=window.innerHeight+1};});
+  t('a 390px il messaggio non copre la barra del salvataggio',
+    !cop.coperta&&!cop.suiTab&&cop.dentro, cop);
+  await p.close();p=await nuova(1440,1000);await p.evaluate(()=>setTab('plancia'));await p.waitForTimeout(250);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

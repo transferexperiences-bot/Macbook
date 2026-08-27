@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (94 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (102 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -339,7 +339,11 @@ senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista*
 **l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
 
 Si assegna in tre modi: trascinando il blocco, toccandolo (si «arma» e su ogni mezzo compare
-una piazzola) o dalla scheda. Fra un
+una piazzola) o dalla scheda. **Assegnando un mezzo, l'autista viene dietro**: quello che
+guidava quel mezzo prima di questo servizio (o, se prima non c'è nessuno, il primo che lo
+prende dopo). Se sul servizio l'autista c'è già, **non si tocca**. Il salvataggio è una barra
+gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
+giornata, e `💾 Salva tutto` deve restare a portata di pollice. Fra un
 servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
 margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
@@ -367,13 +371,14 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **223 controlli automatici, tutti verdi.**
+libera. **231 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
 **8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px ·
 **9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista ·
-**9quinquies** il trascinamento non resta appeso.
+**9quinquies** il trascinamento non resta appeso · **9sexies** autista dal mezzo e barra
+del salvataggio.
 
 Da fare fuori dal codice:
 

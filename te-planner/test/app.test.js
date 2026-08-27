@@ -401,6 +401,36 @@ const SEED=`(function(){
   t('togliendo il mouse sparisce',
     await p.evaluate(()=>document.getElementById('plcard').style.display!=='block'), null);
 
+  console.log('\n=== 9quater. PLANCIA: togliere il mezzo, l\'autista, o tutti e due ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;setDue(false);render();});await p.waitForTimeout(250);
+  const st=await p.evaluate(()=>{
+    var s=DATA.services.filter(x=>x.autista&&x.veicolo)[0];
+    var out={id:s.id,prima:{aut:s.autista,vei:s.veicolo}};
+    plArma(s.id);
+    out.bottoni=[].map.call(document.querySelectorAll('#plcard .plcaz button'),x=>x.textContent.trim());
+    plStacca('autista');
+    var d=function(){return DATA.services.filter(x=>x.id===out.id)[0];};
+    out.soloAutista={aut:d().autista,vei:d().veicolo,pend:PEND[out.id]};
+    d().autista=out.prima.aut;d().veicolo=out.prima.vei;delete PEND[out.id];
+    plArma(out.id);plStacca('veicolo');
+    out.soloMezzo={aut:d().autista,vei:d().veicolo};
+    out.inCoda=DATA.services.filter(x=>!isCanc(x)&&!x.veicolo&&x.id===out.id).length;
+    d().autista=out.prima.aut;d().veicolo=out.prima.vei;delete PEND[out.id];
+    plArma(out.id);plStacca('tutti');
+    out.tuttiEDue={aut:d().autista,vei:d().veicolo};
+    d().autista=out.prima.aut;d().veicolo=out.prima.vei;PEND={};
+    return out;});
+  t('la scheda offre tutte e tre le vie',
+    st.bottoni.length===4&&/mezzo/i.test(st.bottoni[1])&&/autista/i.test(st.bottoni[2]), st.bottoni);
+  t('togliere l\'autista lascia il mezzo',
+    st.soloAutista.aut===''&&st.soloAutista.vei===st.prima.vei
+    &&st.soloAutista.pend.autista===''&&st.soloAutista.pend.veicolo===st.prima.vei, st.soloAutista);
+  t('togliere il mezzo lascia l\'autista',
+    st.soloMezzo.vei===''&&st.soloMezzo.aut===st.prima.aut, st.soloMezzo);
+  t('e il servizio torna fra i da assegnare', st.inCoda===1, st.inCoda);
+  t('«tutti e due» li toglie entrambi',
+    st.tuttiEDue.aut===''&&st.tuttiEDue.vei==='', st.tuttiEDue);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

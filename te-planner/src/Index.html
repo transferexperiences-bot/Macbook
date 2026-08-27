@@ -388,6 +388,8 @@ main{padding:12px;}
 #plcard .plcaz button{flex:1 1 auto;min-height:38px;border:1px solid var(--bordo);background:var(--card);
   border-radius:9px;font-size:12.5px;cursor:pointer;padding:0 10px}
 #plcard .plcaz button.blu{background:var(--blu);border-color:var(--blu);color:#fff}
+#plcard .plcaz button:not(.blu){color:#8c1a17;border-color:#f0c3bf;background:#fef7f6}
+#plcard .plcaz button:not(.blu):hover{background:#fdecea}
 #plcard .plcsug{padding:0 11px 11px;font-size:11.5px;color:#1c7a45;font-weight:700}
 #plcard .plcsug.plcno{color:var(--rosso)}
 #plcard.plcbasso{left:8px!important;right:8px;width:auto;top:auto!important}
@@ -2440,7 +2442,26 @@ function plNodoDi(id) {
   return document.querySelector('.plblk[data-id="' + id + '"]') || document.querySelector('.pltile[data-id="' + id + '"]');
 }
 function plCardApri() { if (PL_ARM) plApriServizio(PL_ARM); }
-function plCardLibera() { var s = plArmato(); if (s) plSposta(s, ''); }
+/* Togliere è un gesto a sé: capita di dover liberare il mezzo tenendo l'autista (il van
+   serve altrove, il giro no) o di togliere l'autista lasciando il mezzo fermo dov'è.
+   cosa = 'veicolo' | 'autista' | 'tutti'. Come ogni altra mossa non scrive sul foglio:
+   finisce in PEND e si salva dalla barra gialla. */
+function plStacca(cosa) {
+  plCon(function () {
+    var s = plArmato();
+    if (!s) return;
+    var vei = cosa === 'autista' ? (s.veicolo || '') : '';
+    var aut = cosa === 'veicolo' ? (s.autista || '') : '';
+    if ((s.veicolo || '') === vei && (s.autista || '') === aut) { PL_ARM = null; render(); return; }
+    PEND[s.id] = { autista: aut, veicolo: vei };
+    s.veicolo = vei; s.autista = aut;
+    if (s.orig) { s.orig.veicolo = vei; s.orig.autista = aut; }
+    PL_ARM = null;
+    render();
+    toast('🕐 ' + (cosa === 'veicolo' ? 'mezzo tolto' : (cosa === 'autista' ? 'autista tolto' : 'mezzo e autista tolti'))
+      + ' da ' + (s.nome || s.da) + ' — salva dalla barra in alto');
+  });
+}
 
 /* ---- messaggino che segue il dito mentre trascini ---- */
 function plMsg(x, y, testo, errore) {
@@ -2647,7 +2668,9 @@ function plMiniatura_() {
       : (quanti ? '✓ tocca una piazzola verde: ' + quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi')
         : '✕ nessun mezzo libero in questa fascia')) + (anteprima ? '' : '</div>')
     + (anteprima ? '' : '<div class="plcaz"><button class="blu" onclick="plCardApri()">📋 Apri scheda</button>'
-      + (s.veicolo ? '<button onclick="plCardLibera()">🅿️ Togli dal mezzo</button>' : '')
+      + (s.veicolo ? '<button onclick="plStacca(\'veicolo\')" title="lascia l\'autista, libera il mezzo">🚐 Togli il mezzo</button>' : '')
+      + (s.autista ? '<button onclick="plStacca(\'autista\')" title="lascia il mezzo, libera l\'autista">👤 Togli l\'autista</button>' : '')
+      + (s.veicolo && s.autista ? '<button onclick="plStacca(\'tutti\')">✕ Togli tutti e due</button>' : '')
       + '</div>');
   c.className = anteprima ? 'plcpeek' : '';
   c.style.display = 'block';

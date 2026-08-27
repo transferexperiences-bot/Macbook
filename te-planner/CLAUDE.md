@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (85 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (90 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -318,7 +318,8 @@ sott'occhio. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i ser
 notte si vede per quello che è. Un servizio di domani si apre sulla **sua** giornata, e
 assegnarlo scrive sulla riga giusta. **Il mouse sopra un quadratino** apre la stessa scheda
 ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in sola lettura,
-senza armare niente.
+senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista**, togliere
+**l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
 
 Si assegna in tre modi: trascinando il blocco, toccandolo (si «arma» e su ogni mezzo compare
 una piazzola) o dalla scheda. Fra un
@@ -349,12 +350,12 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **214 controlli automatici, tutti verdi.**
+libera. **219 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
 **8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px ·
-**9ter** Plancia a due giorni, vassoio e anteprima.
+**9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista.
 
 Da fare fuori dal codice:
 

@@ -523,6 +523,51 @@ const SEED=`(function(){
     !cop.coperta&&!cop.suiTab&&cop.dentro, cop);
   await p.close();p=await nuova(1440,1000);await p.evaluate(()=>setTab('plancia'));await p.waitForTimeout(250);
 
+  console.log('\n=== 9septies. PLANCIA: il pennello autista ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_PENNA=null;PL_DRAG=null;setDue(false);render();});
+  await p.waitForTimeout(250);
+  const pen0=await p.evaluate(()=>({chip:document.querySelectorAll('.plautc').length,
+    autisti:DATA.autisti.length, striscia:!!document.querySelector('.plarmp')}));
+  t('c\'è una casella per ogni autista', pen0.chip===pen0.autisti&&pen0.chip>0, pen0);
+  t('e finché non ne prendi uno nessuna striscia', !pen0.striscia, pen0);
+
+  await p.evaluate(()=>{plPenna(PL_AUTLISTA.indexOf('Marco Rossi'));});await p.waitForTimeout(250);
+  const pen1=await p.evaluate(()=>({inMano:PL_PENNA,striscia:!!document.querySelector('.plarmp'),
+    sel:document.querySelectorAll('.plautc.sel').length,
+    marcati:document.querySelectorAll('.plblk.plmio').length,
+    suoi:DATA.services.filter(s=>s.autista==='Marco Rossi'&&!isCanc(s)&&s.startMin>=0).length}));
+  t('preso un autista, resta in mano e si vede', pen1.inMano==='Marco Rossi'&&pen1.striscia&&pen1.sel===1, pen1);
+  t('e i suoi servizi sono marcati sulla plancia', pen1.marcati===pen1.suoi&&pen1.marcati>0, pen1);
+
+  // il tocco vero su un blocco, senza trascinare
+  const blocco=await p.evaluate(()=>{
+    var s=DATA.services.filter(x=>x.autista&&x.autista!=='Marco Rossi'&&x.veicolo)[0];
+    var n=document.querySelector('.plblk[data-id="'+s.id+'"]');
+    var r=n.getBoundingClientRect();
+    return {id:s.id,vei:s.veicolo,autPrima:s.autista,x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};});
+  await p.mouse.move(blocco.x,blocco.y);await p.mouse.down();await p.mouse.up();
+  await p.waitForTimeout(250);
+  const pen2=await p.evaluate(i=>{var d=DATA.services.filter(x=>x.id===i)[0];
+    return {aut:d.autista,vei:d.veicolo,pend:PEND[i],armato:PL_ARM,inMano:PL_PENNA};},blocco.id);
+  t('toccando un servizio ci scrivi l\'autista', pen2.aut==='Marco Rossi', pen2);
+  t('e il mezzo resta quello che aveva',        pen2.vei===blocco.vei, {atteso:blocco.vei,avuto:pen2.vei});
+  t('finisce in sospeso, non sul foglio',       !!pen2.pend&&pen2.pend.autista==='Marco Rossi', pen2.pend);
+  t('col pennello in mano il tocco non arma il servizio', pen2.armato===null, pen2);
+  t('e il pennello resta in mano per il prossimo',        pen2.inMano==='Marco Rossi', pen2);
+
+  // ritocco lo stesso: lo toglie
+  const nodo2=await p.evaluate(i=>{var n=document.querySelector('.plblk[data-id="'+i+'"]');
+    var r=n.getBoundingClientRect();return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};},blocco.id);
+  await p.mouse.move(nodo2.x,nodo2.y);await p.mouse.down();await p.mouse.up();
+  await p.waitForTimeout(250);
+  t('ritoccando lo stesso servizio l\'autista si toglie',
+    await p.evaluate(i=>DATA.services.filter(x=>x.id===i)[0].autista==='',blocco.id), null);
+
+  await p.evaluate(()=>plPosa());await p.waitForTimeout(200);
+  t('«posa» lascia il pennello',
+    await p.evaluate(()=>PL_PENNA===null&&!document.querySelector('.plarmp')), null);
+  await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(200);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

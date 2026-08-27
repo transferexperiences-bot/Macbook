@@ -417,6 +417,20 @@ main{padding:12px;}
   border-bottom:1px solid var(--bordo)}
 .plavv.rotto{background:#fdecea;color:#8c1a17}
 .plavv.stretto{background:#fff3e2;color:#8a4b00}
+/* 20. il pennello: la fila degli autisti, e i servizi di quello in mano marcati */
+.plautbar{display:flex;gap:6px;align-items:center;overflow-x:auto;overflow-y:hidden;
+  padding-bottom:4px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+.plautbar>*{flex:0 0 auto}
+.plautt{font-size:12px;color:var(--grigio);font-weight:600;white-space:nowrap}
+.plautc{border:1.5px solid;border-radius:9px;padding:0 12px;min-height:40px;background:var(--card);
+  display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:13px;font-weight:600;
+  white-space:nowrap;cursor:pointer}
+.plautc small{font-size:11px;opacity:.8;font-weight:500}
+.plautc.sel{color:#fff;box-shadow:0 0 0 3px rgba(11,61,102,.18)}
+.plautc.off{opacity:.55}
+.plarmp{background:#f2ecfd;border-color:#c2a5ef}
+.plblk.plmio{outline:2px solid #1668c1;outline-offset:-2px}
+.pltile.plmio{border-left-color:#1668c1}
 /* 19. il salvataggio non deve restare in cima alla pagina mentre si lavora a metà giornata */
 /* sopra il messaggino, che sta a 80px: se si coprono a vicenda non si salva più niente */
 .plsalva{position:fixed;left:10px;right:10px;bottom:88px;z-index:15;margin:0;
@@ -2497,6 +2511,58 @@ function plSposta(s, veic) {
     + (preso ? ' · con ' + preso + ' (ultimo che l\'aveva)' : '')
     + (r.ok ? '' : ' · ' + r.breve));
 }
+/* ---- pennello autista ----
+   Si prende un autista dalla fila in alto e resta "in mano": da lì ogni servizio che si
+   tocca prende quel nome, uno dietro l'altro, e il mezzo resta quello che ha già.
+   Ritoccando lo stesso servizio lo si toglie, così il pennello cancella i propri segni.
+   Nessun trascinamento: sul telefono e sul monitor si fa lo stesso gesto. */
+var PL_PENNA = null, PL_AUTLISTA = [];
+function plPenna(k) {
+  var n = PL_AUTLISTA[k];
+  PL_PENNA = (PL_PENNA === n) ? null : n;
+  PL_ARM = null;
+  render();
+}
+function plPosa() { PL_PENNA = null; render(); }
+function plPennella(s) {
+  plCon(function () {
+    if (!s || !PL_PENNA) return;
+    var togli = (s.autista === PL_PENNA);
+    var aut = togli ? '' : PL_PENNA;
+    var v = togli ? null : valutaAutista(s, PL_PENNA);
+    PEND[s.id] = { autista: aut, veicolo: s.veicolo || '' };
+    s.autista = aut;
+    if (s.orig) s.orig.autista = aut;
+    render();
+    if (togli) { toast('🖌 ' + PL_PENNA + ' tolto da ' + fmtMin(s.startMin)); return; }
+    // si assegna comunque, come ogni altra cosa in plancia: la app avvisa, non blocca
+    toast((v.k === 'no' || v.k === 'off' ? '⚠️ ' : '🖌 ') + PL_PENNA + ' · ' + fmtMin(s.startMin)
+      + (v.k === 'no' || v.k === 'off' ? ' — ' + v.txt : ''));
+  });
+}
+/* La fila degli autisti: prima chi è in servizio oggi, poi gli altri, in fondo chi non
+   può lavorare. Il nome non entra mai nell'onclick (gli apostrofi romperebbero l'HTML):
+   si passa l'indice e il nome si rilegge da PL_AUTLISTA. */
+function plBarraAutisti() {
+  var righe = [];
+  DATA.autisti.forEach(function (a) {
+    var n = srvDi('autista', a.nome).length;
+    righe.push({ a: a, n: n, peso: a.esclusoMotivo ? 2 : (n ? 0 : 1) });
+  });
+  righe.sort(function (x, y) { return x.peso - y.peso || y.n - x.n || (x.a.nome < y.a.nome ? -1 : 1); });
+  PL_AUTLISTA = righe.map(function (r) { return r.a.nome; });
+  var h = '<div class="plautbar"><span class="plautt">🖌 Autista</span>';
+  righe.forEach(function (r, k) {
+    var c = colorOf(r.a.nome), sel = (PL_PENNA === r.a.nome);
+    h += '<button class="plautc' + (sel ? ' sel' : '') + (r.a.esclusoMotivo ? ' off' : '') + '"'
+      + ' style="border-color:' + c + ';' + (sel ? 'background:' + c : 'color:' + c) + '"'
+      + ' title="' + esc(r.a.esclusoMotivo || (r.n ? r.n + ' servizi oggi' : 'oggi non ha servizi')) + '"'
+      + ' onclick="plPenna(' + k + ')">' + esc(r.a.nome)
+      + (r.n ? ' <small>' + r.n + '</small>' : '') + (r.a.esclusoMotivo ? ' 🚫' : '') + '</button>';
+  });
+  if (PL_PENNA) h += '<button class="chip" style="border:none" onclick="plPosa()">✕ posa</button>';
+  return h + '</div>';
+}
 function plArma(id) { PL_ARM = (PL_ARM === id) ? null : id; render(); }
 function plArmato() {
   if (!PL_ARM) return null;
@@ -2635,7 +2701,7 @@ function plPrendi(ev, s, nodo, colore) {
     plPulisci();
     if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
     PL_DRAG = null;
-    if (!mosso) { plArma(s.id); return; }
+    if (!mosso) { if (PL_PENNA) { plPennella(s); return; } plArma(s.id); return; }
     if (dove !== undefined && dove !== s.veicolo) plSposta(s, dove); else render();
   }
   if (nodo.setPointerCapture) { try { nodo.setPointerCapture(ev.pointerId); } catch (e) { } }
@@ -2864,11 +2930,17 @@ function renderPlancia_() {
     + (DUE && !plPronta() ? '<span class="plsolo1">carico domani…</span>' : '')
     + '</div>';
 
+  h += plBarraAutisti();
+  if (PL_PENNA) {
+    h += '<div class="plarm plarmp">🖌 <b>' + esc(PL_PENNA) + '</b> in mano — tocca i servizi da dargli, '
+      + 'ritocca lo stesso per toglierlo. Il mezzo non si tocca.'
+      + '<button class="chip" style="border:none;margin-left:auto" onclick="plPosa()">posa</button></div>';
+  }
   if (armato) {
     h += '<div class="plarm">🎯 <b>' + esc(armato.nome || armato.da) + '</b> parte alle <b>' + fmtMin(armato.startMin) + '</b>'
       + ' · ' + fmtDur(plDurata(armato)) + ' stimata · ' + (armato.pax || '?') + ' pax — <b>tocca una piazzola verde</b> per assegnarlo, la rossa lo forza'
       + '<button class="chip" style="border:none;margin-left:auto" onclick="plArma(null)">annulla</button></div>';
-  } else {
+  } else if (!PL_PENNA) {
     h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b>, oppure trascinalo direttamente sulla riga del mezzo. Due dita per lo zoom.'
       + (px < 0.9 ? ' <b>+</b> per leggere i nomi dentro i blocchi.' : '') + '</p>';
   }
@@ -2979,7 +3051,8 @@ function renderPlancia_() {
     srt.forEach(function (s) {
       var col = s.autista ? colorOf(s.autista) : '#8f9aa4';
       var male = veic && !plVerifica(s, veic).ok;
-      var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s.autista ? ' plnoaut' : '') + (PL_ARM === s.id ? ' plsel' : '');
+      var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s.autista ? ' plnoaut' : '')
+        + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '');
       var W2 = Math.max(px < 0.5 ? 12 : 34, Math.round(plDurata(s) * px));
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
       c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : '');
@@ -3044,7 +3117,8 @@ function renderPlancia_() {
       if (!plVerifica(s, v.nome).ok) return;
       if (VEI_HIDE[v.nome]) quantiNascosti++; else quanti++;
     });
-    h += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero') + '" data-id="' + esc(s.id) + '">'
+    h += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero')
+      + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '') + '" data-id="' + esc(s.id) + '">'
       + '<b>' + fmtMin(s.startMin) + ' <i class="plstima">≈ ' + fmtDur(plDurata(s)) + '</i></b>'
       + esc(s.nome || s.da) + (s.domani ? '<em class="pldomani">🌙 domani</em>' : '')
       + '<em>' + esc(s.da + ' → ' + s.per) + '</em>'

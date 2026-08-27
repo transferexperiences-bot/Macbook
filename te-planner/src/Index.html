@@ -440,13 +440,36 @@ main{padding:12px;}
 }
 /* 18. il vassoio è una colonna a destra che scorre, non una striscia in fondo alla pagina */
 .plmain{display:grid;gap:12px;align-items:start}
-@media (min-width:900px){ .plmain{grid-template-columns:minmax(0,1fr) 250px} }
 .pltray{margin-top:0;display:flex;flex-direction:column;min-height:0;max-height:min(62vh,560px)}
-@media (min-width:900px){ .pltray{position:sticky;top:8px;max-height:calc(100vh - 130px)} }
 .pltiles{flex:1;flex-direction:column;flex-wrap:nowrap;overflow-y:auto;min-height:0;
   -webkit-overflow-scrolling:touch}
 .pltile{width:auto}
+.plriapri{display:none}
+@media (min-width:900px){
+  /* nell'HTML il vassoio viene prima: qui torna nella colonna di destra, dov'era */
+  .plmain{grid-template-columns:minmax(0,1fr) 250px}
+  .plwrap{grid-column:1;grid-row:1}
+  .pltray{grid-column:2;grid-row:1;position:sticky;top:8px;max-height:calc(100vh - 130px)}
+}
 @media (min-width:820px){ .pltray .pltile{width:auto} }
+/* 21. sul telefono il vassoio era in fondo alla pagina: per vederlo bisognava scorrere
+   tutta la plancia, e infatti non lo trovava nessuno. Qui diventa una striscia in cima
+   che scorre di lato e resta appiccicata sotto l'intestazione mentre si guarda la
+   giornata. Armato un servizio si richiude da sola: la striscia gialla dice già cosa
+   hai in mano, e le corsie si riprendono lo schermo. */
+@media (max-width:899px){
+  .plmain{display:block}
+  .pltray{position:sticky;top:var(--plsotto,96px);z-index:9;max-height:none;margin:0 0 10px;
+    box-shadow:0 6px 16px rgba(11,61,102,.13)}
+  .pltray>h4{padding:7px 10px}
+  .pltiles{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+    padding:8px 10px;min-height:0;scroll-snap-type:x proximity}
+  .pltile{width:196px;scroll-snap-align:start;touch-action:pan-x}
+  .pltray.plridotto .pltiles{display:none}
+  .pltray.plridotto .plriapri{display:inline-flex;margin-left:auto}
+  .plvuoto{padding:8px 2px}
+  .plpiu{display:none}
+}
 /* anteprima: si guarda e basta, non deve intercettare i clic diretti al quadratino sotto */
 #plcard.plcpeek{pointer-events:none}
 /* 17. due giorni sullo stesso asse: la mezzanotte è una riga vera, non un'ora come le altre */
@@ -2938,14 +2961,42 @@ function renderPlancia_() {
   }
   if (armato) {
     h += '<div class="plarm">🎯 <b>' + esc(armato.nome || armato.da) + '</b> parte alle <b>' + fmtMin(armato.startMin) + '</b>'
-      + ' · ' + fmtDur(plDurata(armato)) + ' stimata · ' + (armato.pax || '?') + ' pax — <b>tocca una piazzola verde</b> per assegnarlo, la rossa lo forza'
+      + '<span class="plpiu"> · ' + fmtDur(plDurata(armato)) + ' stimata · ' + (armato.pax || '?') + ' pax</span>'
+      + ' — <b>tocca una piazzola verde</b><span class="plpiu"> per assegnarlo, la rossa lo forza</span>'
       + '<button class="chip" style="border:none;margin-left:auto" onclick="plArma(null)">annulla</button></div>';
   } else if (!PL_PENNA) {
-    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b>, oppure trascinalo direttamente sulla riga del mezzo. Due dita per lo zoom.'
-      + (px < 0.9 ? ' <b>+</b> per leggere i nomi dentro i blocchi.' : '') + '</p>';
+    /* sul telefono ogni riga di testo è una riga di corsie in meno: il di più sta
+       dentro .plpiu, che sotto i 900px sparisce */
+    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga del mezzo. Due dita per lo zoom.'
+      + (px < 0.9 ? ' <b>+</b> per leggere i nomi dentro i blocchi.' : '') + '</span></p>';
   }
 
-  h += '<div class="plmain"><div class="plwrap"><div class="plscroll" id="plscroll"><div class="plgrid" id="plgrid">';
+  /* Il vassoio dei da assegnare sta PRIMA della griglia nell'HTML: sul telefono deve
+     essere la prima cosa che si vede, in cima, non in fondo a tutta la plancia (lì non
+     lo trovava nessuno). Sul desktop torna a destra con grid-column, dov'era. */
+  var vass = '<aside class="pltray' + (armato ? ' plridotto' : '') + '">'
+    + '<h4>🅿️ Da assegnare <em>' + senza.length + '</em>'
+    + (armato ? '<button class="chip plriapri" style="border:none" onclick="plArma(null)">▾ vedi l\'elenco</button>' : '')
+    + '</h4><div class="pltiles" id="pltiles">';
+  if (!senza.length) vass += '<div class="plvuoto">Tutti i servizi hanno un mezzo. 👌</div>';
+  senza.slice().sort(function (a, b) { return a.startMin - b.startMin; }).forEach(function (s) {
+    var quanti = 0, quantiNascosti = 0;
+    DATA.veicoli.forEach(function (v) {
+      if (!plVerifica(s, v.nome).ok) return;
+      if (VEI_HIDE[v.nome]) quantiNascosti++; else quanti++;
+    });
+    vass += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero')
+      + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '') + '" data-id="' + esc(s.id) + '">'
+      + '<b>' + fmtMin(s.startMin) + ' <i class="plstima">≈ ' + fmtDur(plDurata(s)) + '</i></b>'
+      + esc(s.nome || s.da) + (s.domani ? '<em class="pldomani">🌙 domani</em>' : '')
+      + '<em>' + esc(s.da + ' → ' + s.per) + '</em>'
+      + '<em>' + (s.pax || '?') + ' pax · ' + esc(s.autista || 'senza autista') + '</em>'
+      + '<u class="' + (quanti ? 'ok' : 'no') + '">' + (quanti ? quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi') : 'nessun mezzo libero')
+      + (quantiNascosti ? ' · ' + quantiNascosti + ' nascosti' : '') + '</u></div>';
+  });
+  vass += '</div></aside>';
+
+  h += '<div class="plmain">' + vass + '<div class="plwrap"><div class="plscroll" id="plscroll"><div class="plgrid" id="plgrid">';
   /* riga delle ore */
   h += '<div class="plrow plhead"><div class="plrail"><b>Ora</b><span>' + ('0' + (sc.h0 % 24)).slice(-2) + ':00 › ' + ('0' + (sc.h1 % 24)).slice(-2) + ':00</span></div>'
     + '<div class="pllane plhrs" style="width:' + Math.round(tot) + 'px">';
@@ -3107,28 +3158,16 @@ function renderPlancia_() {
     + lane(senza, '', null, -1) + '</div>';
   h += '</div></div></div>';
 
-  /* vassoio: colonna a destra che scorre, così l'elenco dei da assegnare resta
-     sott'occhio mentre si guarda la giornata invece di stare in fondo alla pagina */
-  h += '<aside class="pltray"><h4>🅿️ Da assegnare <em>' + senza.length + '</em></h4><div class="pltiles" id="pltiles">';
-  if (!senza.length) h += '<div class="plvuoto">Tutti i servizi hanno un mezzo. 👌</div>';
-  senza.slice().sort(function (a, b) { return a.startMin - b.startMin; }).forEach(function (s) {
-    var quanti = 0, quantiNascosti = 0;
-    DATA.veicoli.forEach(function (v) {
-      if (!plVerifica(s, v.nome).ok) return;
-      if (VEI_HIDE[v.nome]) quantiNascosti++; else quanti++;
-    });
-    h += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero')
-      + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '') + '" data-id="' + esc(s.id) + '">'
-      + '<b>' + fmtMin(s.startMin) + ' <i class="plstima">≈ ' + fmtDur(plDurata(s)) + '</i></b>'
-      + esc(s.nome || s.da) + (s.domani ? '<em class="pldomani">🌙 domani</em>' : '')
-      + '<em>' + esc(s.da + ' → ' + s.per) + '</em>'
-      + '<em>' + (s.pax || '?') + ' pax · ' + esc(s.autista || 'senza autista') + '</em>'
-      + '<u class="' + (quanti ? 'ok' : 'no') + '">' + (quanti ? quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi') : 'nessun mezzo libero')
-      + (quantiNascosti ? ' · ' + quantiNascosti + ' nascosti' : '') + '</u></div>';
-  });
-  h += '</div></aside></div>';
+  h += '</div>';
 
   m.innerHTML = h;
+
+  /* Sul telefono il vassoio si appiccica sotto l'intestazione, che è a sua volta
+     appiccicata in cima: l'altezza vera si misura, non si indovina (cambia con la
+     larghezza e con la barra della data che va a capo). */
+  var intest = document.querySelector('header');
+  if (intest) document.documentElement.style.setProperty('--plsotto',
+    Math.round(intest.getBoundingClientRect().height) + 'px');
 
   /* aggancio gli eventi dopo aver scritto l'HTML */
   function aggancia(sel) {

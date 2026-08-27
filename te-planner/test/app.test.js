@@ -611,6 +611,47 @@ const SEED=`(function(){
   t('e non copre la piazzola',              !pm1.copre, pm1);
   t('nessuno scroll orizzontale',           pm1.ov<=2, pm1.ov);
 
+  console.log('\n=== 9nonies. PLANCIA sul telefono: il vassoio si vede subito ===');
+  await p.evaluate(()=>{PL_ARM=null;PEND={};render();});await p.waitForTimeout(250);
+  const vt=await p.evaluate(()=>{
+    var tr=document.querySelector('.pltray').getBoundingClientRect();
+    var gr=document.querySelector('.plwrap').getBoundingClientRect();
+    var ti=[].slice.call(document.querySelectorAll('.pltile')).map(function(n){var r=n.getBoundingClientRect();
+      return {top:Math.round(r.top),left:Math.round(r.left),w:Math.round(r.width)};});
+    return {trayTop:Math.round(tr.top),trayBot:Math.round(tr.bottom),grigliaTop:Math.round(gr.top),
+            vh:window.innerHeight,tiles:ti,
+            ov:document.documentElement.scrollWidth-document.documentElement.clientWidth};});
+  t('il vassoio sta sopra le corsie, non in fondo alla pagina', vt.trayBot<=vt.grigliaTop+1, vt);
+  t('e si vede senza scorrere',                                vt.trayTop<vt.vh-60, vt);
+  t('i servizi da assegnare sono in fila, si scorrono di lato',
+    vt.tiles.length>1&&vt.tiles[0].top===vt.tiles[1].top&&vt.tiles[1].left>vt.tiles[0].left, vt.tiles);
+  t('nessuno scroll orizzontale della pagina',                 vt.ov<=2, vt.ov);
+  // armato un servizio la striscia si richiude e le corsie salgono
+  await p.evaluate(()=>plArma(DATA.services.filter(s=>!s.veicolo)[0].id));await p.waitForTimeout(300);
+  const va=await p.evaluate(()=>({
+    ridotto:document.querySelector('.pltray').className.indexOf('plridotto')>=0,
+    listaVisibile:getComputedStyle(document.querySelector('.pltiles')).display!=='none',
+    riapri:!!document.querySelector('.plriapri'),
+    grigliaTop:Math.round(document.querySelector('.plwrap').getBoundingClientRect().top)}));
+  t('scelto un servizio, la striscia si richiude', va.ridotto&&!va.listaVisibile, va);
+  t('e le corsie guadagnano spazio',              va.grigliaTop<vt.grigliaTop, {prima:vt.grigliaTop,dopo:va.grigliaTop});
+  t('resta il modo di riaprire l\'elenco',        va.riapri, va);
+  await p.evaluate(()=>document.querySelector('.plriapri').click());await p.waitForTimeout(300);
+  t('riaprendolo i servizi tornano in fila',
+    await p.evaluate(()=>PL_ARM===null&&document.querySelectorAll('.pltile').length>0
+      &&getComputedStyle(document.querySelector('.pltiles')).display!=='none'), null);
+  // sul desktop il vassoio resta la colonna di destra, come prima
+  await p.close();p=await nuova(1440,1000);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  const vd=await p.evaluate(()=>{
+    var tr=document.querySelector('.pltray').getBoundingClientRect();
+    var gr=document.querySelector('.plwrap').getBoundingClientRect();
+    return {trayL:Math.round(tr.left),trayT:Math.round(tr.top),grR:Math.round(gr.right),grT:Math.round(gr.top),
+            tileW:Math.round((document.querySelector('.pltile')||{getBoundingClientRect:()=>({width:0})}).getBoundingClientRect().width)};});
+  t('sul desktop il vassoio è ancora a destra della plancia', vd.trayL>=vd.grR-1&&Math.abs(vd.trayT-vd.grT)<=2, vd);
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();
   for(const [w,h] of [[1920,1080],[1440,900],[1024,768],[768,900],[390,844]]){

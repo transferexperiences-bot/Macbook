@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (97 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (118 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (127 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -288,6 +288,15 @@ zone, leggi `docs/REVISIONE_v5.md`.
     solo dove si disegna, altrimenti un servizio annullato torna a occupare un mezzo.
     Coperto da `motore.test.js` (sezione «Servizi cancellati») e `app.test.js` 9octies.
 
+18. **Sul telefono, in fondo alla pagina = invisibile.** Il vassoio dei «da assegnare» era
+    l'ultima cosa della Plancia: sul desktop stava a destra e si vedeva sempre, sul telefono
+    finiva sotto tutte le corsie e nessuno lo trovava. Ora nell'HTML **viene prima** della
+    griglia, e la colonna di destra del desktop si ottiene con `grid-column` invece che
+    dall'ordine del sorgente. Se aggiungi pezzi alla Plancia, chiediti dove finiscono a
+    390px: `.plmain` lì è `display:block`, non una griglia. Il testo di contorno va dentro
+    `<span class="plpiu">`, che sotto i 900px sparisce — ogni riga di parole è una riga di
+    corsie in meno.
+
 ---
 
 ## Convenzioni
@@ -339,7 +348,10 @@ servizio si sta piazzando; assegnato, si torna alla coda per il prossimo.
 
 **🎛 Plancia** — una riga per mezzo, il tempo sull'asse X, i servizi come blocchi colorati per
 autista; **a destra** la colonna dei servizi senza mezzo, che scorre da sola e resta
-sott'occhio. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i servizi di domani a
+sott'occhio. **Sul telefono** quella colonna non sta a destra: diventa una **striscia in cima**,
+sopra le corsie, che si scorre di lato e resta appiccicata sotto l'intestazione. Scelto un
+servizio si richiude da sola (`▾ vedi l'elenco` la riapre): la striscia gialla dice già cosa
+hai in mano, e le corsie si riprendono lo schermo. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i servizi di domani a
 +1440 minuti, la mezzanotte segnata da una riga e dalla data): una catena che scavalla la
 notte si vede per quello che è. Un servizio di domani si apre sulla **sua** giornata, e
 assegnarlo scrive sulla riga giusta. **Il mouse sopra un quadratino** apre la stessa scheda
@@ -387,14 +399,15 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **258 controlli automatici, tutti verdi.**
+libera. **267 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
 **8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px ·
 **9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista ·
 **9quinquies** il trascinamento non resta appeso · **9sexies** autista dal mezzo e barra
-del salvataggio · **9septies** il pennello autista.
+del salvataggio · **9septies** il pennello autista · **9octies** i cancellati non occupano niente ·
+**9nonies** il vassoio sul telefono.
 
 Da fare fuori dal codice:
 

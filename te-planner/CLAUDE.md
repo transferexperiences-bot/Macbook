@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (90 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (94 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -262,6 +262,23 @@ zone, leggi `docs/REVISIONE_v5.md`.
     errore). Se aggiungi una funzione che tocca `DATA.services` dalla Plancia, falla passare
     di lì o vedrà solo oggi.
 
+15. **La app appesa alla rotella.** `render()` esce subito se `PL_DRAG` è acceso — giusto,
+    non si ridisegna sotto il dito. Ma se il trascinamento non finiva mai (dito alzato fuori
+    dalla finestra, oppure blocco sparito perché nel frattempo i dati si sono ricaricati e
+    l'evento `pointerup` sul nodo non arriva più), `PL_DRAG` restava acceso **per sempre**:
+    la app smetteva di disegnarsi e restava la rotella, con il fantasma del blocco a
+    mezz'aria. Ora `molla()` è agganciato anche a `window` (`pointerup`, `pointercancel`,
+    `blur`), `load()` chiude il trascinamento prima di cancellare la plancia, e `render()`
+    se trova un `PL_DRAG` su un blocco che non esiste più lo spegne da solo. Tre reti, perché
+    questa si paga con la app inservibile.
+16. **Il costo nascosto delle normalizzazioni.** `normLuogoUI()` fa sette sostituzioni con
+    espressioni regolari, e un disegno della plancia con trenta mezzi e cento servizi la
+    chiamava **5.716 volte**. Ora è memorizzata per stringa, e i servizi si leggono da un
+    indice (`srvDi`) invece di rifiltrare tutta la giornata a ogni controllo. L'indice si
+    rifà all'inizio di ogni `render()`: dopo ogni assegnazione si ridisegna, quindi non può
+    restare indietro. Se scrivi codice che cambia `autista`/`veicolo` **senza** ridisegnare,
+    azzera `_BYID_SRC` a mano.
+
 ---
 
 ## Convenzioni
@@ -350,12 +367,13 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **219 controlli automatici, tutti verdi.**
+libera. **223 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
 **8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px ·
-**9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista.
+**9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista ·
+**9quinquies** il trascinamento non resta appeso.
 
 Da fare fuori dal codice:
 

@@ -431,6 +431,33 @@ const SEED=`(function(){
   t('«tutti e due» li toglie entrambi',
     st.tuttiEDue.aut===''&&st.tuttiEDue.vei==='', st.tuttiEDue);
 
+  console.log('\n=== 9quinquies. PLANCIA: il trascinamento non può restare appeso ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_DRAG=null;setDue(false);render();});await p.waitForTimeout(250);
+  // 1. la app si ricarica mentre il dito è ancora giù (aggiornamento, tasto 🔄, cambio data)
+  const dr=await p.evaluate(()=>{var n=document.querySelector('.plblk');var r=n.getBoundingClientRect();
+    return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};});
+  await p.mouse.move(dr.x,dr.y);await p.mouse.down();
+  await p.mouse.move(dr.x+40,dr.y+60,{steps:3});await p.waitForTimeout(120);
+  const inCorso=await p.evaluate(()=>({drag:!!PL_DRAG,ghost:document.querySelectorAll('.plghost').length}));
+  t('il trascinamento è partito', inCorso.drag&&inCorso.ghost===1, inCorso);
+  const dopoLoad=await p.evaluate(()=>{ load(); return {
+    drag:PL_DRAG, ghost:document.querySelectorAll('.plghost').length,
+    msg:(document.getElementById('plmsg')||{}).style.display};});
+  t('un ricaricamento chiude il trascinamento invece di lasciarlo acceso',
+    dopoLoad.drag===null&&dopoLoad.ghost===0&&dopoLoad.msg!=='block', dopoLoad);
+  const tornata=await p.evaluate(()=>{ render(); return document.querySelectorAll('.plrow').length; });
+  t('e la plancia si ridisegna: niente rotella per sempre', tornata>2, tornata);
+  await p.mouse.up();await p.waitForTimeout(150);
+
+  // 2. il dito si alza fuori dalla app, o il blocco sparisce da sotto
+  await p.evaluate(()=>{PL_DRAG=null;render();});await p.waitForTimeout(200);
+  const fuori=await p.evaluate(()=>{
+    PL_DRAG='UN-ID-CHE-NON-ESISTE';
+    render();                          // la rete di sicurezza deve accorgersene
+    return {drag:PL_DRAG,righe:document.querySelectorAll('.plrow').length};});
+  t('un trascinamento rimasto acceso su un blocco sparito viene chiuso',
+    fuori.drag===null&&fuori.righe>2, fuori);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

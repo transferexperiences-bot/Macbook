@@ -640,6 +640,9 @@ function setTab(t){TAB=t;
 
 function load(silent){
   var d=document.getElementById('datePick').value;
+  // un ricaricamento cancella la plancia da sotto le dita: meglio chiudere il trascinamento
+  // qui, in ordine, che lasciarlo acceso e non ridisegnare mai più
+  if(PL_DRAG||PL_PINCH)plMollaTutto();
   if(silent!==true)document.getElementById('main').innerHTML='<div class="spin"></div>';
   google.script.run.withSuccessHandler(function(res){
     DATA=res;
@@ -676,7 +679,19 @@ function load(silent){
    ("Aeroporto di Bari" / "Apt Bari" / "Aeroporto di Bari - Arrivi").
    Stessa regola del backend, ripetuta qui perché la app deve essere giusta anche
    quando in _CacheTratte è rimasto un valore vecchio per quella coppia. */
+/* I nomi dei luoghi sono sempre gli stessi dieci o cento, e questa funzione fa sette
+   sostituzioni con espressioni regolari: su una giornata piena veniva chiamata cinquemila
+   volte a disegno. Il risultato dipende solo dalla stringa, quindi si tiene. */
+var _NORML={},_NORMN=0;
 function normLuogoUI(x){
+  var k=String(x||'');
+  if(_NORML.hasOwnProperty(k))return _NORML[k];
+  var v=normLuogoUI_(k);
+  if(_NORMN>4000){_NORML={};_NORMN=0;}   // rete di sicurezza, non deve crescere all'infinito
+  _NORML[k]=v;_NORMN++;
+  return v;
+}
+function normLuogoUI_(x){
   return String(x||'').toLowerCase().trim()
     .replace(/[.,;:'"()\/\-]/g,' ')
     .replace(/\b(aeroporto( di)?|airport|apt|aereoporto)\b/g,'apt')
@@ -686,16 +701,41 @@ function normLuogoUI(x){
     .replace(/\s+/g,' ').trim();
 }
 function stessoLuogoUI(a,b){var x=normLuogoUI(a),y=normLuogoUI(b);return !!x&&x===y;}
-var _BYID_SRC=null,_BYID={};
+/* Un indice solo per la giornata mostrata: per id, per autista, per mezzo, più le tratte
+   già calcolate. Prima ogni controllo di disponibilità rifiltrava tutti i servizi: con
+   trenta mezzi e cento servizi erano cinquantamila giri di lista a disegno.
+   Si rifà da zero all'inizio di ogni render() — dopo ogni assegnazione si ridisegna, quindi
+   non può restare indietro — e i test lo forzano mettendo `_BYID_SRC = null`. */
+var _BYID_SRC=null,_BYID={},_IDXA={},_IDXV={},_TRF={};
+function _reindicizza(){
+  _BYID={};_IDXA={};_IDXV={};_TRF={};
+  if(DATA&&DATA.services)DATA.services.forEach(function(s){
+    _BYID[s.id]=s;
+    if(isCanc(s)||s.startMin<0)return;
+    var a=String(s.autista||''),v=String(s.veicolo||'');
+    if(a){if(!_IDXA[a])_IDXA[a]=[];_IDXA[a].push(s);}
+    if(v){if(!_IDXV[v])_IDXV[v]=[];_IDXV[v].push(s);}
+  });
+  _BYID_SRC=DATA;
+}
 function srvById(id){
-  if(_BYID_SRC!==DATA){_BYID_SRC=DATA;_BYID={};if(DATA&&DATA.services)DATA.services.forEach(function(s){_BYID[s.id]=s;});}
+  if(_BYID_SRC!==DATA)_reindicizza();
   return _BYID[id]||null;
 }
+/* i servizi veri di un autista o di un mezzo, senza riscorrere la giornata */
+function srvDi(chiave,valore){
+  if(_BYID_SRC!==DATA)_reindicizza();
+  return ((chiave==='autista'?_IDXA:_IDXV)[String(valore||'')])||[];
+}
 function trf(aId,bId){
-  var A=srvById(aId),B=srvById(bId);
-  if(A&&B&&stessoLuogoUI(A.per,B.da))return {min:0,buffer:0};
-  var t=DATA.transfers[aId+'->'+bId];
-  return t||{min:30,buffer:DATA.bufferDefault};
+  if(_BYID_SRC!==DATA)_reindicizza();
+  var k=aId+'->'+bId,c=_TRF[k];
+  if(c)return c;
+  var A=_BYID[aId],B=_BYID[bId],t;
+  if(A&&B&&stessoLuogoUI(A.per,B.da))t={min:0,buffer:0};
+  else t=DATA.transfers[k]||{min:30,buffer:DATA.bufferDefault};
+  _TRF[k]=t;
+  return t;
 }
 /* La regola madre, una sola per tutta la app: fine A + trasferimento + buffer <= inizio B.
    Con una tolleranza in più: un servizio che parte da un aeroporto e ha un volo non
@@ -711,10 +751,14 @@ function conflict(A,S){
   return {freeAt:A.endMin+t1.min+t1.buffer,con:A};
 }
 function isCanc(s){return String(s.allert||'').indexOf('Cancellato')>=0;}
-function availability(list,keyFn,S){
+/* chiave = 'autista' | 'veicolo': quando la si passa si legge dall'indice invece di
+   rifiltrare tutti i servizi. Senza, resta la strada vecchia (la usano i test). */
+function availability(list,keyFn,S,chiave){
   var out={};
   list.forEach(function(item){
-    var mine=DATA.services.filter(function(sv){return sv.id!==S.id&&!isCanc(sv)&&keyFn(sv)===item.nome&&sv.startMin>=0;});
+    var mine=chiave
+      ? srvDi(chiave,item.nome).filter(function(sv){return sv.id!==S.id;})
+      : DATA.services.filter(function(sv){return sv.id!==S.id&&!isCanc(sv)&&keyFn(sv)===item.nome&&sv.startMin>=0;});
     var worst=null;
     mine.forEach(function(A){var c=conflict(A,S);if(c&&(!worst||c.freeAt>worst.freeAt))worst=c;});
     out[item.nome]=worst;
@@ -731,9 +775,8 @@ var FATT_OK={ok:1,stretto:1,fermo:1,libero:1};
 /* Il giro di un autista nella giornata mostrata: solo servizi veri, in ordine di ora. */
 function giroDi(nome,escludiId){
   if(!nome||!DATA||!DATA.services)return [];
-  return DATA.services.filter(function(sv){
-    return sv.autista===nome&&sv.id!==escludiId&&!isCanc(sv)&&sv.startMin>=0;
-  }).sort(function(a,b){return a.startMin-b.startMin;});
+  return srvDi('autista',nome).filter(function(sv){return sv.id!==escludiId;})
+    .sort(function(a,b){return a.startMin-b.startMin;});
 }
 function autistiInServizio(){
   return DATA.autisti.filter(function(a){return giroDi(a.nome,null).length>0;});
@@ -799,7 +842,7 @@ function valutaAutista(S,nome){
    al volo dalle durate/tratte precalcolate (nessuna chiamata al server) */
 function bestFor(S){
   if(S.autista||S.startMin<0)return null;
-  var avA=availability(DATA.autisti,function(sv){return sv.autista;},S);
+  var avA=availability(DATA.autisti,function(sv){return sv.autista;},S,'autista');
   var c=suggest(S,avA);
   return c.length?c[0]:null;
 }
@@ -830,7 +873,7 @@ function colorOfVeicolo(nome){
    il mezzo che l'autista sta già usando in giornata, e il più piccolo che basta. */
 function bestVeicoloFor(S){
   if(S.veicolo||S.startMin<0)return null;
-  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},S);
+  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},S,'veicolo');
   var cands=[];
   DATA.veicoli.forEach(function(v){
     if(v.fuoriServizio||v.inRent)return;
@@ -923,9 +966,8 @@ function giudizioMargine(margine,finestra){
 function catenaDi(chiave,valore,escludiId){
   var v=String(valore||'');
   if(!v||!DATA||!DATA.services)return [];
-  return DATA.services.filter(function(sv){
-    return String(sv[chiave]||'')===v&&sv.id!==escludiId&&!isCanc(sv)&&sv.startMin>=0;
-  }).sort(function(a,b){return a.startMin-b.startMin;});
+  return srvDi(chiave,v).filter(function(sv){return sv.id!==escludiId;})
+    .sort(function(a,b){return a.startMin-b.startMin;});
 }
 /* Il collegamento fra due servizi consecutivi della stessa catena: quando il mezzo è
    materialmente sul pick-up del secondo, e quanto margine resta. */
@@ -1032,9 +1074,13 @@ function oreAutista(nome,extra){
 
 /* ---------- viste ---------- */
 function render(){
+  _BYID_SRC=null;   // una assegnazione cambia i servizi senza cambiare l'oggetto DATA: si riparte da capo
   document.body.setAttribute('data-tab',TAB); // serve al CSS per le due colonne su schermo largo
   if(TAB!=='plancia'){var _c=document.getElementById('plcard');if(_c)_c.style.display='none';}
-  if(TAB==='plancia'&&(PL_DRAG||PL_PINCH))return; // non ridisegnare sotto il dito
+  // non ridisegnare sotto il dito — ma solo se il dito c'è ancora davvero: un blocco
+  // sparito (dati ricaricati, scheda cambiata) lasciava PL_DRAG acceso per sempre
+  if(TAB==='plancia'&&PL_DRAG&&!plNodoDi(PL_DRAG))plMollaTutto();
+  if(TAB==='plancia'&&(PL_DRAG||PL_PINCH))return;
   if(TAB==='servizi')renderServizi();
   else if(TAB==='assegna')renderAssegna();
   else if(TAB==='plancia')renderPlancia();
@@ -1662,8 +1708,8 @@ function apri(ri){
 function openModal(i){
   CUR=DATA.services[i];MODAL_OPEN=true;
   var s=CUR;
-  var avA=availability(DATA.autisti,function(sv){return sv.autista;},s);
-  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},s);
+  var avA=availability(DATA.autisti,function(sv){return sv.autista;},s,'autista');
+  var avV=availability(DATA.veicoli,function(sv){return sv.veicolo;},s,'veicolo');
   var sug=suggest(s,avA);
 
   /* Chi oggi non lavora sta in un gruppo suo, in fondo: mescolato ai «Disponibili»
@@ -2223,14 +2269,21 @@ function plScala() {
 }
 function plFine(s) { return s.endMin > s.startMin ? s.endMin : s.startMin + 45; }
 function plDurata(s) { return plFine(s) - s.startMin; }
+var PL_RAIL_W = 0, PL_MISURATO = false;
 function plLarghezzaUtile() {
   // se la plancia è già a schermo misuro lo spazio vero, non quello teorico:
   // "adatta" deve far stare la giornata dentro, non lasciarla sporgere di 30px
   var box = document.getElementById('plscroll');
   var rail = document.querySelector('.plrail');
-  if (box && rail && box.clientWidth) return Math.max(200, box.clientWidth - rail.offsetWidth - 8);
+  if (box && rail && box.clientWidth) {
+    // la colonna dei mezzi non cambia larghezza fra un disegno e l'altro: la si misura una
+    // volta e la si tiene, così il primo disegno è già giusto e non serve rifarlo
+    if (rail.offsetWidth !== PL_RAIL_W) { PL_RAIL_W = rail.offsetWidth; PL_MISURATO = false; }
+    return Math.max(200, box.clientWidth - PL_RAIL_W - 8);
+  }
   var m = document.getElementById('main');
-  return Math.max(200, (m ? m.clientWidth : 360) - (window.innerWidth >= 820 ? 176 : 116) - 26);
+  var w = PL_RAIL_W || (window.innerWidth >= 820 ? 176 : 116);
+  return Math.max(200, (m ? m.clientWidth : 360) - w - 26);
 }
 function plPx(sc) {
   if (PL_PX) return PL_PX;
@@ -2307,7 +2360,7 @@ function plScontro(s, veic) {
   // Due servizi con lo stesso autista viaggiano insieme e non sono un conflitto.
   var v = plVeicolo(veic);
   if (!v) return null;
-  var w = availability([v], function (sv) { return sv.veicolo; }, s)[veic];
+  var w = availability([v], function (sv) { return sv.veicolo; }, s, 'veicolo')[veic];
   if (w && w.con && s.autista && w.con.autista === s.autista) return null;
   return w;
 }
@@ -2532,10 +2585,19 @@ function plPrendi(ev, s, nodo, colore) {
       dove = '';
     } else plMsgOff();
   }
+  var finito = false;
   function molla() {
+    if (finito) return;
+    finito = true;
     nodo.removeEventListener('pointermove', muovi);
     nodo.removeEventListener('pointerup', molla);
     nodo.removeEventListener('pointercancel', molla);
+    // anche sulla finestra: se il dito si alza fuori dalla app, o il blocco sparisce da
+    // sotto (un aggiornamento dei dati ridisegna tutto), l'evento sul nodo non arriva mai
+    // e senza questi la app restava con PL_DRAG acceso — cioè non si ridisegnava più
+    window.removeEventListener('pointerup', molla, true);
+    window.removeEventListener('pointercancel', molla, true);
+    window.removeEventListener('blur', molla, true);
     plPulisci();
     if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
     PL_DRAG = null;
@@ -2546,6 +2608,18 @@ function plPrendi(ev, s, nodo, colore) {
   nodo.addEventListener('pointermove', muovi);
   nodo.addEventListener('pointerup', molla);
   nodo.addEventListener('pointercancel', molla);
+  window.addEventListener('pointerup', molla, true);
+  window.addEventListener('pointercancel', molla, true);
+  window.addEventListener('blur', molla, true);
+}
+/* Rete di sicurezza: qualunque cosa succeda, un trascinamento non deve poter restare
+   acceso. Se resta, render() esce subito e la app smette di disegnarsi — è così che si
+   restava appesi alla rotella con il fantasma a mezz'aria. */
+function plMollaTutto() {
+  PL_DRAG = null; PL_PINCH = null;
+  plPulisci();
+  var g = document.querySelectorAll('.plghost');
+  for (var i = 0; i < g.length; i++) if (g[i].parentNode) g[i].parentNode.removeChild(g[i]);
 }
 /* mentre trascini, accende le piazzole già disegnate */
 function plDipingiPiazzole(s) {
@@ -2619,7 +2693,8 @@ function plMiniatura_() {
   PL_CARD_ID = s.id;
   var col = s.autista ? colorOf(s.autista) : '#5f6368';
   var quanti = 0;
-  DATA.veicoli.forEach(function (v) { if (!VEI_HIDE[v.nome] && plVerifica(s, v.nome).ok) quanti++; });
+  // il conto dei mezzi liberi serve solo alla riga del consiglio, che in anteprima non c'è
+  if (!anteprima) DATA.veicoli.forEach(function (v) { if (!VEI_HIDE[v.nome] && plVerifica(s, v.nome).ok) quanti++; });
   var info = '';
   info += '<span>' + (s.pax ? esc(s.pax) + ' pax' : '? pax') + '</span>';
   info += s.veicolo ? '<span>🚐 ' + esc(s.veicolo) + '</span>' : '<span class="vuoto">🚐 senza mezzo</span>';
@@ -2964,10 +3039,12 @@ function renderPlancia_() {
   aggancia('.plblk');
   aggancia('.pltile');
   var box = document.getElementById('plscroll');
-  if (box && !PL_PX && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
+  if (box && !PL_PX && !PL_MISURATO && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
     // al primo disegno la colonna dei mezzi non esisteva ancora e la misura era teorica:
-    // ora che è a schermo rifaccio una volta sola, così "adatta" adatta davvero
-    PL_RIFATTO = true; renderPlancia(); PL_RIFATTO = false; return;
+    // ora che è a schermo rifaccio UNA volta, e poi basta — rifarlo a ogni tocco costava
+    // il doppio del disegno su una flotta vera
+    PL_MISURATO = true;
+    PL_RIFATTO = true; renderPlancia_(); PL_RIFATTO = false; return;
   }
   if (box) {
     plAggiungiZoomGesti(box, sc);

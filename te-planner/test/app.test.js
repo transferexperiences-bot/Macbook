@@ -345,6 +345,62 @@ const SEED=`(function(){
     return {trasf:r.cat.trasf,buffer:r.cat.buffer,arrivo:r.cat.arrivo};});
   t('stesso luogo: trasferimento 0 e buffer 0 anche qui', c5.trasf===0&&c5.buffer===0&&c5.arrivo===600, c5);
 
+  console.log('\n=== 9ter. PLANCIA: due giorni, vassoio a destra, anteprima col mouse ===');
+  const DOMSEED=`(function(){
+    var pl_d2=addDaysC(DATA.date,1);
+    var P=JSON.parse(JSON.stringify(DATA));P.date=pl_d2;P.nowMin=-1;
+    P.services=[JSON.parse(JSON.stringify(DATA.services[0]))];
+    var s=P.services[0];s.id='DOM1';s.startMin=390;s.durMin=60;s.endMin=450;s.time='06:30';
+    s.da='Polignano a Mare';s.per='Aeroporto di Bari';s.autista='';s.veicolo='';
+    s.nome='Partenza presto';s.stato='';s.allert='';s.volo='';
+    P.transfers={};PLANS[pl_d2]=P;return pl_d2;})()`;
+  const pl_d2=await p.evaluate(DOMSEED);
+  await p.evaluate(()=>{PL_ARM=null;PEND={};setDue(true);});await p.waitForTimeout(400);
+  const pl_g1=await p.evaluate(()=>{
+    var P=plPiano(), dom=P.services.filter(x=>x.domani);
+    return {due:DUE,pronta:plPronta(),nDom:dom.length,
+            oraDom:dom.length?dom[0].startMin:null,
+            mezzanotte:document.querySelectorAll('.plmezza').length,
+            badge:document.querySelectorAll('.pltile .pldomani').length,
+            tickDom:document.querySelectorAll('.plhrs i.pldom').length};});
+  t('domani entra sulla stessa plancia', pl_g1.nDom===1&&pl_g1.pronta, pl_g1);
+  t('e sta a +1440 minuti, dopo la mezzanotte', pl_g1.oraDom===390+1440, pl_g1);
+  t('la mezzanotte è una riga in ogni corsia', pl_g1.mezzanotte>0, pl_g1);
+  t('nel vassoio si vede che è di domani', pl_g1.badge===1, pl_g1);
+
+  const pl_g2=await p.evaluate(dd=>{
+    var S=plPiano().services.filter(x=>x.id==='DOM1')[0];
+    plSposta(S,'Vito 1');
+    return {copia:S.veicolo, vera:PLANS[dd].services.filter(x=>x.id==='DOM1')[0].veicolo,
+            pend:PEND['DOM1']?PEND['DOM1'].veicolo:null};},pl_d2);
+  t('assegnare un servizio di domani scrive sulla SUA giornata',
+    pl_g2.copia==='Vito 1'&&pl_g2.vera==='Vito 1'&&pl_g2.pend==='Vito 1', pl_g2);
+  await p.evaluate(()=>{PEND={};setDue(false);});await p.waitForTimeout(300);
+
+  const pl_g3=await p.evaluate(()=>{
+    var t=document.querySelector('.pltiles'), st=getComputedStyle(t);
+    var rt=t.getBoundingClientRect(), rg=document.querySelector('.plwrap').getBoundingClientRect();
+    return {colonna:st.flexDirection,scorre:st.overflowY,aDestra:rt.left>=rg.right-40};});
+  t('il vassoio è una colonna a destra', pl_g3.aDestra&&pl_g3.colonna==='column', pl_g3);
+  t('e scorre da solo',                  pl_g3.scorre==='auto'||pl_g3.scorre==='scroll', pl_g3);
+
+  const pl_pos=await p.evaluate(()=>{var n=document.querySelectorAll('.plblk')[1];
+    var r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+  await p.mouse.move(pl_pos.x,pl_pos.y);await p.waitForTimeout(250);
+  const pl_g4=await p.evaluate(()=>{
+    var c=document.getElementById('plcard'),s=DATA.services[1];
+    var txt=c.textContent.replace(/\s+/g,' ');
+    return {aperta:c.style.display==='block',anteprima:/plcpeek/.test(c.className),
+            bottoni:c.querySelectorAll('button').length,armato:PL_ARM,
+            ora:txt.indexOf(fmtMin(s.startMin))>=0, da:txt.indexOf(s.da)>=0,
+            per:txt.indexOf(s.per)>=0, pax:txt.indexOf(s.pax+' pax')>=0};});
+  t('col mouse sopra il quadratino si apre la scheda', pl_g4.aperta&&pl_g4.anteprima, pl_g4);
+  t('con ora, da, per e pax',            pl_g4.ora&&pl_g4.da&&pl_g4.per&&pl_g4.pax, pl_g4);
+  t('è solo un\'anteprima: non arma e non ha pulsanti', pl_g4.armato===null&&pl_g4.bottoni===0, pl_g4);
+  await p.mouse.move(4,4);await p.waitForTimeout(250);
+  t('togliendo il mouse sparisce',
+    await p.evaluate(()=>document.getElementById('plcard').style.display!=='block'), null);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

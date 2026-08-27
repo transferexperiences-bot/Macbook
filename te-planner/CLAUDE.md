@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (74 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (85 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -254,6 +254,14 @@ zone, leggi `docs/REVISIONE_v5.md`.
     non c'entrava. Il verdetto è lo stesso, ma il motivo va detto per quello che è: *ci
     arriva, ma poi le 14:00 saltano per 35 minuti*.
 
+14. **Due giorni: copie, non originali.** La Plancia a 2 giorni mette i servizi di domani a
+    +1440 minuti. Spostare di 1440 gli oggetti veri rovinerebbe l'altra giornata: `plPiano()`
+    ne fa **copie** con `orig` che punta all'originale, e `plSposta()` scrive su tutti e due.
+    Tutto il motore legge il globale `DATA`, quindi le funzioni della Plancia passano da
+    `plCon()`, che scambia `DATA` col piano unito e lo rimette **sempre** (anche in caso di
+    errore). Se aggiungi una funzione che tocca `DATA.services` dalla Plancia, falla passare
+    di lì o vedrà solo oggi.
+
 ---
 
 ## Convenzioni
@@ -304,7 +312,13 @@ un servizio nella coda si passa da soli ai giri, con una striscia gialla che ric
 servizio si sta piazzando; assegnato, si torna alla coda per il prossimo.
 
 **🎛 Plancia** — una riga per mezzo, il tempo sull'asse X, i servizi come blocchi colorati per
-autista; sotto, il vassoio di quelli senza mezzo. Si assegna in tre modi: trascinando il
+autista; **a destra** la colonna dei servizi senza mezzo, che scorre da sola e resta
+sott'occhio. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i servizi di domani a
++1440 minuti, la mezzanotte segnata da una riga e dalla data): una catena che scavalla la
+notte si vede per quello che è. Un servizio di domani si apre sulla **sua** giornata, e
+assegnarlo scrive sulla riga giusta. **Il mouse sopra un quadratino** apre la stessa scheda
+ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in sola lettura,
+senza armare niente. Si assegna in tre modi: trascinando il
 blocco, toccandolo (si «arma» e su ogni mezzo compare una piazzola) o dalla scheda. Fra un
 servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
@@ -333,7 +347,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **203 controlli automatici, tutti verdi.**
+libera. **214 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -357,7 +371,8 @@ Idee non ancora affrontate:
 - `_CacheTratte` non scade mai (voluto: tempi senza traffico), ma se cambia la viabilità di
   una tratta va cancellata la riga a mano
 - vista settimana, statistiche incassi, accesso in sola lettura per gli autisti
-- la scheda Assegna lavora sul **giorno mostrato**: niente vista a due giorni come in Servizi
+- la scheda Assegna lavora sul **giorno mostrato**: i due giorni ci sono in Servizi e in
+  Plancia, non ancora lì
 - «in servizio oggi» è dedotto dai servizi assegnati: se il foglio `Autisti` avesse una
   colonna con il turno vero (o le ore disponibili), il consiglio potrebbe usarla
 - far scrivere a Turni v6 le sue distanze nella stessa `_CacheTratte`

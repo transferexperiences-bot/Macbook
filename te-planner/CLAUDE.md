@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (146 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (149 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -394,7 +394,10 @@ C'è solo quando la corsia ha una riga sola — con i servizi impilati non si ca
 sono. Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa**
 (liscia), e sotto la barra, dove il viaggio finisce, c'è **`arrivo 10:30 · 25m · 18 km`**:
 l'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Sopra e sotto perché così
-non si accavallano mai. Ogni etichetta è ancorata al suo minuto (`data-m0`), quindi si sposta
+non si accavallano mai. Lo spazio per quell'etichetta si misura su **tutto il buco**, non
+sulla sola attesa: con le catene strette l'attesa è zero e l'ora d'arrivo non compariva mai —
+proprio nei casi in cui serve. Se dall'arrivo in poi non ci sta, si appoggia alla fine del
+buco, contro il blocco che segue. Ogni etichetta è ancorata al suo minuto (`data-m0`), quindi si sposta
 da sola con lo zoom, e quando lo spazio è poco **si accorcia invece di sparire** (`plEtich`
 prova le scritte dalla più completa alla più secca): `07:00 → 08:10 · 42 km · 1h 10m` →
 `07:00 → 08:10` → `→ 08:10`. I **km** arrivano dal backend (`services[].km`,
@@ -425,7 +428,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **310 controlli automatici, tutti verdi.**
+libera. **313 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

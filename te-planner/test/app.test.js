@@ -706,6 +706,33 @@ const SEED=`(function(){
     return {m0:+n.getAttribute('data-m0'), testo:n.textContent};});
   t('ogni ora è ancorata al suo minuto (si sposta con lo zoom)',
     ore2.m0>0&&ore2.testo.indexOf(('0'+Math.floor(ore2.m0/60)).slice(-2)+':'+('0'+(ore2.m0%60)).slice(-2))>=0, ore2);
+  // catena stretta: il viaggio si mangia tutto il buco, l'attesa è zero.
+  // Era il caso in cui l'ora d'arrivo non compariva mai — proprio quando serve.
+  const stretta=await p.evaluate(()=>{
+    var A=DATA.services.filter(function(s){return s.veicolo==='Vito 1';})
+      .sort(function(x,y){return x.startMin-y.startMin;})[0];
+    var B=JSON.parse(JSON.stringify(A));
+    B.id='STRETTO'; B.startMin=A.endMin+40; B.durMin=60; B.endMin=B.startMin+60;
+    B.time=('0'+Math.floor(B.startMin/60)).slice(-2)+':'+('0'+(B.startMin%60)).slice(-2);
+    B.nome='Subito dopo'; B.da='Ostuni'; B.per='Bari';
+    DATA.services=DATA.services.filter(function(s){return s.veicolo!=='Vito 1'||s.id===A.id;});
+    DATA.services.push(B);
+    DATA.transfers[A.id+'->'+B.id]={min:40,buffer:15,km:28};   // viaggio = tutto il buco
+    _BYID_SRC=null; PL_ARM=null; render();
+    var lane=[].slice.call(document.querySelectorAll('.pllane')).filter(function(l){
+      return l.getAttribute('data-v')==='Vito 1';})[0];
+    var arr=lane.querySelector('.plora.plarr');
+    var blocco=[].slice.call(lane.querySelectorAll('.plblk')).filter(function(n){
+      return n.getAttribute('data-id')==='STRETTO';})[0];
+    return {attesa:lane.querySelectorAll('.plgatt').length,
+            testo:arr?arr.textContent:null,
+            atteso:fmtMin(A.endMin+40),
+            dentro:!!(arr&&blocco&&arr.getBoundingClientRect().right<=blocco.getBoundingClientRect().left+1)};});
+  t('catena stretta: nessuna attesa da disegnare', stretta.attesa===0, stretta);
+  t('ma l\'ora d\'arrivo si vede lo stesso',      !!stretta.testo&&stretta.testo.indexOf(stretta.atteso)>=0, stretta);
+  t('appoggiata al blocco che segue, senza coprirlo', stretta.dentro, stretta);
+  await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
+
   // sul telefono la giornata sta in 390px: le scritte si accorciano invece di sparire
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(350);

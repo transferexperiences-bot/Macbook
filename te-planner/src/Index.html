@@ -3130,15 +3130,22 @@ function renderPlancia_() {
              cose si leggono in fila e non si accavallano mai, nemmeno quando il viaggio è
              una strisciolina di dieci pixel. Se dentro la barra non ci stanno i minuti,
              se li porta dietro questa etichetta. */
+          /* L'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Prima la
+             misuravo solo sull'attesa: con le catene strette l'attesa è zero e l'etichetta
+             non compariva mai — proprio nei casi in cui serve saperlo. Ora lo spazio è
+             TUTTO il buco: se dall'arrivo in poi non ci sta, si appoggia alla fine del
+             buco, contro il blocco che segue. L'ora è scritta, la posizione è un di più. */
           var kmT = tt.km ? ' · ' + tt.km + ' km' : '';
           var tArr = plEtich(wv >= 62
             ? ['arrivo ' + fmtMin(arrivo) + kmT, 'arrivo ' + fmtMin(arrivo), '▸' + fmtMin(arrivo)]
             : ['arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via) + kmT,
                'arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via), 'arrivo ' + fmtMin(arrivo),
                '▸' + fmtMin(arrivo) + ' ' + fmtDur(via), '▸' + fmtMin(arrivo)],
-            (B.startMin - arrivo) * px);
+            buco * px);
           if (tArr) {
-            b += '<div class="plora plarr" data-m0="' + arrivo + '" style="left:' + Math.round((arrivo - sc.m0) * px)
+            var largA = tArr.length * 5.4 + 10, mLab = arrivo;
+            if ((B.startMin - arrivo) * px < largA) mLab = Math.max(f, B.startMin - largA / px);
+            b += '<div class="plora plarr" data-m0="' + Math.round(mLab) + '" style="left:' + Math.round((mLab - sc.m0) * px)
               + 'px;top:' + (top + 18) + 'px" title="' + esc(titolo) + '">' + tArr + '</div>';
             arrSopra = true;
           }

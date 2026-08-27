@@ -48,12 +48,13 @@ src/Code.gs           backend: legge il foglio, calcola durate e incastri, scriv
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati autista/mezzo       (51 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (84 controlli)
 test/app.test.js      apre la app in Chromium e la usa davvero                (57 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
-docs/                 revisione v4→v5, scheda Assegna, handoff originale, installazione
+docs/                 revisione v4→v5, scheda Assegna, catene, handoff, installazione
+docs/blocco-catene.js   il motore delle catene, pronto da incollare in un'altra copia
 ```
 
 `preview.html` e `shots/` sono generati, non versionarli.
@@ -150,6 +151,26 @@ Dentro il primo gruppo conta il **tempo morto prima** del servizio (`vuoto`), no
 stretto: ordinare per il lato più stretto premiava i giri fragili (5 minuti di margine dopo
 sembravano meglio di mezz'ora d'attesa comoda). Categoria (`Fisso`) e carico di giornata
 restano, ma come spareggio.
+
+### Catene: cosa si rompe se sposto un servizio
+
+`catenaIpotesi(S, chiave, valore)` — con `chiave` `'veicolo'` o `'autista'` — risponde, senza
+scrivere niente e senza chiamare il backend: da dove arriva quel mezzo/autista e **a che ora è
+sul pick-up**, il **margine col segno**, cosa si **rompe a valle**, cosa si **libera** sulla
+catena di partenza, come cambia il **rientro in garage**. Scorciatoie: `plCatena(S, veicolo)`
+e `plCatenaAutista(S, autista)`.
+
+Due regole che vivono lì dentro:
+
+- **`finestraInizio(s)`** — un servizio con volo che parte da un aeroporto può cominciare fino
+  a **20 minuti** dopo l'ora scritta (bagagli). L'aeroporto si riconosce da `normLuogoUI()`,
+  niente elenchi di nomi a mano. `giudizioMargine()` traduce in ok / stretto / finestra / rotto.
+- **`oreAutista(nome, extra)`** — prima partenza → ultimo rientro, `oltre: true` sopra le
+  **12 ore**. Informazione, non divieto.
+
+Quando manca un dato **non si inventa**: senza servizio precedente `daDove` è `'garage'` e
+`arrivo`/`margine` restano `null` (base → pick-up non è in `_CacheTratte`); se `trf()` ha usato
+i 30 minuti di default, `stima` è `true` e va scritto a schermo. Dettagli in `docs/CATENE.md`.
 
 ### Cosa manda `getPlanData(dateISO)` alla app
 
@@ -282,7 +303,15 @@ Fatto: revisione completa v4→v5 (12 bug), rientro in garage, layout desktop, v
 filtri autisti e mezzi, Flotta ridisegnata, ordinamento per mezzo, candidato mezzo,
 bug delle catene "stesso luogo". Poi (18/08): **scheda 🧩 Assegna** (giri a sinistra, coda per
 ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non stava lavorando.
-**151 controlli automatici, tutti verdi.**
+Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) per l'handoff
+della Plancia. **184 controlli automatici, tutti verdi.**
+
+⚠️ **Attenzione: esistono due copie della app.** L'handoff della Plancia (scheda 🎛, `.pllane`,
+`plDurata()`, 148 controlli) parla di una versione che **qui non c'è**: lo zip da cui nasce
+questa cartella ha un commit solo e nessuna traccia di Plancia. Prima di lavorare
+sull'interfaccia della Plancia serve il `src/Index.html` vero di Apps Script — vedi
+`docs/CATENE.md`. Il punto che si scontra è `test/app.test.js` **sezione 8**: di là è la
+Plancia, di qua la scheda Assegna.
 
 Da fare fuori dal codice:
 

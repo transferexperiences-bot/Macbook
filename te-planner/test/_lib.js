@@ -38,7 +38,9 @@ function caricaFrontend(){
   ['trf','conflict','availability','bestFor','bestVeicoloFor','suggest','stessoLuogoUI',
    'normLuogoUI','garageInfo','statoDi','eur','fmtDur','fmtMin','isDone','isCanc',
    'servizioVisibile','colorOf','colorOfVeicolo',
-   'giroDi','valutaAutista','autistiInServizio','punteggioAutista']
+   'giroDi','valutaAutista','autistiInServizio','punteggioAutista',
+   'finestraInizio','giudizioMargine','catenaDi','trattaFra','catenaIpotesi',
+   'plCatena','plCatenaAutista','oreAutista']
     .forEach(n=>{try{out[n]=eval(n);}catch(e){}});
   out.setDATA=(d)=>{eval('DATA=d;_BYID_SRC=null;');};
   return out;

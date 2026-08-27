@@ -171,4 +171,115 @@ eq('Tino: 3h ferme prima, 10 minuti dopo', [F.valutaAutista(MEZZO,'Tino').vuoto,
 eq('Gino: 40 e 40',                        [F.valutaAutista(MEZZO,'Gino').vuoto,F.valutaAutista(MEZZO,'Gino').k], [40,'ok']);
 eq('consigliato Gino', F.suggest(MEZZO,F.availability(par.autisti,s=>s.autista,MEZZO),3)[0].nome, 'Gino');
 
+/* ============================================================================
+   Catene: cosa si rompe (o si libera) se sposto un servizio.
+   Handoff "Plancia: catene e tempi quando sposti un servizio".
+   ============================================================================ */
+sezione('Finestra degli arrivi: atterraggio + bagagli');
+const VOLO=srv({id:'V',time:'10:00',startMin:600,durMin:60,endMin:660,
+  da:'Aeroporto di Bari',per:'Ostuni',volo:'FR8826'});
+const VOLO2=srv({id:'V2',time:'10:00',startMin:600,durMin:60,endMin:660,
+  da:'Apt Bari - Arrivi',per:'Ostuni',volo:'AZ1614'});
+const NOVOLO=srv({id:'NV',time:'10:00',startMin:600,durMin:60,endMin:660,
+  da:'Aeroporto di Bari',per:'Ostuni',volo:''});
+const CITTA=srv({id:'C',time:'10:00',startMin:600,durMin:60,endMin:660,
+  da:'Polignano a Mare',per:'Ostuni',volo:'FR8826'});
+F.setDATA(Object.assign({},base,{services:[VOLO]}));
+eq('volo + aeroporto → 20 minuti di tolleranza', F.finestraInizio(VOLO), 20);
+eq('vale anche scritto \"Apt Bari - Arrivi\"',   F.finestraInizio(VOLO2), 20);
+eq('aeroporto senza volo → nessuna tolleranza', F.finestraInizio(NOVOLO), 0);
+eq('volo ma partenza in città → nessuna',       F.finestraInizio(CITTA), 0);
+eq('giudizio: 25 minuti di margine',      F.giudizioMargine(25,0), 'ok');
+eq('giudizio: 3 minuti = stretto',        F.giudizioMargine(3,0), 'stretto');
+eq('giudizio: -12 senza finestra = rotto',F.giudizioMargine(-12,0), 'rotto');
+eq('giudizio: -12 con i bagagli = ci sta',F.giudizioMargine(-12,20), 'finestra');
+eq('giudizio: -25 oltre i bagagli = rotto',F.giudizioMargine(-25,20), 'rotto');
+
+sezione('plCatena: da dove arriva il mezzo e con che margine');
+// Vito 1: 08:00-10:00 finisce a Monopoli · si vuole metterci il servizio delle 11:00 da Ostuni
+const M1=srv({id:'M1',time:'08:00',startMin:480,durMin:120,endMin:600,
+  da:'Bari',per:'Monopoli',autista:'Marco',veicolo:'Vito 1'});
+const M2=srv({id:'M2',time:'14:00',startMin:840,durMin:60,endMin:900,
+  da:'Alberobello',per:'Bari',autista:'Marco',veicolo:'Vito 1'});
+const SPOSTA=srv({id:'SP',time:'11:00',startMin:660,durMin:120,endMin:780,
+  da:'Ostuni',per:'Matera',autista:'',veicolo:''});
+const pl={date:'2026-08-18',today:'2026-08-18',weekday:'martedì',nowMin:-1,bufferDefault:15,
+  services:[M1,M2,SPOSTA],
+  transfers:{'M1->SP':{min:35,buffer:15},'SP->M2':{min:80,buffer:15},'M1->M2':{min:60,buffer:15}},
+  autisti:[{nome:'Marco',categoria:'Fisso',stato:'ON',esclusoMotivo:''}],
+  veicoli:[{nome:'Vito 1',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'},
+           {nome:'Vito 2',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'}],
+  rents:[],prossimi:[],luoghiNomi:[],fornitori:[],base:'Polignano a Mare'};
+F.setDATA(pl);
+let c=F.plCatena(SPOSTA,'Vito 1');
+eq('viene da Monopoli',            c.daDove&&c.daDove.per, 'Monopoli');
+eq('sul pick-up alle 10:35',       c.arrivo, 635);
+eq('margine 10 minuti → stretto',  [c.margine,c.k], [10,'stretto']);
+eq('il tempo è quello vero, non una stima', c.stima, false);
+eq('a valle salta il servizio delle 14:00', c.aValle.length&&c.aValle[0].id, 'M2');
+eq('e lo dice: diventa irraggiungibile',    c.aValle[0].diventa, 'rotto');
+eq('mancano 35 minuti',                     c.aValle[0].ritardo, 35);
+eq('mentre prima reggeva',                  c.aValle[0].era, 'ok');
+
+sezione('Mezzo libero: parte dal garage, nessuna ora inventata');
+c=F.plCatena(SPOSTA,'Vito 2');
+eq('daDove = garage', c.daDove, 'garage');
+eq('nessun orario di arrivo inventato', [c.arrivo,c.margine], [null,null]);
+eq('e la piazzola resta verde', c.k, 'ok');
+
+sezione('Sovrapposizione: si può forzare, ma è rosso');
+const SOVR=srv({id:'SV',time:'11:30',startMin:690,durMin:60,endMin:750,
+  da:'Bari',per:'Bari',autista:'Marco',veicolo:'Vito 2'});
+F.setDATA(Object.assign({},pl,{services:[M1,M2,SPOSTA,SOVR]}));
+c=F.plCatena(SPOSTA,'Vito 2');
+eq('la sovrapposizione è elencata', c.sovrapposti.length&&c.sovrapposti[0].id, 'SV');
+eq('e il verdetto è rosso',         c.k, 'rotto');
+
+sezione('Cosa si libera sulla catena di partenza');
+// SPOSTA è su Vito 2 e strozza il servizio dopo: portandolo via, quello respira
+const STRETTA=srv({id:'ST',time:'11:00',startMin:660,durMin:120,endMin:780,
+  da:'Ostuni',per:'Matera',autista:'',veicolo:'Vito 2'});
+const DOPO=srv({id:'DP',time:'14:20',startMin:860,durMin:60,endMin:920,
+  da:'Bari',per:'Monopoli',autista:'',veicolo:'Vito 2'});
+const PRIMA=srv({id:'PR',time:'08:00',startMin:480,durMin:60,endMin:540,
+  da:'Bari',per:'Bari',autista:'',veicolo:'Vito 2'});
+F.setDATA(Object.assign({},pl,{services:[PRIMA,STRETTA,DOPO],
+  transfers:{'ST->DP':{min:70,buffer:15},'PR->DP':{min:10,buffer:10},'PR->ST':{min:35,buffer:15}}}));
+c=F.plCatena(STRETTA,'Vito 1');
+eq('il servizio dopo si libera',      c.liberati.length&&c.liberati[0].id, 'DP');
+eq('prima non ci arrivava',           c.liberati[0].era, 'rotto');
+eq('e ora ci arriva comodo',          c.liberati[0].diventa, 'ok');
+// 320 di margine nuovo (PRIMA chiude a Bari e DOPO parte da Bari: stesso luogo, 0 e 0)
+// contro i 5 che mancavano prima
+eq('guadagno in minuti',              c.liberati[0].guadagno, 325);
+
+sezione('Rientro in garage, prima e dopo la mossa');
+const R1=srv({id:'R1',time:'08:00',startMin:480,durMin:60,endMin:540,
+  da:'Bari',per:'Monopoli',veicolo:'Vito 1',rientroMin:20});
+const R2=srv({id:'R2',time:'20:00',startMin:1200,durMin:60,endMin:1260,
+  da:'Bari',per:'Matera',veicolo:'',rientroMin:70});
+F.setDATA(Object.assign({},pl,{services:[R1,R2],transfers:{'R1->R2':{min:60,buffer:15}}}));
+c=F.plCatena(R2,'Vito 1');
+eq('prima rientrava alle 09:20', c.rientro.prima, 560);
+eq('dopo la mossa alle 22:10',   c.rientro.dopo, 1330);
+
+sezione('Ore dell\'autista: oltre le 12 si dice');
+F.setDATA(Object.assign({},pl,{services:[
+  srv({id:'A1',time:'06:00',startMin:360,durMin:60,endMin:420,da:'Bari',per:'Bari',autista:'Marco',rientroMin:10}),
+  srv({id:'A2',time:'17:00',startMin:1020,durMin:60,endMin:1080,da:'Bari',per:'Ostuni',autista:'Marco',rientroMin:40})]}));
+let o=F.oreAutista('Marco');
+eq('dalla prima partenza all\'ultimo rientro', [o.inizio,o.fine], [360,1120]);
+eq('12h 40m: oltre il limite',                 [o.minuti,o.oltre], [760,true]);
+eq('senza servizi non inventa niente',         F.oreAutista('Nessuno'), null);
+
+sezione('La catena vale anche per l\'autista, non solo per il mezzo');
+F.setDATA(pl);
+const ca=F.plCatenaAutista(SPOSTA,'Marco');
+eq('stessa risposta sulla catena autista', [ca.chiave,ca.arrivo,ca.k], ['autista',635,'stretto']);
+eq('stesso luogo → trasferimento 0 e buffer 0',
+   (function(){var X=srv({id:'X1',time:'08:00',startMin:480,durMin:60,endMin:540,da:'Bari',per:'Aeroporto di Bari',veicolo:'Vito 1'});
+    var Y=srv({id:'Y1',time:'09:00',startMin:540,durMin:60,endMin:600,da:'Apt Bari',per:'Ostuni',veicolo:''});
+    F.setDATA(Object.assign({},pl,{services:[X,Y],transfers:{'X1->Y1':{min:30,buffer:15}}}));
+    var r=F.plCatena(Y,'Vito 1');return [r.trasf,r.buffer,r.margine];})(), [0,0,0]);
+
 bilancio();

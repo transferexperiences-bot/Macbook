@@ -451,7 +451,13 @@ function getPlanData(dateISO) {
       durSrc = t.src;
     }
     if (durMin < 15) durMin = 15;
+    /* i km del servizio: dal precalcolo (linea d'aria × 1,3) o dalla cache delle tratte.
+       Servono alla Plancia, che scrive «07:00 → 08:10 · 42 km» sopra ogni blocco. */
+    var kmSrv = 0;
+    if (pc && pc.coordDa && pc.coordPer) kmSrv = Math.round(haversine_(pc.coordDa, pc.coordPer) * 1.3);
+    else { var tk = cache[tratteKey_(da, per)]; if (tk && tk.km) kmSrv = Math.round(tk.km); }
     services.push({
+      km: kmSrv,
       rowNum: r + 1,
       id: String(row[C.id] || ''),
       time: startMin >= 0 ? pad(Math.floor(startMin / 60)) + ':' + pad(startMin % 60) : String(row[C.time] || ''),
@@ -500,7 +506,7 @@ function getPlanData(dateISO) {
     var buffer = CONFIG.BUFFER_DEFAULT;
     if (stessoLuogo_(A.per, B.da) || tt.min === 0) buffer = 0;
     else if (tt.km < 5 || tt.min < 10) buffer = CONFIG.BUFFER_VICINI;
-    transfers[A.id + '->' + B.id] = { min: tt.min, buffer: buffer };
+    transfers[A.id + '->' + B.id] = { min: tt.min, buffer: buffer, km: Math.round(tt.km || 0) };
   }
 
   for (var x = 0; x < services.length; x++) {

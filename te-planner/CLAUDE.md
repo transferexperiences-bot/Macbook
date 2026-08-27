@@ -190,8 +190,8 @@ prossimi[], luoghiNomi[], fornitori[], bufferDefault, base}`
 
 - `services[]`: `rowNum, id, time, startMin, endMin, durMin, rientroMin, da, per, pax, nome,
   fornitore, volo, autista, veicolo, note, stato, allert, tariffa, cell, wa, hextra,
-  modalita, acconto, durSrc`
-- `transfers{}`: chiave `"idA->idB"` → `{min, buffer}`, solo per le coppie plausibili
+  modalita, acconto, durSrc, km`
+- `transfers{}`: chiave `"idA->idB"` → `{min, buffer, km}`, solo per le coppie plausibili
   (A finisce entro 4 ore dall'inizio di B). Ci sono anche le coppie **oltre la mezzanotte**
   — ultimo servizio di oggi → primo di domani — che servono alla Plancia a 2 giorni:
   senza quelle `trf()` cadeva sui 30 minuti di default e la catena diceva «(stima)»
@@ -386,15 +386,19 @@ prende dopo). Se sul servizio l'autista c'è già, **non si tocca**. Il salvatag
 gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
 giornata, e `💾 Salva tutto` deve restare a portata di pollice.
 
-Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia),
-e le tre ore che servono si leggono in fila: **`fine 10:00`** sopra la barra, subito dopo il
-blocco · **`🚗 30m`** dentro la barra del viaggio · **`arrivo 10:30`** sotto, dove il viaggio
-finisce e comincia l'attesa. Sopra e sotto perché così non si accavallano mai, nemmeno quando
-il viaggio è una strisciolina di dieci pixel; se dentro la barra i minuti non ci stanno, se li
-porta dietro l'etichetta dell'arrivo (`arrivo 10:30 · 30m`). Ogni etichetta è ancorata al suo
-minuto (`data-m0`), quindi si sposta da sola con lo zoom. Quando lo spazio è poco — sul
-telefono la giornata intera sta in 390px — le scritte **si accorciano invece di sparire**
-(`plEtich`): `fine 10:00` → `10:00`, `arrivo 10:30 · 30m` → `▸10:30`.
+Ogni corsia ha in cima una **fascia riservata alle ore**: sopra ogni blocco si legge
+**`07:00 → 08:10 · 42 km · 1h 10m`** — partenza, arrivo, distanza, tempo. Dentro il blocco il
+testo è quasi sempre tagliato (`06:…`), e sopra il blocco senza fascia l'etichetta finiva
+coperta dal blocco stesso: la fascia è l'unico modo perché quelle ore si vedano **sempre**.
+C'è solo quando la corsia ha una riga sola — con i servizi impilati non si capirebbe di chi
+sono. Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa**
+(liscia), e sotto la barra, dove il viaggio finisce, c'è **`arrivo 10:30 · 25m · 18 km`**:
+l'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Sopra e sotto perché così
+non si accavallano mai. Ogni etichetta è ancorata al suo minuto (`data-m0`), quindi si sposta
+da sola con lo zoom, e quando lo spazio è poco **si accorcia invece di sparire** (`plEtich`
+prova le scritte dalla più completa alla più secca): `07:00 → 08:10 · 42 km · 1h 10m` →
+`07:00 → 08:10` → `→ 08:10`. I **km** arrivano dal backend (`services[].km`,
+`transfers[].km`): prima non uscivano da `getPlanData`.
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
 margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
 il servizio successivo compare una riga d'avviso sotto la corsia, e sulla riga da cui il

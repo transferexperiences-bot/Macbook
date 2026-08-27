@@ -678,14 +678,17 @@ const SEED=`(function(){
             arr:arr.map(function(n){return n.textContent;}),
             attesaTxt:[].slice.call(lane.querySelectorAll('.plgatt i')).map(function(n){return n.textContent;}),
             viaggioTxt:[].slice.call(lane.querySelectorAll('.plgvia i')).map(function(n){return n.textContent;}),
-            attesoFine:'fine '+fmtMin(plFine(A)), attesoArr:'arrivo '+fmtMin(plFine(A)+t.min), via:t.min, viaTxt:fmtDur(t.min),
+            attesoFine:fmtMin(A.startMin)+' → '+fmtMin(plFine(A)), attesoArr:'arrivo '+fmtMin(plFine(A)+t.min), via:t.min, viaTxt:fmtDur(t.min),
             yFine:Math.round(fine[0].getBoundingClientRect().top),
             yArr:arr.length?Math.round(arr[0].getBoundingClientRect().top):null,
             yBarra:Math.round((lane.querySelector('.plgvia')||lane.querySelector('.plgatt')).getBoundingClientRect().top),
             xFine:Math.round(fine[0].getBoundingClientRect().left),
-            xBlocco:Math.round(lane.querySelector('.plblk').getBoundingClientRect().right)};});
-  t('dopo ogni servizio c\'è la sua ora di fine', ore.fine.indexOf(ore.attesoFine)>=0, ore);
-  t('e sta subito dopo il blocco, non altrove',  Math.abs(ore.xFine-ore.xBlocco)<=6, ore);
+            xBlocco:Math.round(lane.querySelector('.plblk').getBoundingClientRect().left),
+            yBlocco:Math.round(lane.querySelector('.plblk').getBoundingClientRect().top)};});
+  t('sopra ogni servizio ci sono partenza e arrivo',
+    ore.fine.some(function(x){return x.indexOf(ore.attesoFine)===0;}), ore);
+  t('allineate al blocco, e mai coperte dal blocco',
+    Math.abs(ore.xFine-ore.xBlocco)<=6&&ore.yFine<ore.yBlocco, ore);
   t('poi l\'ora in cui è sul pick-up del servizio dopo',
     ore.arr.length>0&&ore.arr[0].indexOf(ore.attesoArr)>=0, ore);
   t('la fine sta sopra la barra e l\'arrivo sotto, non si accavallano',
@@ -702,18 +705,20 @@ const SEED=`(function(){
     var n=document.querySelector('.plora.plofin');
     return {m0:+n.getAttribute('data-m0'), testo:n.textContent};});
   t('ogni ora è ancorata al suo minuto (si sposta con lo zoom)',
-    ore2.m0>0&&ore2.testo==='fine '+('0'+Math.floor(ore2.m0/60)).slice(-2)+':'+('0'+(ore2.m0%60)).slice(-2), ore2);
+    ore2.m0>0&&ore2.testo.indexOf(('0'+Math.floor(ore2.m0/60)).slice(-2)+':'+('0'+(ore2.m0%60)).slice(-2))>=0, ore2);
   // sul telefono la giornata sta in 390px: le scritte si accorciano invece di sparire
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(350);
   const oreTel=await p.evaluate(()=>({
+    blocchi:document.querySelectorAll('.plblk').length,
     fine:[].slice.call(document.querySelectorAll('.plora.plofin')).map(function(n){return n.textContent;}),
     arr:[].slice.call(document.querySelectorAll('.plora.plarr')).map(function(n){return n.textContent;}),
     dentro:[].slice.call(document.querySelectorAll('.plora')).every(function(n){
       var r=n.getBoundingClientRect(), l=n.parentNode.getBoundingClientRect();
       return r.top>=l.top-1&&r.bottom<=l.bottom+1;}),
     ov:document.documentElement.scrollWidth-document.documentElement.clientWidth}));
-  t('anche sul telefono le ore di fine ci sono', oreTel.fine.length>0, oreTel);
+  t('anche sul telefono ogni servizio ha le sue ore',
+    oreTel.fine.length===oreTel.blocchi&&oreTel.blocchi>0, oreTel);
   t('e almeno un arrivo, magari in forma corta', oreTel.arr.length>0, oreTel);
   t('le scritte restano dentro la corsia',       oreTel.dentro, oreTel);
   t('e non allargano la pagina',                 oreTel.ov<=2, oreTel.ov);

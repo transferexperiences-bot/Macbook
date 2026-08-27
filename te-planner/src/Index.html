@@ -3058,7 +3058,13 @@ function renderPlancia_() {
       riga[s.id] = k;
     });
     var nr = Math.max(fine.length, 1);
-    var H = nr > 1 ? 32 : 38, alt = nr * H + (nr + 1) * 5;
+    /* Una fascia in cima alla corsia, riservata alle ore: dentro il blocco il testo è
+       quasi sempre tagliato («06:…»), e sopra il blocco l'etichetta finiva coperta dal
+       blocco stesso. Qui invece «07:00 → 08:10 · 42 km · 1h 10m» si legge sempre.
+       La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
+       etichette non saprebbero a quale blocco appartengono. */
+    var banda = nr > 1 ? 0 : 14;
+    var H = nr > 1 ? 32 : 38, alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
     for (var g = Math.ceil(sc.m0 / 60) * 60; g <= sc.m1; g += 60)
@@ -3075,7 +3081,7 @@ function renderPlancia_() {
       if (L + W > tot) L = Math.max(0, Math.round(tot) - W);
       var kSlot = esito.ok ? (esito.k === 'stretto' ? 'plsmid' : 'plsok') : 'plsno';
       b += '<div class="plslot ' + kSlot + '" data-m0="' + armato.startMin + '" data-m1="' + plFine(armato) + '"'
-        + ' style="left:' + L + 'px;width:' + W + 'px;height:' + (alt - 8) + 'px"'
+        + ' style="left:' + L + 'px;top:' + (banda + 4) + 'px;width:' + W + 'px;height:' + (alt - banda - 8) + 'px"'
         + ' onclick="plAssegnaIdx(' + idx + ')"'
         + (esito.ok ? '' : ' title="' + esc(esito.msg + ' — toccala per metterlo qui lo stesso') + '"')
         // l'etichetta può sporgere dalla piazzola, non dalla corsia: se contro il bordo
@@ -3092,7 +3098,7 @@ function renderPlancia_() {
     var un = [];
     ov.forEach(function (o) { var l = un[un.length - 1]; if (l && o[0] <= l[1]) l[1] = Math.max(l[1], o[1]); else un.push([o[0], o[1]]); });
     un.forEach(function (o) {
-      b += '<div class="plov" data-m0="' + o[0] + '" data-m1="' + o[1] + '" style="left:' + Math.round((o[0] - sc.m0) * px) + 'px;width:'
+      b += '<div class="plov" data-m0="' + o[0] + '" data-m1="' + o[1] + '" style="top:' + banda + 'px;left:' + Math.round((o[0] - sc.m0) * px) + 'px;width:'
         + Math.max(3, Math.round((o[1] - o[0]) * px)) + 'px"><i>⚠ ' + fmtDur(o[1] - o[0]) + '</i></div>';
     });
     /* fra un servizio e l'altro: prima il viaggio per arrivare al pick-up,
@@ -3107,12 +3113,12 @@ function renderPlancia_() {
         var arrivo = f + via, attesa = buco - via;
         var stretto = tt.min + tt.buffer > buco;
         var titolo = 'Finisce alle ' + fmtMin(f)
-          + (tt.min ? ' · ' + fmtDur(tt.min) + ' per arrivare a ' + B.da + ' · sul posto alle ' + fmtMin(arrivo)
+          + (tt.min ? ' · ' + fmtDur(tt.min) + (tt.km ? ' e ' + tt.km + ' km' : '') + ' per arrivare a ' + B.da + ' · sul posto alle ' + fmtMin(arrivo)
                     : ' · stesso posto, non si sposta')
           + (attesa > 0 ? ' · ' + fmtDur(attesa) + ' di attesa' : '')
           + ' · riparte alle ' + fmtMin(B.startMin)
           + (stretto ? ' — margine sotto i ' + fmtDur(tt.buffer) : '');
-        var top = Math.round(alt / 2 - 8), oy = Math.max(0, top - 13);
+        var top = banda + Math.round((alt - banda) / 2 - 8);
         var wv = Math.max(3, Math.round(via * px)), arrSopra = false;
         if (via > 0) {
           b += '<div class="plgap plgvia' + (stretto ? ' plgno' : '') + '" data-m0="' + f + '" data-m1="' + arrivo + '"'
@@ -3124,9 +3130,11 @@ function renderPlancia_() {
              cose si leggono in fila e non si accavallano mai, nemmeno quando il viaggio è
              una strisciolina di dieci pixel. Se dentro la barra non ci stanno i minuti,
              se li porta dietro questa etichetta. */
+          var kmT = tt.km ? ' · ' + tt.km + ' km' : '';
           var tArr = plEtich(wv >= 62
-            ? ['arrivo ' + fmtMin(arrivo), '▸' + fmtMin(arrivo)]
-            : ['arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via), 'arrivo ' + fmtMin(arrivo),
+            ? ['arrivo ' + fmtMin(arrivo) + kmT, 'arrivo ' + fmtMin(arrivo), '▸' + fmtMin(arrivo)]
+            : ['arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via) + kmT,
+               'arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via), 'arrivo ' + fmtMin(arrivo),
                '▸' + fmtMin(arrivo) + ' ' + fmtDur(via), '▸' + fmtMin(arrivo)],
             (B.startMin - arrivo) * px);
           if (tArr) {
@@ -3154,13 +3162,24 @@ function renderPlancia_() {
       for (var qf = 0; qf < srt.length; qf++) {
         var S1 = srt[qf], S2 = srt[qf + 1];
         var fin1 = plFine(S1);
-        if (S1.startMin < 0 || fin1 > sc.m1) continue;
-        var spazio = ((S2 ? S2.startMin : sc.m1) - fin1) * px;
-        var tFin = plEtich(['fine ' + fmtMin(fin1), fmtMin(fin1)], spazio);
+        if (S1.startMin < 0 || S1.startMin > sc.m1) continue;
+        /* Lo spazio parte dal BLOCCO, non dalla sua fine: l'etichetta sta sopra il servizio
+           e può allungarsi fino a dove comincia quello dopo. Dentro il blocco il nome è
+           quasi sempre tagliato («06:…»): qui invece le ore si leggono sempre. */
+        var spazio = ((S2 ? S2.startMin : sc.m1) - S1.startMin) * px;
+        var kmS = S1.km ? ' · ' + S1.km + ' km' : '';
+        var tFin = plEtich([
+          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1) + kmS + ' · ' + fmtDur(plDurata(S1)),
+          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1) + kmS,
+          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1),
+          '→ ' + fmtMin(fin1),
+          fmtMin(fin1)
+        ], spazio);
         if (!tFin) continue;
-        b += '<div class="plora plofin" data-m0="' + fin1 + '" style="left:' + Math.round((fin1 - sc.m0) * px)
-          + 'px;top:' + Math.max(0, Math.round(alt / 2 - 8) - 13) + 'px"'
-          + ' title="' + esc((S1.nome || S1.da) + ' finisce alle ' + fmtMin(fin1)) + '">' + tFin + '</div>';
+        b += '<div class="plora plofin" data-m0="' + S1.startMin + '" style="left:' + Math.round((S1.startMin - sc.m0) * px)
+          + 'px;top:1px"'
+          + ' title="' + esc((S1.nome || S1.da) + ' · ' + fmtMin(S1.startMin) + ' → ' + fmtMin(fin1)
+            + (S1.km ? ' · ' + S1.km + ' km' : '') + ' · ' + fmtDur(plDurata(S1))) + '">' + tFin + '</div>';
       }
     }
     srt.forEach(function (s) {
@@ -3173,7 +3192,7 @@ function renderPlancia_() {
       c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : '');
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
-        + (5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
+        + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
         + ' title="' + esc((s.domani ? 'DOMANI ' : '') + fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'
         + '<b>' + fmtMin(s.startMin) + ' ' + esc(s.autista || 'senza autista') + (male ? ' ⚠' : '') + '</b>'
         + '<span>' + esc((s.nome || s.da) + ' → ' + s.per) + '</span></div>';

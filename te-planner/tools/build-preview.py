@@ -4,7 +4,8 @@ def srv(i,t,dur,da,per,aut,vei,pax,nome,tar,forn,rient,**kw):
     return dict(rowNum=i+2,id="TE%03d"%(i+1),time="%02d:%02d"%(t//60,t%60),startMin=t,da=da,per=per,pax=pax,
       nome=nome,fornitore=forn,volo=kw.get('volo',''),autista=aut,veicolo=vei,note=kw.get('note',''),
       stato=kw.get('stato',''),allert=kw.get('allert',''),tariffa=tar,cell="+393331234567",wa="",hextra="",
-      modalita='Contanti',acconto="",durMin=dur,endMin=t+dur,durSrc="cache",rientroMin=rient)
+      modalita='Contanti',acconto="",durMin=dur,endMin=t+dur,durSrc="cache",rientroMin=rient,
+      km=kw.get('km',max(3,int(dur*0.7))))
 S=[srv(0,330,55,'Polignano a Mare','Aeroporto di Bari','Marco Rossi','Vito 1',4,'Famiglia Bianchi','75','Covo dei Saraceni',48,volo='FR8826'),
  srv(1,435,70,'Aeroporto di Bari','Alberobello','Luca Verdi','Vito 2',6,'Mr. Anderson','110','Masseria San Domenico',65,volo='AZ1614'),
  srv(2,540,45,'Monopoli','Polignano a Mare','Marco Rossi','Vito 1',3,'Sig.ra Colombo','55','Don Ferrante',0),
@@ -18,7 +19,8 @@ tr={}
 for a in S:
     for b in S:
         if a is b or a['endMin']>b['startMin']+240: continue
-        tr[a['id']+'->'+b['id']]={'min':0 if a['per']==b['da'] else 25,'buffer':0 if a['per']==b['da'] else 15}
+        stesso=a['per']==b['da']
+        tr[a['id']+'->'+b['id']]={'min':0 if stesso else 25,'buffer':0 if stesso else 15,'km':0 if stesso else 18}
 D=dict(date="2026-07-30",today="2026-07-30",weekday="giovedì",nowMin=890,services=S,transfers=tr,
  autisti=[dict(nome=n,categoria=c,stato='ON',pref='',cell='+39333',esclusoMotivo=m) for n,c,m in
    [('Marco Rossi','Fisso',''),('Luca Verdi','Fisso',''),('Giovanni Leo','Extra',''),

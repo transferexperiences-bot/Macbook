@@ -318,8 +318,10 @@ sott'occhio. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i ser
 notte si vede per quello che è. Un servizio di domani si apre sulla **sua** giornata, e
 assegnarlo scrive sulla riga giusta. **Il mouse sopra un quadratino** apre la stessa scheda
 ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in sola lettura,
-senza armare niente. Si assegna in tre modi: trascinando il
-blocco, toccandolo (si «arma» e su ogni mezzo compare una piazzola) o dalla scheda. Fra un
+senza armare niente.
+
+Si assegna in tre modi: trascinando il blocco, toccandolo (si «arma» e su ogni mezzo compare
+una piazzola) o dalla scheda. Fra un
 servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa** (liscia).
 Con un servizio armato ogni piazzola dice **a che ora quel mezzo è sul pick-up e con che
 margine** (`✓ 10:35 · +45m` verde, `⏱` ambra, `✕` rosso); se la mossa rende irraggiungibile
@@ -351,7 +353,8 @@ libera. **214 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
-**8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px.
+**8bis** Assegna a 390px · **9** Plancia e catene · **9bis** Plancia a 390px ·
+**9ter** Plancia a due giorni, vassoio e anteprima.
 
 Da fare fuori dal codice:
 

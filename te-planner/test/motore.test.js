@@ -298,4 +298,34 @@ eq('col volo ci arriva (sul posto 10:20, decolla il buffer alle 10:20)', F.confl
 F.setDATA(Object.assign({},vol,{services:[PRE,SENZAVOLO]}));
 t('senza volo lo stesso incastro è un conflitto', !!F.conflict(PRE,SENZAVOLO), true);
 
+sezione('Servizi cancellati: il mezzo e l\'autista tornano liberi');
+/* Sul foglio la cancellazione è morbida: la riga resta, con Allert = Cancellato.
+   Per il motore quella riga non esiste più — se contasse, un mezzo resterebbe
+   occupato da un servizio che nessuno farà. */
+const XCANC=srv({id:'C1',time:'08:00',startMin:480,durMin:120,endMin:600,
+  da:'Polignano a Mare',per:'Aeroporto di Bari',autista:'Marco Rossi',veicolo:'Vito 1',
+  allert:'Cancellato'});
+const CDOPO=srv({id:'D1',time:'09:00',startMin:540,durMin:60,endMin:600,
+  da:'Monopoli',per:'Ostuni',autista:'',veicolo:''});
+const canc={date:'2026-08-27',today:'2026-08-27',weekday:'giovedì',nowMin:-1,bufferDefault:15,
+  services:[XCANC,CDOPO],transfers:{'C1->D1':{min:60,buffer:15},'D1->C1':{min:60,buffer:15}},
+  autisti:[{nome:'Marco Rossi',categoria:'Fisso',stato:'ON',esclusoMotivo:''},
+           {nome:'Luca Verdi',categoria:'Extra',stato:'ON',esclusoMotivo:''}],
+  veicoli:[{nome:'Vito 1',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'}],
+  rents:[],prossimi:[],luoghiNomi:[],fornitori:[],base:'Polignano a Mare'};
+F.setDATA(canc);
+eq('non entra nell\'indice del mezzo',      F.srvDi('veicolo','Vito 1').length, 0);
+eq('non entra nel giro dell\'autista',      F.giroDi('Marco Rossi',null).length, 0);
+eq('il mezzo non risulta occupato',         F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], null);
+eq('per Marco è una giornata libera',       F.valutaAutista(CDOPO,'Marco Rossi').k, 'libero');
+eq('non compare fra chi sta lavorando',     F.autistiInServizio().length, 0);
+eq('la catena del mezzo è vuota',           F.catenaDi('veicolo','Vito 1',null).length, 0);
+eq('dal garage, non dal servizio annullato',F.plCatena(CDOPO,'Vito 1').daDove, 'garage');
+eq('nessuna ora addosso all\'autista',      F.oreAutista('Marco Rossi'), null);
+eq('il pennello del mezzo non eredita un autista cancellato', F.plUltimoAutista('Vito 1',CDOPO), '');
+// controprova: la stessa riga senza Allert torna a contare
+F.setDATA(Object.assign({},canc,{services:[Object.assign({},XCANC,{allert:''}),CDOPO]}));
+eq('senza Allert il mezzo è di nuovo occupato', !!F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], true);
+eq('e l\'ultimo autista del mezzo si ritrova',  F.plUltimoAutista('Vito 1',CDOPO), 'Marco Rossi');
+
 bilancio();

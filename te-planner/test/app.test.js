@@ -568,6 +568,35 @@ const SEED=`(function(){
     await p.evaluate(()=>PL_PENNA===null&&!document.querySelector('.plarmp')), null);
   await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(200);
 
+  console.log('\n=== 9octies. PLANCIA: i servizi cancellati non occupano niente ===');
+  await p.evaluate(()=>{setTab('plancia');PEND={};PL_ARM=null;PL_PENNA=null;setDue(false);render();});
+  await p.waitForTimeout(250);
+  const ca0=await p.evaluate(()=>{
+    var s=DATA.services.filter(x=>x.veicolo&&x.autista&&x.startMin>=0)[0];
+    return {id:s.id,vei:s.veicolo,aut:s.autista,
+            blocchi:document.querySelectorAll('.plblk').length,
+            suoi:document.querySelectorAll('.plblk[data-id="'+s.id+'"]').length};});
+  t('il servizio di partenza è disegnato', ca0.suoi>0, ca0);
+  const ca1=await p.evaluate(i=>{
+    var s=DATA.services.filter(x=>x.id===i)[0];
+    s.allert='Cancellato'; render();
+    return {blocchi:document.querySelectorAll('.plblk').length,
+            suoi:document.querySelectorAll('.plblk[data-id="'+i+'"]').length,
+            tile:document.querySelectorAll('.pltile[data-id="'+i+'"]').length,
+            libero:!plScontro(DATA.services.filter(x=>!x.veicolo&&x.startMin>=0)[0]||s,s.veicolo)};},ca0.id);
+  t('cancellato sparisce dalla corsia del mezzo', ca1.suoi===0&&ca1.blocchi===ca0.blocchi-1, {prima:ca0,dopo:ca1});
+  t('e non finisce nemmeno fra i da assegnare',   ca1.tile===0, ca1);
+  t('il mezzo resta libero per quell\'ora',       ca1.libero, ca1);
+  const ca2=await p.evaluate(a=>{
+    var i=a[0],aut=a[1];
+    var chip=[].slice.call(document.querySelectorAll('.plautc')).filter(function(b){return b.textContent.indexOf(aut)===0;})[0];
+    var conta=chip?(chip.querySelector('small')?+chip.querySelector('small').textContent:0):null;
+    var s=DATA.services.filter(x=>x.id===i)[0];
+    return {conta:conta,giro:giroDi(aut,null).length};},[ca0.id,ca0.aut]);
+  t('e non conta più nel carico dell\'autista', ca2.conta===ca2.giro, ca2);
+  await p.evaluate(i=>{DATA.services.filter(x=>x.id===i)[0].allert='';PEND={};render();},ca0.id);
+  await p.waitForTimeout(200);
+
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);

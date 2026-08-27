@@ -48,8 +48,8 @@ src/Code.gs           backend: legge il foglio, calcola durate e incastri, scriv
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (86 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (113 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (97 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (118 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -279,6 +279,15 @@ zone, leggi `docs/REVISIONE_v5.md`.
     restare indietro. Se scrivi codice che cambia `autista`/`veicolo` **senza** ridisegnare,
     azzera `_BYID_SRC` a mano.
 
+17. **Le cancellazioni passano dall'indice, non dai singoli conti.** Sul foglio la
+    cancellazione è morbida: la riga resta con `Allert = Cancellato`. Nella app il filtro
+    sta in un punto solo — `_reindicizza()` non mette i cancellati in `_IDXA`/`_IDXV` — e
+    da lì lo ereditano `giroDi`, `valutaAutista`, `catenaDi`, `oreAutista`,
+    `plUltimoAutista`, `availability`. La Plancia li toglie anche dal disegno (`attivi`).
+    Se un giorno servisse *vedere* i cancellati in Plancia, non toccare l'indice: filtra
+    solo dove si disegna, altrimenti un servizio annullato torna a occupare un mezzo.
+    Coperto da `motore.test.js` (sezione «Servizi cancellati») e `app.test.js` 9octies.
+
 ---
 
 ## Convenzioni
@@ -378,7 +387,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **242 controlli automatici, tutti verdi.**
+libera. **258 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

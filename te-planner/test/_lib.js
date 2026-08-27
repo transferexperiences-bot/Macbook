@@ -19,7 +19,8 @@ function caricaBackend(){
   eval(src.replace(/^\/\*\*[\s\S]*?\*\//,''));
   const out={};
   ['normLuogo_','stessoLuogo_','driveTime_','stimaMin_','parseEuro_','indisponibileIn_',
-   'riposoIn_','haversine_','normDate','toMin','isoToItalian','addDaysISO','lookupCoords_']
+   'riposoIn_','haversine_','normDate','toMin','isoToItalian','addDaysISO','lookupCoords_',
+   'isCancRow_']
     .forEach(n=>{try{out[n]=eval(n);}catch(e){}});
   return out;
 }
@@ -36,7 +37,7 @@ function caricaFrontend(){
   eval(js);
   const out={};
   ['trf','conflict','availability','bestFor','bestVeicoloFor','suggest','stessoLuogoUI',
-   'normLuogoUI','garageInfo','statoDi','eur','fmtDur','fmtMin','isDone','isCanc',
+   'normLuogoUI','garageInfo','statoDi','eur','fmtDur','fmtMin','isDone','isCanc','cancInNote',
    'servizioVisibile','colorOf','colorOfVeicolo',
    'giroDi','valutaAutista','autistiInServizio','punteggioAutista',
    'finestraInizio','giudizioMargine','catenaDi','trattaFra','catenaIpotesi',

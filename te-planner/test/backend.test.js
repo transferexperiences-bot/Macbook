@@ -60,4 +60,33 @@ eq('stimaMin_(0,4)', B.stimaMin_(0.4), 2);
 eq('stimaMin_(2)',   B.stimaMin_(2), 5);
 eq('stimaMin_(30)',  B.stimaMin_(30), 36);
 
+sezione('Cancellato: l\'Allert, ma anche il segno lasciato nelle Note');
+// la cancellazione morbida scrive in tutti e due i posti; a volte resta solo la nota
+eq('Allert = Cancellato',                B.isCancRow_('Cancellato',''), true);
+eq('la firma della cancellazione morbida',B.isCancRow_('','seggiolino | Cancellazione 12/08/2026 10:15'), true);
+eq('il ⛔ della nota',                    B.isCancRow_('','⛔ non si fa più'), true);
+eq('«servizio cancellato»',              B.isCancRow_('','Servizio cancellato dal fornitore'), true);
+eq('«è stato annullato»',                B.isCancRow_('','il transfer è stato annullato ieri'), true);
+// \b davanti a «è» non funziona: in JS il confine di parola è solo ASCII, e senza questo
+// controllo «purtroppo è stato cancellato» passava liscio
+eq('«è stato cancellato» dopo una parola',B.isCancRow_('','purtroppo è stato cancellato'), true);
+// e quello che NON è una cancellazione del servizio: nel dubbio si tiene
+eq('un volo cancellato non è il servizio',B.isCancRow_('','Volo cancellato, il cliente arriva domani'), false);
+eq('una richiesta non è una cancellazione',B.isCancRow_('','Il cliente chiede la cancellazione, aspetto conferma'), false);
+eq('la negazione non inganna',            B.isCancRow_('','NON cancellato: confermato'), false);
+eq('un pagamento annullato non tocca il servizio', B.isCancRow_('','Pagamento annullato ma il servizio si fa'), false);
+eq('note normali',                        B.isCancRow_('','Bagaglio extra, seggiolino'), false);
+eq('nessuna nota',                        B.isCancRow_('',''), false);
+
+sezione('Frontend e backend dicono la stessa cosa su una nota');
+(function(){
+  var F=require('./_lib').caricaFrontend();
+  var casi=['Cancellazione 12/08/2026 10:15','⛔ stop','Servizio cancellato','purtroppo è stato cancellato',
+            'Volo cancellato, riprotetto','chiede la cancellazione','NON cancellato','Bagaglio extra','',
+            'prenotazione annullata','Pagamento annullato ma il servizio si fa'];
+  var diversi=[];
+  casi.forEach(function(n){ if(B.isCancRow_('',n)!==F.cancInNote(n)) diversi.push(n); });
+  eq('stessa risposta su '+casi.length+' note', diversi, []);
+})();
+
 bilancio();

@@ -594,7 +594,24 @@ const SEED=`(function(){
     var s=DATA.services.filter(x=>x.id===i)[0];
     return {conta:conta,giro:giroDi(aut,null).length};},[ca0.id,ca0.aut]);
   t('e non conta più nel carico dell\'autista', ca2.conta===ca2.giro, ca2);
-  await p.evaluate(i=>{DATA.services.filter(x=>x.id===i)[0].allert='';PEND={};render();},ca0.id);
+  // stessa storia ma segnata solo nelle Note: l'Allert sul foglio è rimasto indietro
+  const cn=await p.evaluate(i=>{
+    var s=DATA.services.filter(x=>x.id===i)[0];
+    s.allert=''; s.note='Servizio cancellato dal fornitore'; render();
+    return {suoi:document.querySelectorAll('.plblk[data-id="'+i+'"]').length,
+            canc:isCanc(s), giro:giroDi(s.autista,null).length};},ca0.id);
+  t('cancellato nelle note: per la app è cancellato', cn.canc, cn);
+  t('e sparisce anche lui dalla corsia',              cn.suoi===0, cn);
+  // in Servizi la riga resta visibile, barrata, e dice da dove viene il segno
+  const cs=await p.evaluate(i=>{
+    setTab('servizi'); render();
+    var n=[].slice.call(document.querySelectorAll('div')).filter(function(d){
+      return d.textContent.indexOf('CANCELLATO')>=0&&d.querySelectorAll('div').length===0;})[0];
+    return {c:!!n, testo:n?n.textContent.replace(/\s+/g,' ').trim():''};},ca0.id);
+  t('in Servizi la riga si vede lo stesso, barrata',  cs.c, cs);
+  t('e dice che il segno sta nelle note',             cs.testo.indexOf('dalle note')>=0, cs);
+  await p.evaluate(i=>{var s=DATA.services.filter(x=>x.id===i)[0];
+    s.allert='';s.note='';PEND={};setTab('plancia');render();},ca0.id);
   await p.waitForTimeout(200);
 
   console.log('\n=== 9bis. PLANCIA a 390px: la miniatura non copre le piazzole ===');

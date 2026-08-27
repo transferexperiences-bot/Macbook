@@ -827,6 +827,19 @@ function notificaOra(id, tipo) {
   return { ok: http < 300, http: http, tipo: tipo };
 }
 
+/* Cancellato: l'Allert è il segno ufficiale, ma la cancellazione morbida scrive anche in
+   Note («Cancellazione 12/08/2026 10:15», il ⛔) e capita che qualcuno segni solo lì.
+   Stesse regole dell'app (isCanc in Index.html): si riconoscono i modi che parlano DEL
+   SERVIZIO — «volo cancellato» non lo è — e nel dubbio si tiene. */
+var RE_CANC_ = /⛔|(?:^|\|)\s*cancellazione\b|cancellazione\s+\d{1,2}[\/.\-]\d{1,2}|è\s+stat[oa]\s+(?:cancellat|annullat)[oa]|\b(?:servizio|transfer|corsa|viaggio|navetta|prenotazione)\s+(?:\S+\s+){0,2}?(?:cancellat|annullat)[oa]|^\s*(?:cancellat|annullat)[oa]\b/i;
+var RE_NONCANC_ = /\bnon\s+(?:\S+\s+){0,3}?(?:cancellat|annullat)[oa]/i;
+function isCancRow_(allert, note) {
+  if (String(allert || '').indexOf('Cancellato') >= 0) return true;
+  var n = String(note || '');
+  if (!n || RE_NONCANC_.test(n)) return false;
+  return RE_CANC_.test(n);
+}
+
 /* ---------------- API: allert / stato / modifica ---------------- */
 
 function setAllert(id, valore) {
@@ -896,8 +909,8 @@ function precalcolaCatene() {
   for (var r = 1; r < pv.length; r++) {
     var d = normDate(pv[r][C.data]);
     if (!d || d < oggi || d > fine) continue;
-    var al = String(C.allert >= 0 ? pv[r][C.allert] : '');
-    if (al.indexOf('Cancellato') >= 0) continue; // i cancellati non entrano nelle catene
+    // i cancellati non entrano nelle catene: né quelli con l'Allert né quelli segnati in Note
+    if (isCancRow_(C.allert >= 0 ? pv[r][C.allert] : '', C.note >= 0 ? pv[r][C.note] : '')) continue;
     var da = String(pv[r][C.da] || '').trim(), per = String(pv[r][C.per] || '').trim();
     if (!da || !per) continue;
     if (!perGiorno[d]) perGiorno[d] = [];
@@ -993,7 +1006,7 @@ function onNuovoTransfer(e) {
     for (var r = 1; r < pv.length; r++) {
       var d = normDate(pv[r][C.data]);
       if (!d || d < oggi || d > fine) continue;
-      if (String(C.allert >= 0 ? pv[r][C.allert] : '').indexOf('Cancellato') >= 0) continue;
+      if (isCancRow_(C.allert >= 0 ? pv[r][C.allert] : '', C.note >= 0 ? pv[r][C.note] : '')) continue;
       var da = String(pv[r][C.da] || '').trim(), per = String(pv[r][C.per] || '').trim();
       if (!da || !per) continue;
       if (!perGiorno[d]) perGiorno[d] = [];

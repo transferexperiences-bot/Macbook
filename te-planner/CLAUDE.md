@@ -47,9 +47,9 @@ Se si vuole automatizzare il push, si può usare [`clasp`](https://github.com/go
 src/Code.gs           backend: legge il foglio, calcola durate e incastri, scrive, notifica
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
-test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (43 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (97 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (127 controlli)
+test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (131 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -280,7 +280,15 @@ zone, leggi `docs/REVISIONE_v5.md`.
     azzera `_BYID_SRC` a mano.
 
 17. **Le cancellazioni passano dall'indice, non dai singoli conti.** Sul foglio la
-    cancellazione è morbida: la riga resta con `Allert = Cancellato`. Nella app il filtro
+    cancellazione è morbida: la riga resta con `Allert = Cancellato` **e una nota**
+    (`Cancellazione gg/mm/aaaa hh:mm`, il ⛔) — e a volte il segno resta **solo** nella
+    nota, perché l'ha scritto una persona. `isCanc()` guarda tutti e due
+    (`cancInNote()` nell'app, `isCancRow_()` nel backend: **stessa espressione regolare**,
+    con un test che le confronta riga per riga). Riconosce solo i modi che parlano *del
+    servizio*: «volo cancellato» no, «chiede la cancellazione» no, «NON cancellato» no —
+    nel dubbio si tiene, perché un servizio nascosto per sbaglio è un transfer che sparisce.
+    Attenzione a `\b` davanti a `è`: in JavaScript il confine di parola è solo ASCII, e
+    «purtroppo è stato cancellato» passava liscio. Nella app il filtro
     sta in un punto solo — `_reindicizza()` non mette i cancellati in `_IDXA`/`_IDXV` — e
     da lì lo ereditano `giroDi`, `valutaAutista`, `catenaDi`, `oreAutista`,
     `plUltimoAutista`, `availability`. La Plancia li toglie anche dal disegno (`attivi`).
@@ -399,7 +407,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **267 controlli automatici, tutti verdi.**
+libera. **295 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -411,8 +419,8 @@ del salvataggio · **9septies** il pennello autista · **9octies** i cancellati 
 
 Da fare fuori dal codice:
 
-- [ ] Incollare `src/Index.html` nel progetto e fare **Nuova versione** (il backend
-      `src/Code.gs` non è cambiato con la scheda Assegna, ma va allineato se non lo è già)
+- [ ] Incollare `src/Index.html` **e `src/Code.gs`** nel progetto e fare **Nuova versione**
+      (il backend è cambiato con le cancellazioni segnate in Note: `isCancRow_`)
 - [ ] Creare il trigger `onNuovoTransfer` (Da foglio di lavoro → **Al cambio**)
 - [ ] Portare `precalcolaDomani` da giornaliero a **ogni ora**
 - [ ] Eseguire una volta `pulisciLuoghi()` e controllare il tab `Luoghi`

@@ -794,7 +794,22 @@ function conflict(A,S){
   if(AbeforeS||SbeforeA)return null;
   return {freeAt:A.endMin+t1.min+t1.buffer,con:A};
 }
-function isCanc(s){return String(s.allert||'').indexOf('Cancellato')>=0;}
+/* Cancellato: l'Allert è il segno ufficiale, ma non è l'unico che arriva. La cancellazione
+   morbida scrive anche in Note («Cancellazione 12/08/2026 10:15», il ⛔), e capita che
+   qualcuno segni solo lì — quel servizio non va fatto, e non deve tenere occupato un mezzo.
+   Si riconoscono solo i modi che parlano DEL SERVIZIO: «volo cancellato» è un'altra cosa,
+   e nel dubbio si tiene (un servizio nascosto per sbaglio è un transfer che sparisce). */
+var _RE_CANC = /⛔|(?:^|\|)\s*cancellazione\b|cancellazione\s+\d{1,2}[\/.\-]\d{1,2}|è\s+stat[oa]\s+(?:cancellat|annullat)[oa]|\b(?:servizio|transfer|corsa|viaggio|navetta|prenotazione)\s+(?:\S+\s+){0,2}?(?:cancellat|annullat)[oa]|^\s*(?:cancellat|annullat)[oa]\b/i;
+var _RE_NONCANC = /\bnon\s+(?:\S+\s+){0,3}?(?:cancellat|annullat)[oa]/i;
+function cancInNote(note){
+  var n = String(note || '');
+  if (!n) return false;
+  if (_RE_NONCANC.test(n)) return false;   // «non è stato cancellato» non è una cancellazione
+  return _RE_CANC.test(n);
+}
+function isCanc(s){
+  return String(s.allert||'').indexOf('Cancellato')>=0 || cancInNote(s.note);
+}
 /* chiave = 'autista' | 'veicolo': quando la si passa si legge dall'indice invece di
    rifiltrare tutti i servizi. Senza, resta la strada vecchia (la usano i test). */
 function availability(list,keyFn,S,chiave){
@@ -1351,7 +1366,10 @@ function rigaServizio(o,g2,badge){
       h+='<div onclick="'+oc+'" style="display:flex;gap:8px;padding:8px 10px;margin-bottom:3px;border-radius:8px;background:'+bg+';border-left:4px solid '+c+';align-items:center;font-size:13px;opacity:.7;text-decoration:line-through">'
         +'<b style="min-width:92px;color:'+testo+'">'+s.time+'</b>'
         +'<span style="flex:1;color:'+testo+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(s.da)+' → '+esc(s.per)+'</span>'
-        +'<b style="color:#9aa0a6;white-space:nowrap;text-decoration:none">🗑 CANCELLATO</b>'
+        /* se il segno sta solo nelle Note, dirlo: sul foglio l'Allert è rimasto indietro */
+        +'<b style="color:#9aa0a6;white-space:nowrap;text-decoration:none" title="'
+          + (String(s.allert||'').indexOf('Cancellato')>=0 ? 'Allert = Cancellato' : esc(s.note||'')) + '">🗑 CANCELLATO'
+        + (String(s.allert||'').indexOf('Cancellato')>=0 ? '' : ' <i style="font-style:normal;font-weight:400">· dalle note</i>') + '</b>'
         +'</div>';
       return h;
     }

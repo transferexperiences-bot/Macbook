@@ -328,4 +328,23 @@ F.setDATA(Object.assign({},canc,{services:[Object.assign({},XCANC,{allert:''}),C
 eq('senza Allert il mezzo è di nuovo occupato', !!F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], true);
 eq('e l\'ultimo autista del mezzo si ritrova',  F.plUltimoAutista('Vito 1',CDOPO), 'Marco Rossi');
 
+sezione('Cancellato nelle Note: stesso effetto dell\'Allert');
+/* Frontend e backend devono dare la stessa risposta sulla stessa riga: qui si controlla
+   il lato app, che è quello che decide cosa si vede e cosa occupa un mezzo. */
+eq('la firma della cancellazione morbida', F.cancInNote('Cancellazione 12/08/2026 10:15'), true);
+eq('il ⛔',                                F.cancInNote('⛔ annullato dal cliente'), true);
+eq('«servizio cancellato»',                F.cancInNote('Servizio cancellato'), true);
+eq('«è stato cancellato»',                 F.cancInNote('purtroppo è stato cancellato'), true);
+eq('un volo cancellato non è il servizio', F.cancInNote('Volo cancellato, riprotetto domani'), false);
+eq('una richiesta non è una cancellazione',F.cancInNote('chiede la cancellazione, aspetto conferma'), false);
+eq('la negazione non inganna',             F.cancInNote('NON cancellato'), false);
+const NOTA=srv({id:'N1',time:'08:00',startMin:480,durMin:120,endMin:600,
+  da:'Polignano a Mare',per:'Aeroporto di Bari',autista:'Marco Rossi',veicolo:'Vito 1',
+  allert:'', note:'Servizio cancellato dal fornitore'});
+F.setDATA(Object.assign({},canc,{services:[NOTA,CDOPO]}));
+eq('per la app è cancellato',           F.isCanc(NOTA), true);
+eq('non entra nell\'indice del mezzo',  F.srvDi('veicolo','Vito 1').length, 0);
+eq('il mezzo resta libero',             F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], null);
+eq('e l\'autista non se lo porta dietro', F.plUltimoAutista('Vito 1',CDOPO), '');
+
 bilancio();

@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (131 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (135 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -168,6 +168,10 @@ Due regole che vivono lì dentro:
 - **`oreAutista(nome, extra)`** — prima partenza → ultimo rientro, `oltre: true` sopra le
   **12 ore**. Informazione, non divieto.
 
+Le catene valgono anche **su domani**: `precalcolaCatene()` mette in `_CacheTratte` pure le
+tratte fra l'ultimo servizio di un giorno e il primo del giorno dopo, e `getPlanData` le
+manda alla app. Con **🗓 2 giorni** acceso, una catena che scavalla la notte ha tempi veri.
+
 Quando manca un dato **non si inventa**: senza servizio precedente `daDove` è `'garage'` e
 `arrivo`/`margine` restano `null` (base → pick-up non è in `_CacheTratte`); se `trf()` ha usato
 i 30 minuti di default, `stima` è `true` e va scritto a schermo.
@@ -188,7 +192,9 @@ prossimi[], luoghiNomi[], fornitori[], bufferDefault, base}`
   fornitore, volo, autista, veicolo, note, stato, allert, tariffa, cell, wa, hextra,
   modalita, acconto, durSrc`
 - `transfers{}`: chiave `"idA->idB"` → `{min, buffer}`, solo per le coppie plausibili
-  (A finisce entro 4 ore dall'inizio di B)
+  (A finisce entro 4 ore dall'inizio di B). Ci sono anche le coppie **oltre la mezzanotte**
+  — ultimo servizio di oggi → primo di domani — che servono alla Plancia a 2 giorni:
+  senza quelle `trf()` cadeva sui 30 minuti di default e la catena diceva «(stima)»
 - `nowMin` = minuti da mezzanotte, **-1 se la data mostrata non è oggi**: tutta la logica
   "occupato adesso / countdown" è condizionata a `nowMin >= 0`
 
@@ -407,7 +413,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **295 controlli automatici, tutti verdi.**
+libera. **299 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

@@ -398,7 +398,7 @@ function getPlanData(dateISO) {
   var C = prenCols_(pi);
 
   var cache = loadCache_(), newRows = [];
-  var services = [];
+  var services = [], domaniSrv = [], domaniISO = addDaysISO(dateISO, 1);
   var limScoperti = addDaysISO(today, CONFIG.GIORNI_SCOPERTI);
   var scopertiMap = {};
   // coordinate della base: servono per stimare il rientro quando la tratta non è ancora in cache
@@ -426,6 +426,13 @@ function getPlanData(dateISO) {
       scopertiMap[dRow].tot++;
       if (!String(row[C.autista] || '').trim()) scopertiMap[dRow].senzaAutista++;
       if (!String(row[C.veicolo] || '').trim()) scopertiMap[dRow].senzaMezzo++;
+    }
+    /* i servizi di domani servono solo per le catene che scavallano la mezzanotte:
+       di loro bastano id, ora e i due luoghi */
+    if (dRow === domaniISO) {
+      var idD = String(row[C.id] || '').trim(), stD = toMin(row[C.time]);
+      if (idD && stD >= 0 && !isCancRow_(C.allert >= 0 ? row[C.allert] : '', C.note >= 0 ? row[C.note] : ''))
+        domaniSrv.push({ id: idD, startMin: stD, da: String(row[C.da] || '').trim(), per: String(row[C.per] || '').trim() });
     }
     if (dRow !== dateISO) continue;
     var idRow = String(row[C.id] || '').trim();
@@ -474,28 +481,47 @@ function getPlanData(dateISO) {
   services.sort(function (a, b) { return a.startMin - b.startMin; });
 
   var transfers = {};
+  /* Il collegamento fra il drop-off di A e il pickup di B, con il suo buffer.
+     Un posto solo: le coppie dentro la giornata e quelle che scavallano la mezzanotte
+     devono rispondere allo stesso modo. */
+  function coppia_(A, B) {
+    var tt;
+    // se ho le coordinate precalcolate (Per di A e Da di B), calcolo istantaneo in linea d'aria
+    var cpA = precalc[A.id], cpB = precalc[B.id];
+    if (cpA && cpA.coordPer && cpB && cpB.coordDa) {
+      var kmAria = haversine_(cpA.coordPer, cpB.coordDa);
+      var km = kmAria * 1.3;
+      tt = (kmAria < 0.3)
+        ? { min: 0, km: 0, src: 'precalc-same' }
+        : { min: stimaMin_(km), km: Math.round(km * 10) / 10, src: 'precalc' };
+    } else {
+      tt = driveTime_(A.per, B.da, cache, luoghi, newRows);
+    }
+    var buffer = CONFIG.BUFFER_DEFAULT;
+    if (stessoLuogo_(A.per, B.da) || tt.min === 0) buffer = 0;
+    else if (tt.km < 5 || tt.min < 10) buffer = CONFIG.BUFFER_VICINI;
+    transfers[A.id + '->' + B.id] = { min: tt.min, buffer: buffer };
+  }
+
   for (var x = 0; x < services.length; x++) {
     for (var y = 0; y < services.length; y++) {
       if (x === y) continue;
       var A = services[x], B = services[y];
       if (A.endMin < 0 || B.startMin < 0 || A.endMin > B.startMin + 240) continue;
-      var kk = A.id + '->' + B.id;
-      var tt;
-      // se ho le coordinate precalcolate (Per di A e Da di B), calcolo istantaneo in linea d'aria
-      var cpA = precalc[A.id], cpB = precalc[B.id];
-      if (cpA && cpA.coordPer && cpB && cpB.coordDa) {
-        var kmAria = haversine_(cpA.coordPer, cpB.coordDa);
-        var km = kmAria * 1.3;
-        tt = (kmAria < 0.3)
-          ? { min: 0, km: 0, src: 'precalc-same' }
-          : { min: stimaMin_(km), km: Math.round(km * 10) / 10, src: 'precalc' };
-      } else {
-        tt = driveTime_(A.per, B.da, cache, luoghi, newRows);
-      }
-      var buffer = CONFIG.BUFFER_DEFAULT;
-      if (stessoLuogo_(A.per, B.da) || tt.min === 0) buffer = 0;
-      else if (tt.km < 5 || tt.min < 10) buffer = CONFIG.BUFFER_VICINI;
-      transfers[kk] = { min: tt.min, buffer: buffer };
+      coppia_(A, B);
+    }
+  }
+
+  /* Le catene che scavallano la mezzanotte. La Plancia a 2 giorni mette i servizi di
+     domani a +1440 minuti, ma le coppie fra l'ultimo servizio di oggi e il primo di
+     domani non le calcolava nessuno: `trf()` cadeva sui 30 minuti di default e la
+     catena diceva «(stima)» proprio dove serve saperlo davvero. */
+  for (var xd = 0; xd < services.length; xd++) {
+    for (var yd = 0; yd < domaniSrv.length; yd++) {
+      var AD = services[xd], BD = domaniSrv[yd];
+      if (AD.endMin < 0 || BD.startMin < 0) continue;
+      if (AD.endMin > BD.startMin + 1440 + 240) continue;   // stessa finestra di 4 ore
+      coppia_(AD, BD);
     }
   }
 
@@ -947,6 +973,25 @@ function precalcolaCatene() {
         fatte++;
       }
     }
+    /* 2bis) le tratte che scavallano la mezzanotte: l'ultimo servizio di un giorno e il
+       primo del giorno dopo sono una catena come le altre, e la Plancia a 2 giorni la
+       disegna. Senza queste righe in cache, lì il tempo di strada era inventato. */
+    var dom = addDaysISO(g, 1), arr2 = perGiorno[dom];
+    if (arr2) {
+      arr.forEach(function (A2) {
+        if (A2.startMin < 0) return;
+        arr2.forEach(function (B2) {
+          if (B2.startMin < 0) return;
+          if (B2.startMin + 1440 - A2.startMin > 300) return;   // oltre 5h non è una catena
+          if (stessoLuogo_(A2.per, B2.da)) return;
+          var kn = tratteKey_(A2.per, B2.da);
+          if (cache[kn]) { saltate++; return; }
+          driveTime_(A2.per, B2.da, cache, luoghi, newRows);
+          fatte++;
+        });
+      });
+    }
+
     // 3) rientri alla base (per sapere quando il mezzo è davvero libero a fine giornata)
     arr.forEach(function (s) {
       var kb = tratteKey_(s.per, CONFIG.BASE);

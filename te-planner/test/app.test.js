@@ -368,6 +368,40 @@ const SEED=`(function(){
   t('la mezzanotte è una riga in ogni corsia', pl_g1.mezzanotte>0, pl_g1);
   t('nel vassoio si vede che è di domani', pl_g1.badge===1, pl_g1);
 
+  // catena che scavalla la mezzanotte: la tratta la manda il backend, non si inventa
+  const pl_mid=await p.evaluate(dd=>{
+    var L=JSON.parse(JSON.stringify(DATA.services[0]));
+    L.id='LATE';L.startMin=1320;L.durMin=60;L.endMin=1380;L.time='22:00';
+    L.da='Bari';L.per='Monopoli';L.autista='Marco Rossi';L.veicolo='Vito 1';
+    L.allert='';L.note='';L.nome='Ultimo di oggi';
+    DATA.services.push(L);
+    var N=JSON.parse(JSON.stringify(PLANS[dd].services[0]));
+    N.id='NOTTE';N.startMin=30;N.durMin=60;N.endMin=90;N.time='00:30';
+    N.da='Ostuni';N.per='Bari';N.autista='';N.veicolo='';N.nome='Primo di domani';
+    PLANS[dd].services.push(N);
+    DATA.transfers['LATE->NOTTE']={min:40,buffer:15};   // come la manda il backend
+    PL_DUE_PIANO=null;_BYID_SRC=null;render();
+    var con=plCon(function(){
+      var S=plPiano().services.filter(x=>x.id==='NOTTE')[0];
+      return plCatena(S,'Vito 1');});
+    delete DATA.transfers['LATE->NOTTE'];
+    PL_DUE_PIANO=null;_BYID_SRC=null;render();
+    var senza=plCon(function(){
+      var S=plPiano().services.filter(x=>x.id==='NOTTE')[0];
+      return plCatena(S,'Vito 1');});
+    return {daDove:con.daDove&&con.daDove.id, trasf:con.trasf, stima:con.stima,
+            arrivo:con.arrivo, margine:con.margine, stimaSenza:senza.stima, trasfSenza:senza.trasf};},pl_d2);
+  t('la catena del mezzo scavalla la mezzanotte',        pl_mid.daDove==='LATE', pl_mid);
+  t('e usa la tratta vera, non i 30 minuti di default',  pl_mid.trasf===40&&pl_mid.stima===false, pl_mid);
+  // 23:00 di fine + 40' di strada = sul posto alle 23:40; al netto del buffer di 15' restano 35'
+  t('sul pick-up alle 23:40, 35 minuti di margine netto', pl_mid.arrivo===1420&&pl_mid.margine===35, pl_mid);
+  t('senza quella tratta la catena si direbbe a stima',  pl_mid.stimaSenza===true&&pl_mid.trasfSenza===30, pl_mid);
+  await p.evaluate(dd=>{
+    DATA.services=DATA.services.filter(x=>x.id!=='LATE');
+    PLANS[dd].services=PLANS[dd].services.filter(x=>x.id!=='NOTTE');
+    PL_DUE_PIANO=null;_BYID_SRC=null;render();},pl_d2);
+  await p.waitForTimeout(250);
+
   const pl_g2=await p.evaluate(dd=>{
     var S=plPiano().services.filter(x=>x.id==='DOM1')[0];
     plSposta(S,'Vito 1');

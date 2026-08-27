@@ -4,7 +4,8 @@
 <base target="_top">
 <meta charset="utf-8">
 <style>
-:root{--blu:#0b3d66;--oro:#c9a227;--verde:#1e8e3e;--rosso:#c5221f;--ambra:#e37400;--grigio:#5f6368;--bg:#f4f6f8;}
+:root{--blu:#0b3d66;--oro:#c9a227;--verde:#1e8e3e;--rosso:#c5221f;--ambra:#e37400;--grigio:#5f6368;--bg:#f4f6f8;
+  --bordo:#dadce0;--card:#ffffff;--testo:#202124;}
 *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;}
 body{background:var(--bg);color:#202124;padding-bottom:70px;}
 header{background:var(--blu);color:#fff;padding:12px 14px;position:sticky;top:0;z-index:10;}
@@ -226,6 +227,177 @@ main{padding:12px;}
 @media (min-width:1400px){
   header h1,.datebar,main{max-width:1320px;}
 }
+
+/* ---------- plancia: mezzi in riga, tempo sull'asse ---------- */
+.plbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
+.plzoom{display:flex;border:1px solid var(--bordo);border-radius:8px;overflow:hidden}
+.plzoom button{border:0;background:var(--card);color:var(--testo);font:inherit;font-size:14px;padding:7px 13px;
+  border-right:1px solid var(--bordo);cursor:pointer;min-width:44px}
+.plzoom button:last-child{border-right:0}
+.plzoom button:active{background:var(--bordo)}
+.plhint{margin:0 0 8px;font-size:12px;color:var(--grigio);line-height:1.4}
+.plarm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#e8f4ff;border:1px solid #9dcbf0;
+  border-radius:9px;padding:8px 11px;margin-bottom:8px;font-size:13px;line-height:1.35}
+
+.plwrap{border:1px solid var(--bordo);border-radius:10px;background:var(--card);overflow:hidden}
+.plscroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.plgrid{position:relative;display:inline-block;min-width:100%}
+.plrow{display:flex;border-bottom:1px solid var(--bordo)}
+.plrow:last-child{border-bottom:0}
+.plrow.plhead{border-bottom:2px solid var(--testo);position:sticky;top:0;z-index:5;background:var(--card)}
+.plrail{flex:0 0 116px;position:sticky;left:0;z-index:4;background:var(--card);border-right:1px solid var(--bordo);
+  padding:7px 8px;font-size:12px;line-height:1.25}
+.plrail b{display:block;font-size:12.5px}
+.plrail span{display:block;font-size:10.5px;color:var(--grigio);margin-top:2px}
+.plwarn{font-style:normal;color:var(--rosso);font-size:11px}
+.plbadge{display:inline-block;font-style:normal;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:4px}
+.plbadge.ok{background:#e3f6ea;color:#1c7a45;border:1px solid #a9dfc0}
+.plbadge.no{background:#fdecea;color:var(--rosso);border:1px solid #f2b8b1}
+.plrow.plovl .plrail{background:#fdecea}
+.plrow.plovl .plrail b{color:var(--rosso)}
+.plrow.plnone .plrail{background:#fff6e5}
+.plrow.plnone .plrail b{color:#a86800}
+.plrow.plcanok .plrail{box-shadow:inset 3px 0 0 var(--verde)}
+.plrow.plcanno .plrail{opacity:.55}
+
+.pllane{position:relative;flex:1 0 auto;min-height:44px;overflow:hidden}
+.plhrs{height:26px;min-height:26px}
+.plhrs i{position:absolute;top:6px;font-size:10.5px;color:var(--grigio);font-style:normal;transform:translateX(-50%);white-space:nowrap}
+.plgline{position:absolute;top:0;bottom:0;width:1px;background:var(--bordo);opacity:.45}
+.plblk{position:absolute;border-radius:6px;padding:3px 6px;overflow:hidden;cursor:grab;color:#fff;
+  font-size:11px;line-height:12.5px;box-shadow:0 1px 2px rgba(0,0,0,.16);touch-action:none;user-select:none;z-index:2}
+.plblk b{display:block;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plblk span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.93}
+.plblk.plpend{box-shadow:0 0 0 2px var(--ambra)}
+.plblk.plbad{box-shadow:0 0 0 2px var(--rosso)}
+.plblk.plsel{box-shadow:0 0 0 3px #1668c1}
+.plblk.plnoaut{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 6px,transparent 6px 12px)}
+.plgap{position:absolute;height:16px;border-radius:3px;text-align:center;z-index:1;overflow:hidden}
+.plgap i{font-style:normal;font-size:9.5px;color:#3c4650;line-height:16px;white-space:nowrap}
+.plgvia{background:repeating-linear-gradient(135deg,#b9c3cc 0 4px,#cdd5db 4px 8px);opacity:.95}
+.plgvia i{color:#2b3a45;font-weight:700}
+.plgatt{background:#e6e9ec;opacity:.9}
+.plgno{background:repeating-linear-gradient(135deg,rgba(197,34,31,.55) 0 4px,rgba(197,34,31,.25) 4px 8px)}
+.plgno i{color:#7d1512;font-weight:700}
+.plov{position:absolute;top:0;bottom:0;pointer-events:none;z-index:3;
+  background:repeating-linear-gradient(135deg,rgba(214,58,45,.34) 0 5px,rgba(214,58,45,.12) 5px 10px);
+  border-left:2px solid var(--rosso);border-right:2px solid var(--rosso)}
+.plov i{position:absolute;top:2px;left:50%;transform:translateX(-50%);background:var(--rosso);color:#fff;
+  font-style:normal;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:4px;white-space:nowrap}
+.plnow{position:absolute;top:0;bottom:0;width:2px;background:var(--rosso);z-index:4}
+.plslot{position:absolute;top:4px;border-radius:6px;z-index:1;display:flex;align-items:center;justify-content:center}
+.plslot i{font-style:normal;font-size:10.5px;font-weight:700;white-space:nowrap;padding:0 4px}
+.plsok{background:rgba(46,160,90,.20);border:2px dashed #2ea05a;cursor:pointer}
+.plsok i{color:#1c7a45}
+.plsok:hover{background:rgba(46,160,90,.34)}
+.plsno{background:rgba(214,58,45,.10);border:2px dashed rgba(214,58,45,.55);cursor:pointer}
+.plsno:hover{background:rgba(214,58,45,.20)}
+.plsno i{color:var(--rosso);opacity:.85}
+.pllane.plok{background:rgba(46,160,90,.12);box-shadow:inset 0 0 0 2px var(--verde)}
+.pllane.plno{background:rgba(214,58,45,.10);box-shadow:inset 0 0 0 2px var(--rosso)}
+
+.plghost{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);opacity:.96;
+  border-radius:6px;padding:5px 9px;color:#fff;font-size:11.5px;box-shadow:0 5px 16px rgba(0,0,0,.34);white-space:nowrap}
+#plmsg{position:fixed;z-index:10000;pointer-events:none;background:#12222c;color:#fff;border-radius:7px;
+  padding:6px 9px;font-size:11.5px;max-width:220px;display:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#plmsg.plerr{background:var(--rosso)}
+
+.pltray{border:1px solid #e8c98a;border-radius:10px;background:#fffdf6;margin-top:10px}
+.pltray>h4{margin:0;padding:9px 12px;border-bottom:1px solid #e8c98a;font-size:13.5px;display:flex;gap:8px;
+  align-items:baseline;flex-wrap:wrap}
+.pltray>h4 em{font-style:normal;font-size:11.5px;color:var(--grigio);font-weight:400}
+.pltiles{display:flex;flex-wrap:wrap;gap:8px;padding:12px;min-height:64px}
+.pltiles.pldrop{background:#ffe9e5;box-shadow:inset 0 0 0 2px var(--rosso)}
+.pltile{flex:0 0 auto;width:200px;border:1px solid var(--bordo);border-left:4px solid #d99b1a;border-radius:9px;
+  background:var(--card);padding:8px 10px;cursor:grab;touch-action:none;user-select:none;font-size:12px;line-height:1.4}
+.pltile b{display:block;font-size:12.5px}
+.pltile b i.plstima{font-style:normal;font-weight:400;font-size:11px;color:var(--grigio);margin-left:5px}
+.pltile em{display:block;font-style:normal;font-size:11px;color:var(--grigio);margin-top:2px}
+.pltile u{display:inline-block;text-decoration:none;font-size:10.5px;font-weight:700;margin-top:6px;
+  padding:2px 7px;border-radius:5px}
+.pltile u.ok{background:#e3f6ea;color:#1c7a45}
+.pltile u.no{background:#fdecea;color:var(--rosso)}
+.pltile.plsel{box-shadow:0 0 0 3px #1668c1;border-left-color:#1668c1}
+.pltile.plzero{opacity:.72}
+.plvuoto{padding:14px;font-size:12.5px;color:var(--grigio)}
+.plrow.plfuori .plrail{background:#f3eefc}
+.plrow.plfuori .plrail b{color:#5c3a9e}
+.plsolo1{font-size:11.5px;color:#a86800;background:#fff6e5;border:1px solid #e8c98a;border-radius:6px;padding:4px 8px}
+.plsep{padding:5px 10px;background:#f0f1f3;border-top:1px solid var(--bordo);border-bottom:1px solid var(--bordo);
+  font-size:11px;color:var(--grigio);position:sticky;left:0}
+.plsep b{font-weight:700;color:#4a5560}
+
+/* --- rifiniture dopo la revisione visiva --- */
+/* 2. quando si arma un servizio, tutto ciò che non è una piazzola arretra */
+.plrow.plcanok .plblk,.plrow.plcanno .plblk{opacity:.38;filter:grayscale(.75)}
+.plrow .plblk.plsel{opacity:1;filter:none}
+.plsok{background:rgba(30,142,62,.26);border:3px dashed var(--verde);box-shadow:0 0 0 3px rgba(30,142,62,.16)}
+.plsok:hover{background:rgba(30,142,62,.38)}
+.plrow.plcanok .plrail{background:#e9f8ef;box-shadow:inset 5px 0 0 var(--verde)}
+.plrow.plcanno .plrail{opacity:1;background:#fbfbfc}
+/* 4. l'etichetta della piazzola non deve impastarsi con quella dell'attesa */
+.plgap{z-index:0}
+.plslot{z-index:2}
+.plslot i{background:var(--card);border-radius:5px;padding:2px 6px;box-shadow:0 0 0 1px rgba(0,0,0,.10);font-size:12px}
+/* 5. bersagli da dito */
+.plbar{align-items:stretch;gap:8px}
+.plbar .chip{min-height:40px;display:inline-flex;align-items:center;padding:0 12px;font-size:13px;border-radius:9px}
+.plzoom button{min-height:44px;padding:0 15px}
+.plslot{min-height:44px;top:2px}
+/* 8. il bianco sui colori chiari non si legge: gli do un'ombra */
+.plblk b,.plblk span{text-shadow:0 1px 1px rgba(0,0,0,.55)}
+.plblk b{font-size:11.5px}
+/* 10. la sovrapposizione si legge come una cosa sola, e non copre il primo blocco */
+.plov{background:repeating-linear-gradient(135deg,rgba(197,34,31,.55) 0 5px,rgba(197,34,31,.22) 5px 10px)}
+.plov i{top:auto;bottom:2px;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.plrow.plovl .plrail{background:#fdecea;box-shadow:inset 4px 0 0 var(--rosso)}
+/* 11. quando la giornata è tutta a schermo i blocchi sono strettissimi:
+   invece di scrivere dentro 12 px, tolgo il testo e lascio il colore.
+   Il nome torna appena ingrandisci, e intanto il tocco lo mostra in alto. */
+.plblk.plsm{padding:3px 3px}
+.plblk.plsm span{display:none}
+.plblk.plsm b{font-size:10px;letter-spacing:-.2px;line-height:1.9}
+.plblk.plxs{padding:0}
+.plblk.plxs b,.plblk.plxs span{display:none}
+.plblk.plxs{box-shadow:inset 0 0 0 1px rgba(255,255,255,.62),0 1px 2px rgba(0,0,0,.18)}
+.plblk.plxs.plsel{box-shadow:0 0 0 3px #1668c1}
+/* 12. la prima e l'ultima ora non devono restare tagliate a metà dal bordo */
+.plhrs i.plt0{transform:none;left:1px!important}
+.plhrs i.plt9{transform:translateX(-100%)}
+/* 15. la miniatura: tocchi un blocco e vedi che servizio è, senza aprire la scheda */
+#plcard{position:fixed;z-index:9998;width:278px;background:var(--card);border:1px solid var(--bordo);
+  border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.24);overflow:hidden;display:none;font-size:12.5px;color:var(--testo)}
+#plcard .plchd{display:flex;align-items:center;gap:8px;padding:9px 10px;color:#fff}
+#plcard .plchd b{font-size:13.5px;font-weight:700;letter-spacing:.2px}
+#plcard .plchd em{font-style:normal;font-size:11.5px;opacity:.92;margin-left:auto;white-space:nowrap}
+#plcard .plcx{border:none;background:rgba(255,255,255,.22);color:#fff;width:26px;height:26px;border-radius:8px;
+  font-size:14px;line-height:26px;padding:0;cursor:pointer;flex:0 0 auto}
+#plcard .plcbody{padding:9px 11px 10px}
+#plcard .plcn{font-size:14px;font-weight:700;line-height:1.25}
+#plcard .plctr{margin-top:3px;font-size:12.5px}
+#plcard .plctr b{font-weight:700}
+#plcard .plcinfo{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
+#plcard .plcinfo span{background:#eef1f4;border-radius:6px;padding:2px 7px;font-size:11.5px;white-space:nowrap}
+#plcard .plcinfo span.vuoto{background:#fff6e5;color:#a86800}
+#plcard .plcnota{margin-top:6px;font-size:11.5px;color:var(--grigio);line-height:1.35}
+#plcard .plcaz{display:flex;gap:6px;padding:0 11px 11px;flex-wrap:wrap}
+#plcard .plcaz button{flex:1 1 auto;min-height:38px;border:1px solid var(--bordo);background:var(--card);
+  border-radius:9px;font-size:12.5px;cursor:pointer;padding:0 10px}
+#plcard .plcaz button.blu{background:var(--blu);border-color:var(--blu);color:#fff}
+#plcard .plcsug{padding:0 11px 11px;font-size:11.5px;color:#1c7a45;font-weight:700}
+#plcard .plcsug.plcno{color:var(--rosso)}
+#plcard.plcbasso{left:8px!important;right:8px;width:auto;top:auto!important}
+#plcard.plcbasso .plchd{padding:7px 10px}
+#plcard.plcbasso .plcbody{padding:7px 11px 8px}
+#plcard.plcbasso .plcn{font-size:13.5px}
+#plcard.plcbasso .plcaz{padding:0 11px 9px}
+#plcard.plcbasso .plcsug{padding:0 11px 8px}
+/* 6. sul telefono la barra scorre invece di andare a capo */
+@media (max-width:520px){
+  .plbar{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .plbar>*{flex:0 0 auto}
+}
+@media (min-width:820px){ .plrail{flex-basis:176px} .pltile{width:224px} }
 </style>
 </head>
 <body>
@@ -246,6 +418,7 @@ main{padding:12px;}
 <div class="tabs">
   <button id="tabS" class="att" onclick="setTab('servizi')">📋 Servizi</button>
   <button id="tabA" onclick="setTab('assegna')">🧩 Assegna</button>
+  <button id="tabP" onclick="setTab('plancia')">🎛 Plancia</button>
   <button id="tabF" onclick="setTab('flotta')">⏳ Flotta</button>
   <button id="tabT" onclick="setTab('timeline')">📊 Timeline</button>
   <button id="tabR" onclick="setTab('rent')">🔑 Rent</button>
@@ -367,7 +540,8 @@ function apriGiorno2(i){
   load(true);
 }
 
-var PALETTE=['#e6194b','#3cb44b','#4363d8','#f58231','#911eb4','#0aa3a3','#f032e6','#9a6324','#800000','#808000','#000075','#2f4f4f','#c9a227','#1b7f8e','#8e44ad','#d35400','#16a085','#7f8c8d'];
+/* niente verde né rosso fra i colori degli autisti: quelli dicono "ci sta" e "non ci sta" */
+var PALETTE=['#b0184b','#0f6f8e','#4363d8','#9a6324','#911eb4','#5c6b73','#f032e6','#7a4b12','#800000','#808000','#000075','#2f4f4f','#8a6d1f','#1b7f8e','#8e44ad','#d35400','#16a085','#7f8c8d'];
 function colorOf(nome){
   if(!nome||!DATA)return '#5f6368';
   for(var i=0;i<DATA.autisti.length;i++)if(DATA.autisti[i].nome===nome)return PALETTE[i%PALETTE.length];
@@ -423,8 +597,8 @@ function goToday(){useDate(DATA?DATA.today:oggiLocal());}
 function shiftDay(d){useDate(addDaysC(document.getElementById('datePick').value,d));}
 function goDate(iso){closeModal();useDate(iso);}
 function setTab(t){TAB=t;
-  ['S','A','F','T','R'].forEach(function(k){document.getElementById('tab'+k).className='';});
-  document.getElementById('tab'+{servizi:'S',assegna:'A',flotta:'F',timeline:'T',rent:'R'}[t]).className='att';
+  ['S','A','P','F','T','R'].forEach(function(k){document.getElementById('tab'+k).className='';});
+  document.getElementById('tab'+{servizi:'S',assegna:'A',plancia:'P',flotta:'F',timeline:'T',rent:'R'}[t]).className='att';
   render();}
 
 function load(silent){
@@ -809,8 +983,11 @@ function oreAutista(nome,extra){
 /* ---------- viste ---------- */
 function render(){
   document.body.setAttribute('data-tab',TAB); // serve al CSS per le due colonne su schermo largo
+  if(TAB!=='plancia'){var _c=document.getElementById('plcard');if(_c)_c.style.display='none';}
+  if(TAB==='plancia'&&(PL_DRAG||PL_PINCH))return; // non ridisegnare sotto il dito
   if(TAB==='servizi')renderServizi();
   else if(TAB==='assegna')renderAssegna();
+  else if(TAB==='plancia')renderPlancia();
   else if(TAB==='flotta')renderFlotta();
   else if(TAB==='timeline')renderTimeline();
   else renderRent();
@@ -1955,6 +2132,589 @@ function renderTimeline(){
 
   m.innerHTML=h;
 }
+
+
+/* ---------- vista plancia: mezzi in riga, tempo sull'asse ----------
+   Tre modi per assegnare, tutti equivalenti:
+   1. trascini un servizio sulla riga del mezzo
+   2. lo tocchi (si "arma") e la plancia accende tutte le piazzole possibili
+   3. lo apri e scegli il mezzo dal menù di sempre
+   La piazzola verde dice dove ci sta, quella rossa perché no. */
+var PL_PX = 0;            // pixel per minuto; 0 = adatta alla larghezza
+var PL_GAP = true;        // mostra le attese fra un servizio e l'altro
+var PL_SOLO = false;      // mostra solo i mezzi liberi in quella fascia
+var PL_ARM = null;        // id del servizio armato per l'assegnazione
+var PL_DRAG = null;
+var PL_PINCH = null;
+var PL_RIGHE = [];
+var PL_RIFATTO = false;
+function plAssegnaIdx(k) {
+  var s = plArmato(), r = PL_RIGHE[k];
+  if (s && r) plSposta(s, r.nome);
+}
+try { var _z = localStorage.getItem('te_plz'); if (_z) PL_PX = +_z || 0; } catch (e) { }
+
+function plScala() {
+  var min = 1440, max = 0, n = 0;
+  DATA.services.forEach(function (s) {
+    if (s.startMin < 0 || isCanc(s)) return;
+    n++;
+    if (s.startMin < min) min = s.startMin;
+    var e = plFine(s);
+    if (e > max) max = e;
+  });
+  if (!n) { min = 7 * 60; max = 22 * 60; }
+  var h0 = Math.max(0, Math.floor(min / 60) - 1);
+  var h1 = Math.min(30, Math.ceil(max / 60) + 1);
+  if (h1 - h0 < 6) h1 = h0 + 6;
+  return { h0: h0, h1: h1, m0: h0 * 60, m1: h1 * 60 };
+}
+function plFine(s) { return s.endMin > s.startMin ? s.endMin : s.startMin + 45; }
+function plDurata(s) { return plFine(s) - s.startMin; }
+function plLarghezzaUtile() {
+  // se la plancia è già a schermo misuro lo spazio vero, non quello teorico:
+  // "adatta" deve far stare la giornata dentro, non lasciarla sporgere di 30px
+  var box = document.getElementById('plscroll');
+  var rail = document.querySelector('.plrail');
+  if (box && rail && box.clientWidth) return Math.max(200, box.clientWidth - rail.offsetWidth - 8);
+  var m = document.getElementById('main');
+  return Math.max(200, (m ? m.clientWidth : 360) - (window.innerWidth >= 820 ? 176 : 116) - 26);
+}
+function plPx(sc) {
+  if (PL_PX) return PL_PX;
+  return Math.max(0.12, plLarghezzaUtile() / (sc.m1 - sc.m0));
+}
+function plSetPx(v) {
+  PL_PX = v ? Math.max(0.12, Math.min(9, v)) : 0;
+  try { localStorage.setItem('te_plz', String(PL_PX)); } catch (e) { }
+}
+function plZoom(d) {
+  // lo zoom resta ancorato al centro di quello che stai guardando, non torna all'alba
+  var sc = plScala(), box = document.getElementById('plscroll'), p0 = plPx(sc);
+  var centro = box ? (box.scrollLeft + box.clientWidth / 2) / p0 : 0;
+  if (d === 0) plSetPx(0); else plSetPx(p0 * (d > 0 ? 1.5 : 1 / 1.5));
+  render();
+  var n = document.getElementById('plscroll');
+  if (n && d !== 0) n.scrollLeft = Math.max(0, centro * plPx(plScala()) - n.clientWidth / 2);
+}
+function plToggleGap() { PL_GAP = !PL_GAP; render(); }
+function plToggleSolo() { PL_SOLO = !PL_SOLO; render(); }
+function plMostraTutti() { VEI_HIDE = {}; render(); }
+
+/* ---- regole: quel servizio ci sta su quel mezzo? ---- */
+function plVeicolo(nome) {
+  var v = null;
+  DATA.veicoli.forEach(function (x) { if (x.nome === nome) v = x; });
+  return v;
+}
+function plScontro(s, veic) {
+  // stessa regola del resto della app: fine A + trasferimento + buffer <= inizio B.
+  // Due servizi con lo stesso autista viaggiano insieme e non sono un conflitto.
+  var v = plVeicolo(veic);
+  if (!v) return null;
+  var w = availability([v], function (sv) { return sv.veicolo; }, s)[veic];
+  if (w && w.con && s.autista && w.con.autista === s.autista) return null;
+  return w;
+}
+function plVerifica(s, veic) {
+  if (!veic) return { ok: true, msg: 'Torna fra i da assegnare', breve: 'libera' };
+  var v = plVeicolo(veic);
+  if (!v) return { ok: false, msg: 'Mezzo sconosciuto', breve: '?' };
+  if (v.fuoriServizio) return { ok: false, msg: v.nome + ' è fuori servizio', breve: 'fuori servizio' };
+  if (v.inRent) return { ok: false, msg: v.nome + ' è a noleggio', breve: 'a noleggio' };
+  if (v.pax && +s.pax > v.pax) return { ok: false, msg: s.pax + ' passeggeri su ' + v.pax + ' posti', breve: s.pax + ' su ' + v.pax + ' posti' };
+  var w = plScontro(s, veic);
+  if (w) return { ok: false, msg: 'Occupato: si libera alle ' + fmtMin(w.freeAt) + ' · ' + (w.con.nome || w.con.per || ''), breve: 'libero ' + fmtMin(w.freeAt) };
+  return { ok: true, msg: v.nome + ' è libero in questa fascia', breve: 'ci sta' };
+}
+function plEtichetta(esito, centro, tot) {
+  // quanto spazio serve alle parole, in pixel: 6,4 px per carattere più il fondello bianco
+  var t = (esito.ok ? '✓ ' : '✕ ') + esito.breve;
+  var w = 22 + 6.4 * t.length;
+  if (centro - w / 2 >= 0 && centro + w / 2 <= tot) return esc(t);
+  return esito.ok ? '✓' : '✕';
+}
+function plSposta(s, veic) {
+  if (!s) return;
+  if ((veic || '') === (s.veicolo || '')) { PL_ARM = null; render(); return; }
+  var r = veic ? plVerifica(s, veic) : { ok: true };
+  PEND[s.id] = { autista: s.autista || '', veicolo: veic || '' };
+  s.veicolo = veic || '';
+  PL_ARM = null;
+  render();
+  if (!veic) { toast('🕐 ' + (s.nome || s.da) + ' torna fra i da assegnare'); return; }
+  toast((r.ok ? '🕐 ' : '⚠️ ') + (s.nome || s.da) + ' → ' + veic
+    + (r.ok ? '' : ' · forzato: ' + r.msg) + ' · salva dalla barra in alto');
+}
+function plArma(id) { PL_ARM = (PL_ARM === id) ? null : id; render(); }
+function plArmato() {
+  if (!PL_ARM) return null;
+  var s = null;
+  DATA.services.forEach(function (x) { if (x.id === PL_ARM) s = x; });
+  return s;
+}
+function plApriServizio(id) {
+  var idx = -1;
+  DATA.services.forEach(function (x, i) { if (x.id === id) idx = i; });
+  if (idx >= 0) openModal(idx);
+}
+
+/* ---- miniatura: che servizio è questo blocco ----
+   Sulla plancia un servizio di 45 minuti può essere largo 12 px: toccandolo
+   si arma per l'assegnazione e insieme mostra questa scheda ridotta, così si
+   sa sempre chi si sta spostando. Non scrive niente: legge e basta. */
+function plNodoDi(id) {
+  return document.querySelector('.plblk[data-id="' + id + '"]') || document.querySelector('.pltile[data-id="' + id + '"]');
+}
+function plCardApri() { if (PL_ARM) plApriServizio(PL_ARM); }
+function plCardLibera() { var s = plArmato(); if (s) plSposta(s, ''); }
+
+/* ---- messaggino che segue il dito mentre trascini ---- */
+function plMsg(x, y, testo, errore) {
+  var m = document.getElementById('plmsg');
+  if (!m) { m = document.createElement('div'); m.id = 'plmsg'; document.body.appendChild(m); }
+  m.textContent = testo;
+  m.className = 'plmsg' + (errore ? ' plerr' : '');
+  m.style.display = 'block';
+  m.style.left = Math.max(6, Math.min(x + 14, window.innerWidth - 230)) + 'px';
+  m.style.top = Math.max(6, y - 44) + 'px';
+}
+function plMsgOff() { var m = document.getElementById('plmsg'); if (m) m.style.display = 'none'; }
+function plSpegni() {
+  // toglie solo le classi di stato: riscrivere className cancellava plhrs
+  // e il righello delle ore cambiava altezza sotto il dito
+  var l = document.querySelectorAll('.pllane');
+  for (var i = 0; i < l.length; i++) l[i].className = l[i].className.replace(/\s*pl(ok|no)\b/g, '');
+  var t = document.getElementById('pltiles');
+  if (t) t.className = t.className.replace(/\s*pldrop\b/g, '');
+}
+function plPulisci() { plSpegni(); plMsgOff(); }
+function plRisali(n, cls) {
+  while (n && n !== document.body) {
+    if (n.id === cls) return n;
+    if (n.className && typeof n.className === 'string' && (' ' + n.className + ' ').indexOf(' ' + cls + ' ') >= 0) return n;
+    n = n.parentNode;
+  }
+  return null;
+}
+function plPrendi(ev, s, nodo, colore) {
+  if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+  if (PL_PINCH || ev.isPrimary === false || PL_DRAG) return;
+  var x0 = ev.clientX, y0 = ev.clientY, mosso = false, ghost = null, dove;
+  function muovi(e) {
+    if (PL_PINCH) { mosso = false; return; }
+    if (!mosso) {
+      if (Math.abs(e.clientX - x0) < 8 && Math.abs(e.clientY - y0) < 8) return;
+      mosso = true;
+      PL_ARM = null;
+      ghost = document.createElement('div');
+      ghost.className = 'plghost';
+      ghost.style.background = colore;
+      ghost.textContent = fmtMin(s.startMin) + ' · ' + (s.nome || s.da);
+      document.body.appendChild(ghost);
+      PL_DRAG = s.id;
+      plDipingiPiazzole(s);
+    }
+    e.preventDefault();
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top = e.clientY + 'px';
+    ghost.style.display = 'none';
+    var sotto = document.elementFromPoint(e.clientX, e.clientY);
+    ghost.style.display = '';
+    var lane = sotto ? plRisali(sotto, 'pllane') : null;
+    var tray = sotto ? plRisali(sotto, 'pltiles') : null;
+    plSpegni();
+    if (tray) tray.className += ' pldrop';
+    dove = undefined;
+    if (lane && lane.getAttribute('data-v') !== null) {
+      var veic = lane.getAttribute('data-v');
+      var r = plVerifica(s, veic);
+      lane.className += ' ' + (r.ok ? 'plok' : 'plno');
+      plMsg(e.clientX, e.clientY, r.ok ? r.msg : (r.msg + ' — lo metto lo stesso'), !r.ok);
+      // dove lasci la scheda, lì va: la app avvisa, non decide al posto tuo
+      dove = veic;
+    } else if (tray) {
+      plMsg(e.clientX, e.clientY, 'Torna fra i da assegnare', false);
+      dove = '';
+    } else plMsgOff();
+  }
+  function molla() {
+    nodo.removeEventListener('pointermove', muovi);
+    nodo.removeEventListener('pointerup', molla);
+    nodo.removeEventListener('pointercancel', molla);
+    plPulisci();
+    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    PL_DRAG = null;
+    if (!mosso) { plArma(s.id); return; }
+    if (dove !== undefined && dove !== s.veicolo) plSposta(s, dove); else render();
+  }
+  if (nodo.setPointerCapture) { try { nodo.setPointerCapture(ev.pointerId); } catch (e) { } }
+  nodo.addEventListener('pointermove', muovi);
+  nodo.addEventListener('pointerup', molla);
+  nodo.addEventListener('pointercancel', molla);
+}
+/* mentre trascini, accende le piazzole già disegnate */
+function plDipingiPiazzole(s) {
+  var p = document.querySelectorAll('.plslot');
+  for (var i = 0; i < p.length; i++) p[i].style.display = '';
+}
+
+/* ---- zoom con due dita e con rotella+ctrl ---- */
+function plDist(t) {
+  var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy) || 1;
+}
+function plAggiungiZoomGesti(box, sc) {
+  box.addEventListener('wheel', function (e) {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    plSetPx(plPx(sc) * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
+    render();
+  }, { passive: false });
+  box.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 2) return;
+    var PL_PINCH_D = plDist(e.touches);
+    PL_PINCH = { d: PL_PINCH_D, px: plPx(sc) };
+  }, { passive: true });
+  box.addEventListener('touchmove', function (e) {
+    if (!PL_PINCH || e.touches.length !== 2) return;
+    e.preventDefault();
+    var d = plDist(e.touches);
+    plSetPx(PL_PINCH.px * (d / PL_PINCH.d));
+    plRidisegnaScala();
+  }, { passive: false });
+  box.addEventListener('touchend', function () { if (PL_PINCH) { PL_PINCH = null; render(); } }, { passive: true });
+}
+function plRidisegnaScala() {
+  // durante il pinch ridisegno solo le larghezze, senza rifare tutto l'HTML
+  var sc = plScala(), px = plPx(sc), tot = (sc.m1 - sc.m0) * px;
+  var g = document.getElementById('plgrid');
+  if (!g) return;
+  var lanes = g.querySelectorAll('.pllane');
+  for (var i = 0; i < lanes.length; i++) lanes[i].style.width = Math.round(tot) + 'px';
+  var b = g.querySelectorAll('[data-m0]');
+  for (var j = 0; j < b.length; j++) {
+    var n = b[j], a = +n.getAttribute('data-m0'), e = +n.getAttribute('data-m1');
+    n.style.left = Math.round((a - sc.m0) * px) + 'px';
+    if (e) {
+      var minimo = n.className.indexOf('plslot') >= 0 ? 46 : (n.className.indexOf('plblk') >= 0 ? 34 : 3);
+      n.style.width = Math.max(minimo, Math.round((e - a) * px)) + 'px';
+    }
+  }
+}
+
+function plMiniatura() {
+  var c = document.getElementById('plcard');
+  if (!c) { c = document.createElement('div'); c.id = 'plcard'; document.body.appendChild(c); }
+  var s = plArmato();
+  if (!s) { c.style.display = 'none'; return; }
+  var col = s.autista ? colorOf(s.autista) : '#5f6368';
+  var quanti = 0;
+  DATA.veicoli.forEach(function (v) { if (!VEI_HIDE[v.nome] && plVerifica(s, v.nome).ok) quanti++; });
+  var info = '';
+  info += '<span>' + (s.pax ? esc(s.pax) + ' pax' : '? pax') + '</span>';
+  info += s.veicolo ? '<span>🚐 ' + esc(s.veicolo) + '</span>' : '<span class="vuoto">🚐 senza mezzo</span>';
+  info += s.autista ? '<span>👤 ' + esc(s.autista) + '</span>' : '<span class="vuoto">👤 senza autista</span>';
+  if (s.volo) info += '<span>✈ ' + esc(s.volo) + '</span>';
+  if (s.tariffa) info += '<span>€ ' + esc(String(s.tariffa)) + '</span>';
+  if (s.hextra) info += '<span>+' + esc(String(s.hextra)) + 'h</span>';
+  if (s.fornitore) info += '<span>🏨 ' + esc(s.fornitore) + '</span>';
+  var nota = (s.note || '').replace(/\s+/g, ' ');
+  if (nota.length > 110) nota = nota.slice(0, 110) + '…';
+
+  c.innerHTML = '<div class="plchd" style="background:' + col + '">'
+    + '<b>' + fmtMin(s.startMin) + '</b>'
+    + '<em>durata stimata ' + fmtDur(plDurata(s)) + '</em>'
+    + '<button class="plcx" onclick="plArma(null)" title="chiudi">✕</button></div>'
+    + '<div class="plcbody">'
+    + '<div class="plcn">' + esc(s.nome || s.da) + '</div>'
+    + '<div class="plctr">' + esc(s.da) + ' <b>→</b> ' + esc(s.per) + '</div>'
+    + '<div class="plcinfo">' + info + '</div>'
+    + (nota ? '<div class="plcnota">📝 ' + esc(nota) + '</div>' : '')
+    + '</div>'
+    + '<div class="plcsug' + (s.veicolo && !plVerifica(s, s.veicolo).ok ? ' plcno' : '') + '">'
+    + (s.veicolo && !plVerifica(s, s.veicolo).ok ? '⚠️ forzato su ' + esc(s.veicolo) + ': ' + esc(plVerifica(s, s.veicolo).msg)
+      : (quanti ? '✓ tocca una piazzola verde: ' + quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi')
+        : '✕ nessun mezzo libero in questa fascia')) + '</div>'
+    + '<div class="plcaz"><button class="blu" onclick="plCardApri()">📋 Apri scheda</button>'
+    + (s.veicolo ? '<button onclick="plCardLibera()">🅿️ Togli dal mezzo</button>' : '')
+    + '</div>';
+  c.style.display = 'block';
+  plPosizionaCard();
+}
+function plPosizionaCard() {
+  var c = document.getElementById('plcard');
+  if (!c || c.style.display === 'none' || !PL_ARM) return;
+  var n = plNodoDi(PL_ARM);
+  var vw = window.innerWidth, vh = window.innerHeight;
+  if (vw < 560) {
+    // sul telefono la scheda è una striscia in basso: non copre mai le corsie che stai guardando
+    c.className = 'plcbasso';
+    c.style.bottom = '76px';
+    return;
+  }
+  c.className = '';
+  c.style.bottom = 'auto';
+  if (!n) { c.style.left = '12px'; c.style.top = '80px'; return; }
+  var r = n.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight;
+  // di fianco, non sotto: sotto il blocco ci sono le piazzole verdi e la scheda le coprirebbe
+  var x = r.right + 12, y = Math.round(r.top - 6);
+  if (x + w > vw - 8) x = r.left - w - 12;
+  if (x < 8) {
+    x = Math.max(8, Math.min(Math.round(r.left + r.width / 2 - w / 2), vw - w - 8));
+    y = r.bottom + 10 + h < vh - 8 ? r.bottom + 10 : r.top - h - 10;
+  }
+  c.style.left = Math.max(8, x) + 'px';
+  c.style.top = Math.max(8, Math.min(y, vh - h - 8)) + 'px';
+}
+
+function renderPlancia() {
+  var m = document.getElementById('main');
+  var vecchio = document.getElementById('plscroll');
+  var scrollX = vecchio ? vecchio.scrollLeft : -1;
+  var attivi = DATA.services.filter(function (s) { return !isCanc(s) && s.startMin >= 0; });
+  if (!attivi.length) { m.innerHTML = '<div class="vuoto">Nessun servizio con orario per ' + fmtData(DATA.date) + '</div>'; return; }
+  var sc = plScala(), px = plPx(sc), tot = (sc.m1 - sc.m0) * px;
+  var armato = plArmato();
+  var senza = attivi.filter(function (s) { return !s.veicolo; });
+  var h = '';
+
+  /* --- righe: un mezzo ciascuna, più quelli scritti a mano che non stanno in anagrafica --- */
+  var righe = [], nascosti = 0, noti = {};
+  DATA.veicoli.forEach(function (v) {
+    noti[v.nome] = true;
+    if (VEI_HIDE[v.nome]) { nascosti++; return; }
+    var mine = attivi.filter(function (s) { return s.veicolo === v.nome; });
+    var r = armato ? plVerifica(armato, v.nome) : null;
+    if (PL_SOLO && armato && r && !r.ok) return;
+    righe.push({ nome: v.nome, v: v, mine: mine, esito: r });
+  });
+  // un mezzo scritto nel foglio ma assente dal tab Veicoli non deve far sparire il suo servizio
+  var fuori = {};
+  attivi.forEach(function (s) { if (s.veicolo && !noti[s.veicolo]) fuori[s.veicolo] = true; });
+  Object.keys(fuori).forEach(function (nome) {
+    righe.push({ nome: nome, v: { nome: nome, pax: 0, tipo: 'non in anagrafica' }, fuori: true,
+      mine: attivi.filter(function (s) { return s.veicolo === nome; }), esito: null });
+  });
+
+  /* i mezzi che non possono lavorare (fermi, dati a noleggio, o presi fuori flotta)
+     vanno in fondo: in alto resta quello su cui puoi davvero appoggiare un servizio */
+  function plPeso(r) {
+    if (r.fuori) return 2;
+    if (r.v.fuoriServizio || r.v.inRent) return 1;
+    return 0;
+  }
+  righe.forEach(function (r, i) { r._i = i; });
+  righe.sort(function (a, b) { return plPeso(a) - plPeso(b) || a._i - b._i; });
+
+  h += barraPend();
+  h += '<div class="plbar">'
+    + '<div class="plzoom"><button onclick="plZoom(-1)" title="Riduci">−</button>'
+    + '<button onclick="plZoom(0)" title="Tutta la giornata">adatta</button>'
+    + '<button onclick="plZoom(1)" title="Ingrandisci">+</button></div>'
+    + '<button class="chip' + (PL_GAP ? ' verde' : '') + '" style="border:none" onclick="plToggleGap()">🕳 attese</button>'
+    + '<button class="chip' + (PL_SOLO ? ' verde' : '') + '" style="border:none" onclick="plToggleSolo()">🎯 solo dove ci sta</button>'
+    + (nascosti ? '<button class="chip ambra" style="border:none" onclick="plMostraTutti()">👁 ' + nascosti + ' mezzi nascosti</button>' : '')
+    + (DUE ? '<span class="plsolo1">plancia: solo ' + fmtData(DATA.date) + '</span>' : '')
+    + '</div>';
+
+  if (armato) {
+    h += '<div class="plarm">🎯 <b>' + esc(armato.nome || armato.da) + '</b> parte alle <b>' + fmtMin(armato.startMin) + '</b>'
+      + ' · ' + fmtDur(plDurata(armato)) + ' stimata · ' + (armato.pax || '?') + ' pax — <b>tocca una piazzola verde</b> per assegnarlo, la rossa lo forza'
+      + '<button class="chip" style="border:none;margin-left:auto" onclick="plArma(null)">annulla</button></div>';
+  } else {
+    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b>, oppure trascinalo direttamente sulla riga del mezzo. Due dita per lo zoom.'
+      + (px < 0.9 ? ' <b>+</b> per leggere i nomi dentro i blocchi.' : '') + '</p>';
+  }
+
+  h += '<div class="plwrap"><div class="plscroll" id="plscroll"><div class="plgrid" id="plgrid">';
+  /* riga delle ore */
+  h += '<div class="plrow plhead"><div class="plrail"><b>Ora</b><span>' + ('0' + (sc.h0 % 24)).slice(-2) + ':00 › ' + ('0' + (sc.h1 % 24)).slice(-2) + ':00</span></div>'
+    + '<div class="pllane plhrs" style="width:' + Math.round(tot) + 'px">';
+  // il passo non lo decide solo lo zoom: due etichette non devono toccarsi
+  var passo = 15, PASSI = [15, 30, 60, 120, 180, 240, 360, 720];
+  for (var ip = 0; ip < PASSI.length; ip++) { passo = PASSI[ip]; if (passo * px >= 46) break; }
+  for (var mm = Math.ceil(sc.m0 / passo) * passo; mm <= sc.m1; mm += passo) {
+    var xt = Math.round((mm - sc.m0) * px);
+    // translateX(-50%) sul primo tick lo faceva tagliare dal bordo della corsia
+    var ct = xt < 22 ? ' class="plt0"' : (xt > tot - 24 ? ' class="plt9"' : '');
+    h += '<i' + ct + ' data-m0="' + mm + '" style="left:' + xt + 'px">' + fmtMin(mm) + '</i>';
+  }
+  h += '</div></div>';
+
+  function lane(mine, veic, esito, idx) {
+    var srt = mine.slice().sort(function (a, b) { return a.startMin - b.startMin; });
+    /* sotto-righe: due servizi sovrapposti si impilano, non si nascondono */
+    var fine = [], riga = {}, k;
+    srt.forEach(function (s) {
+      for (k = 0; k < fine.length; k++) if (fine[k] <= s.startMin) break;
+      if (k === fine.length) fine.push(0);
+      fine[k] = plFine(s);
+      riga[s.id] = k;
+    });
+    var nr = Math.max(fine.length, 1);
+    var H = nr > 1 ? 32 : 38, alt = nr * H + (nr + 1) * 5;
+    var cls = 'pllane';
+    var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
+    for (var g = Math.ceil(sc.m0 / 60) * 60; g <= sc.m1; g += 60)
+      b += '<div class="plgline" data-m0="' + g + '" style="left:' + Math.round((g - sc.m0) * px) + 'px"></div>';
+
+    /* piazzola: dove finirebbe il servizio armato su questo mezzo */
+    if (esito && veic) {
+      var L = Math.round((armato.startMin - sc.m0) * px), W = Math.max(46, Math.round(plDurata(armato) * px));
+      // con la larghezza minima la piazzola dell'ultimo servizio finiva oltre il bordo
+      // e l'etichetta "✓ ci sta" restava tagliata: la riporto dentro
+      if (L + W > tot) L = Math.max(0, Math.round(tot) - W);
+      b += '<div class="plslot ' + (esito.ok ? 'plsok' : 'plsno') + '" data-m0="' + armato.startMin + '" data-m1="' + plFine(armato) + '"'
+        + ' style="left:' + L + 'px;width:' + W + 'px;height:' + (alt - 8) + 'px"'
+        + ' onclick="plAssegnaIdx(' + idx + ')"'
+        + (esito.ok ? '' : ' title="' + esc(esito.msg + ' — toccala per metterlo qui lo stesso') + '"')
+        // l'etichetta può sporgere dalla piazzola, non dalla corsia: se contro il bordo
+        // resterebbe tagliata tengo solo il segno, tanto il motivo sta nella colonna del mezzo
+        + '><i>' + plEtichetta(esito, L + W / 2, tot) + '</i></div>';
+    }
+    /* fasce rosse dove due servizi si accavallano */
+    var ov = [];
+    for (var i = 0; i < srt.length; i++) for (var j = i + 1; j < srt.length; j++) {
+      var a1 = Math.max(srt[i].startMin, srt[j].startMin), b1 = Math.min(plFine(srt[i]), plFine(srt[j]));
+      if (b1 > a1) ov.push([a1, b1]);
+    }
+    ov.sort(function (x, y) { return x[0] - y[0]; });
+    var un = [];
+    ov.forEach(function (o) { var l = un[un.length - 1]; if (l && o[0] <= l[1]) l[1] = Math.max(l[1], o[1]); else un.push([o[0], o[1]]); });
+    un.forEach(function (o) {
+      b += '<div class="plov" data-m0="' + o[0] + '" data-m1="' + o[1] + '" style="left:' + Math.round((o[0] - sc.m0) * px) + 'px;width:'
+        + Math.max(3, Math.round((o[1] - o[0]) * px)) + 'px"><i>⚠ ' + fmtDur(o[1] - o[0]) + '</i></div>';
+    });
+    /* fra un servizio e l'altro: prima il viaggio per arrivare al pick-up,
+       poi l'attesa vera. Un buco di 6 ore non è tutto tempo libero. */
+    if (PL_GAP && nr === 1) {
+      for (var q = 1; q < srt.length; q++) {
+        var A = srt[q - 1], B = srt[q];
+        var f = plFine(A), buco = B.startMin - f;
+        if (buco < 10) continue;
+        var tt = trf(A.id, B.id);
+        var via = Math.max(0, Math.min(tt.min, buco));
+        var arrivo = f + via, attesa = buco - via;
+        var stretto = tt.min + tt.buffer > buco;
+        var titolo = 'Finisce alle ' + fmtMin(f)
+          + (tt.min ? ' · ' + fmtDur(tt.min) + ' per arrivare a ' + B.da + ' · sul posto alle ' + fmtMin(arrivo)
+                    : ' · stesso posto, non si sposta')
+          + (attesa > 0 ? ' · ' + fmtDur(attesa) + ' di attesa' : '')
+          + ' · riparte alle ' + fmtMin(B.startMin)
+          + (stretto ? ' — margine sotto i ' + fmtDur(tt.buffer) : '');
+        var top = Math.round(alt / 2 - 8);
+        if (via > 0) {
+          var wv = Math.max(3, Math.round(via * px));
+          b += '<div class="plgap plgvia' + (stretto ? ' plgno' : '') + '" data-m0="' + f + '" data-m1="' + arrivo + '"'
+            + ' style="left:' + Math.round((f - sc.m0) * px) + 'px;width:' + wv + 'px;top:' + top + 'px"'
+            + ' title="' + esc(titolo) + '">'
+            + (wv >= 62 ? '<i>🚗 ' + fmtDur(via) + '</i>' : '') + '</div>';
+        }
+        if (attesa > 0) {
+          var wa = Math.max(3, Math.round(attesa * px));
+          b += '<div class="plgap plgatt" data-m0="' + arrivo + '" data-m1="' + B.startMin + '"'
+            + ' style="left:' + Math.round((arrivo - sc.m0) * px) + 'px;width:' + wa + 'px;top:' + top + 'px"'
+            + ' title="' + esc(titolo) + '">'
+            + (wa >= 128 ? '<i>⏳ ' + fmtDur(attesa) + ' · sul posto ' + fmtMin(arrivo) + '</i>'
+              : (wa >= 54 ? '<i>⏳ ' + fmtDur(attesa) + '</i>' : '')) + '</div>';
+        }
+      }
+    }
+    srt.forEach(function (s) {
+      var col = s.autista ? colorOf(s.autista) : '#8f9aa4';
+      var male = veic && !plVerifica(s, veic).ok;
+      var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s.autista ? ' plnoaut' : '') + (PL_ARM === s.id ? ' plsel' : '');
+      var W2 = Math.max(px < 0.5 ? 12 : 34, Math.round(plDurata(s) * px));
+      // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
+      c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : '');
+      b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
+        + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
+        + (5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
+        + ' title="' + esc(fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'
+        + '<b>' + fmtMin(s.startMin) + ' ' + esc(s.autista || 'senza autista') + (male ? ' ⚠' : '') + '</b>'
+        + '<span>' + esc((s.nome || s.da) + ' → ' + s.per) + '</span></div>';
+    });
+    if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
+      b += '<div class="plnow" data-m0="' + DATA.nowMin + '" style="left:' + Math.round((DATA.nowMin - sc.m0) * px) + 'px"></div>';
+    return b + '</div>';
+  }
+
+  PL_RIGHE = righe;
+  var sepFatta = false;
+  righe.forEach(function (r, k) {
+    if (!sepFatta && plPeso(r) > 0) {
+      sepFatta = true;
+      h += '<div class="plsep"><b>fermi, a noleggio o fuori flotta</b> — ci puoi mettere un servizio lo stesso, ma sai cosa stai facendo</div>';
+    }
+    var srt = r.mine.slice().sort(function (a, b) { return a.startMin - b.startMin; });
+    var nOv = 0;
+    for (var i = 0; i < srt.length; i++) for (var j = i + 1; j < srt.length; j++)
+      if (srt[j].startMin < plFine(srt[i])) nOv++;
+    var occ = 0; r.mine.forEach(function (s) { occ += plDurata(s); });
+    var stato = r.fuori ? ' · non in anagrafica' : (r.v.fuoriServizio ? ' · fuori servizio' : (r.v.inRent ? ' · a noleggio' : ''));
+    var cl = 'plrow' + (nOv ? ' plovl' : '') + (r.fuori ? ' plfuori' : '') + (r.esito ? (r.esito.ok ? ' plcanok' : ' plcanno') : '');
+    h += '<div class="' + cl + '"><div class="plrail"><b>' + esc(r.nome) + (nOv ? ' <em class="plwarn">⚠ ' + nOv + '</em>' : '') + '</b>'
+      + '<span>' + (r.v.pax ? r.v.pax + ' posti' : esc(r.v.tipo || '')) + stato + ' · ' + (occ ? fmtDur(occ) : 'fermo') + '</span>'
+      + (r.esito ? '<em class="plbadge ' + (r.esito.ok ? 'ok' : 'no') + '">' + (r.esito.ok ? '✓ ci sta' : '✕ ' + esc(r.esito.breve)) + '</em>' : '')
+      + '</div>' + lane(r.mine, r.nome, r.esito, k) + '</div>';
+  });
+  h += '<div class="plrow plnone"><div class="plrail"><b>Da assegnare</b><span>' + senza.length + (senza.length === 1 ? ' servizio' : ' servizi') + '</span></div>'
+    + lane(senza, '', null, -1) + '</div>';
+  h += '</div></div></div>';
+
+  /* vassoio */
+  h += '<div class="pltray"><h4>🅿️ Da assegnare <em>' + senza.length + ' · toccane uno e guarda dove ci sta</em></h4><div class="pltiles" id="pltiles">';
+  if (!senza.length) h += '<div class="plvuoto">Tutti i servizi hanno un mezzo. 👌</div>';
+  senza.slice().sort(function (a, b) { return a.startMin - b.startMin; }).forEach(function (s) {
+    var quanti = 0, quantiNascosti = 0;
+    DATA.veicoli.forEach(function (v) {
+      if (!plVerifica(s, v.nome).ok) return;
+      if (VEI_HIDE[v.nome]) quantiNascosti++; else quanti++;
+    });
+    h += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero') + '" data-id="' + esc(s.id) + '">'
+      + '<b>' + fmtMin(s.startMin) + ' <i class="plstima">≈ ' + fmtDur(plDurata(s)) + '</i></b>'
+      + esc(s.nome || s.da) + '<em>' + esc(s.da + ' → ' + s.per) + '</em>'
+      + '<em>' + (s.pax || '?') + ' pax · ' + esc(s.autista || 'senza autista') + '</em>'
+      + '<u class="' + (quanti ? 'ok' : 'no') + '">' + (quanti ? quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi') : 'nessun mezzo libero')
+      + (quantiNascosti ? ' · ' + quantiNascosti + ' nascosti' : '') + '</u></div>';
+  });
+  h += '</div></div>';
+
+  m.innerHTML = h;
+
+  /* aggancio gli eventi dopo aver scritto l'HTML */
+  function aggancia(sel) {
+    var n = document.querySelectorAll(sel);
+    for (var i = 0; i < n.length; i++) (function (nodo) {
+      var id = nodo.getAttribute('data-id'), s = null;
+      DATA.services.forEach(function (x) { if (x.id === id) s = x; });
+      if (!s) return;
+      var col = s.autista ? colorOf(s.autista) : '#8f9aa4';
+      nodo.addEventListener('pointerdown', function (e) { plPrendi(e, s, nodo, col); });
+      nodo.addEventListener('dblclick', function () { plApriServizio(s.id); });
+    })(n[i]);
+  }
+  aggancia('.plblk');
+  aggancia('.pltile');
+  var box = document.getElementById('plscroll');
+  if (box && !PL_PX && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
+    // al primo disegno la colonna dei mezzi non esisteva ancora e la misura era teorica:
+    // ora che è a schermo rifaccio una volta sola, così "adatta" adatta davvero
+    PL_RIFATTO = true; renderPlancia(); PL_RIFATTO = false; return;
+  }
+  if (box) {
+    plAggiungiZoomGesti(box, sc);
+    if (armato) box.scrollLeft = Math.max(0, (armato.startMin - sc.m0) * px - box.clientWidth / 2 + 60);
+    else if (scrollX >= 0) box.scrollLeft = scrollX;
+    if (!box.getAttribute('data-card')) {
+      box.setAttribute('data-card', '1');
+      box.addEventListener('scroll', plPosizionaCard);
+    }
+  }
+  plMiniatura();
+}
+
 
 /* ---------- vista rent ---------- */
 function renderRent(){

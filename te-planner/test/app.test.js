@@ -271,7 +271,7 @@ const SEED=`(function(){
       const ov=await q.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       if(ov>2)errs.push(`[${w}px] overflow ${ov}px (due=${due} ord=${ord})`);
     }
-    for(const tab of ['assegna','flotta','timeline','rent','servizi']){await q.evaluate(x=>setTab(x),tab);await q.waitForTimeout(90);
+    for(const tab of ['assegna','plancia','flotta','timeline','rent','servizi']){await q.evaluate(x=>setTab(x),tab);await q.waitForTimeout(90);
       const ov=await q.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
       if(ov>2)errs.push(`[${w}px] overflow ${ov}px (tab=${tab})`);}
     for(const vista of ['coda','giri']){

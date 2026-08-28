@@ -377,7 +377,9 @@ raccoglie i servizi **senza autista** e assegnare da lì mette l'autista — por
 il suo mezzo con la stessa regola al contrario (`plUltimoMezzo`). Catene, attese, arrivi,
 piazzole e trascinamento sono gli stessi: cambia solo la chiave (`plChiave()`), non il
 motore. Il pennello lì non serve e sparisce: la corsia **è** l'autista. La scelta resta in
-`localStorage` (`te_plvista`); **a destra** la colonna dei servizi senza mezzo, che scorre da sola e resta
+`localStorage` (`te_plvista`).
+
+**A destra** la colonna dei servizi ancora scoperti, che scorre da sola e resta
 sott'occhio. **Sul telefono** quella colonna non sta a destra: diventa una **striscia in cima**,
 sopra le corsie, che si scorre di lato e resta appiccicata sotto l'intestazione. Scelto un
 servizio si richiude da sola (`▾ vedi l'elenco` la riapre): la striscia gialla dice già cosa

@@ -376,4 +376,27 @@ F.setDATA(Object.assign({},mezzi,{autisti:[
   {nome:'Katiuscia',categoria:'Fisso',stato:'ON',esclusoMotivo:'Indisponibile'}]}));
 eq('se non può nessuno, il campo resta vuoto', F.plUltimoAutista('Vito 1',NUOVO), '');
 
+sezione('Fra i due autisti del mezzo vince quello che ci arriva davvero');
+/* Il caso di Agostino: il van finisce con Ambrogio alle 12:06 a Polignano, il servizio
+   nuovo parte alle 12:40 dall'altra parte (33 minuti di strada: Ambrogio sarebbe sul posto
+   alle 12:39, senza margine). Claudio, che quel van lo prende dopo, ci arriva comodo.
+   «L'ultimo che l'aveva» dava Ambrogio: adesso vince chi si incastra davvero. */
+const AMB = srv({id:'AM',time:'11:50',startMin:710,durMin:16,endMin:726,
+  da:'Rusk',per:'Polignano a Mare',autista:'Tauro Ambrogio',veicolo:'Vito X'});
+const CLA = srv({id:'CL',time:'14:30',startMin:870,durMin:30,endMin:900,
+  da:'Monopoli',per:'Bari',autista:'Claudio Moccia',veicolo:'Vito X'});
+const NUOVO2 = srv({id:'NU',time:'12:40',startMin:760,durMin:15,endMin:775,
+  da:'Jay',per:'Masseria Torre',autista:'',veicolo:''});
+const due={date:'2026-08-28',today:'2026-08-28',weekday:'venerdì',nowMin:-1,bufferDefault:15,
+  services:[AMB,NUOVO2,CLA],
+  transfers:{'AM->NU':{min:33,buffer:15},'NU->CL':{min:20,buffer:15},'AM->CL':{min:20,buffer:15}},
+  autisti:[{nome:'Tauro Ambrogio',categoria:'Fisso',stato:'ON',esclusoMotivo:''},
+           {nome:'Claudio Moccia',categoria:'Fisso',stato:'ON',esclusoMotivo:''}],
+  veicoli:[{nome:'Vito X',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'}],
+  rents:[],prossimi:[],luoghiNomi:[],fornitori:[],base:'Polignano a Mare'};
+F.setDATA(due);
+eq('Ambrogio finisce alle 12:06 ma non ci arriva', F.valutaAutista(NUOVO2,'Tauro Ambrogio').k, 'no');
+eq('Claudio invece sì',                            F.valutaAutista(NUOVO2,'Claudio Moccia').k !== 'no', true);
+eq('il mezzo porta dietro Claudio, non Ambrogio',  F.plUltimoAutista('Vito X',NUOVO2), 'Claudio Moccia');
+
 bilancio();

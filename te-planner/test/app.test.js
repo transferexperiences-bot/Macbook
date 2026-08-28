@@ -664,6 +664,42 @@ const SEED=`(function(){
     await p.evaluate(()=>PL_PENNA==='Pietro Salvi'), null);
   await p.evaluate(()=>{plPosa();PEND={};load();});await p.waitForTimeout(300);
 
+  console.log('\n=== 9septies ter. PLANCIA: l\'autista si prende dal blocco stesso ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_PENNA=null;setPlVista('mezzi');plZoom(1);});
+  await p.waitForTimeout(400);
+  const pr=await p.evaluate(()=>{
+    // una presa che non finisca sotto la colonna dei mezzi, che è appiccicata a sinistra
+    var rail=document.querySelector('.plrail').getBoundingClientRect();
+    var g=[].slice.call(document.querySelectorAll('.plgrip')).filter(function(n){
+      var r=n.getBoundingClientRect();return r.left>rail.right+6&&r.right<window.innerWidth-6;})[0];
+    if(!g)return null;
+    var da=g.parentNode.getAttribute('data-id');
+    var chi=DATA.services.filter(function(x){return x.id===da;})[0].autista;
+    var t=DATA.services.filter(function(x){
+      if(x.startMin<0||!x.veicolo||!x.autista||x.autista===chi)return false;
+      var n=document.querySelector('.plblk[data-id="'+x.id+'"]');
+      return n&&n.getBoundingClientRect().left>rail.right+6;})[0];
+    var blk=document.querySelector('.plblk[data-id="'+t.id+'"]');
+    var a=g.getBoundingClientRect(), b=blk.getBoundingClientRect();
+    return {ax:Math.round(a.left+a.width/2),ay:Math.round(a.top+a.height/2),
+            bx:Math.round(b.left+b.width/2),by:Math.round(b.top+b.height/2),
+            chi:chi,target:t.id,prima:t.autista,vei:t.veicolo};});
+  t('ogni servizio con autista ha la sua presa', !!pr, pr);
+  await p.mouse.move(pr.ax,pr.ay);await p.mouse.down();
+  await p.mouse.move(pr.ax+25,pr.ay+15,{steps:4});
+  await p.mouse.move(pr.bx,pr.by,{steps:8});await p.waitForTimeout(150);
+  const durante2=await p.evaluate(()=>({fantasma:document.querySelectorAll('.plghost').length,
+    bersaglio:document.querySelectorAll('.plblk.plsu').length}));
+  t('trascinando la presa il nome resta in mano', durante2.fantasma===1&&durante2.bersaglio===1, durante2);
+  await p.mouse.up();await p.waitForTimeout(300);
+  const prDopo=await p.evaluate(i=>{var s=DATA.services.filter(function(x){return x.id===i;})[0];
+    return {aut:s.autista,vei:s.veicolo,pend:!!PEND[i],drag:PL_DRAG};},pr.target);
+  t('il servizio prende l\'autista preso dall\'altro blocco',
+    prDopo.aut===pr.chi&&pr.prima!==pr.chi&&prDopo.pend, {preso:pr.chi,prima:pr.prima,dopo:prDopo});
+  t('e il mezzo resta il suo',   prDopo.vei===pr.vei, {atteso:pr.vei,avuto:prDopo.vei});
+  t('niente resta appeso',       prDopo.drag===null, prDopo);
+  await p.evaluate(()=>{PEND={};PL_PENNA=null;load();});await p.waitForTimeout(300);
+
   console.log('\n=== 9octies. PLANCIA: i servizi cancellati non occupano niente ===');
   await p.evaluate(()=>{setTab('plancia');PEND={};PL_ARM=null;PL_PENNA=null;setDue(false);render();});
   await p.waitForTimeout(250);

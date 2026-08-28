@@ -452,6 +452,11 @@ main{padding:12px;}
 .plblk.plmio{outline:2px solid #1668c1;outline-offset:-2px}
 /* il blocco sotto l'autista che stai trascinando */
 .plblk.plsu,.pltile.plsu{outline:3px solid #0b3d66;outline-offset:1px;filter:brightness(1.08)}
+/* la presa dell'autista dentro il blocco: piccola, in un angolo, non copre il testo */
+.plgrip{position:absolute;right:3px;bottom:2px;font-style:normal;font-size:11px;line-height:1;
+  background:rgba(255,255,255,.9);border-radius:5px;padding:2px 3px;cursor:grab;
+  touch-action:none;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.25);z-index:3}
+.plgrip:hover{background:#fff;transform:scale(1.15)}
 .pltile.plmio{border-left-color:#1668c1}
 /* 19. il salvataggio non deve restare in cima alla pagina mentre si lavora a metà giornata */
 /* sopra il messaggino, che sta a 80px: se si coprono a vicenda non si salva più niente */
@@ -2645,16 +2650,24 @@ function plUltimoAutista(veic, S) {
   vicino.sort(function (a, b) {
     return Math.abs(a.startMin - S.startMin) - Math.abs(b.startMin - S.startMin);
   });
-  var visti = {}, ordine = prima.concat(dopo).concat(vicino), ripiego = '';
+  var visti = {}, ordine = prima.concat(dopo).concat(vicino), buoni = [];
   for (var i = 0; i < ordine.length; i++) {
     var nome = ordine[i].autista;
     if (visti[nome]) continue;
     visti[nome] = true;
     var v = valutaAutista(S, nome);
-    if (v.k === 'off' || v.k === 'no') { if (!ripiego) ripiego = ''; continue; }
-    return nome;
+    if (v.k === 'off' || v.k === 'no') continue;      // non può: si passa al prossimo
+    var a = null;
+    DATA.autisti.forEach(function (x) { if (x.nome === nome) a = x; });
+    buoni.push({ nome: nome, p: a ? punteggioAutista(a, v) : 5000, i: buoni.length });
   }
-  return ripiego;
+  if (!buoni.length) return '';
+  /* Fra quelli che possono, non vince «quello di prima» ma quello che **si incastra
+     meglio**: chi finisce a due passi e arriva comodo batte chi finiva prima ma dall'altra
+     parte della Puglia. È lo stesso punteggio dei consigli, così la plancia e il menù del
+     dettaglio non danno due risposte diverse sullo stesso servizio. */
+  buoni.sort(function (x, y) { return x.p - y.p || x.i - y.i; });
+  return buoni[0].nome;
 }
 /* Il mezzo che viene dietro all'autista: il simmetrico di plUltimoAutista, per quando
    si assegna dalla parte delle persone. Stesso filtro — un mezzo fermo, a noleggio o già
@@ -2732,6 +2745,9 @@ function plSpostaAut(s, nome) {
    Ritoccando lo stesso servizio lo si toglie, così il pennello cancella i propri segni.
    Nessun trascinamento: sul telefono e sul monitor si fa lo stesso gesto. */
 var PL_PENNA = null, PL_AUTLISTA = [];
+/* Prendere in mano un autista partendo dal suo nome (non dall'indice della fila): serve
+   alla presa sul blocco, dove l'autista è quello del servizio. */
+function plPennaNome(n) { PL_PENNA = (PL_PENNA === n) ? null : n; PL_ARM = null; render(); }
 function plPenna(k) {
   var n = PL_AUTLISTA[k];
   PL_PENNA = (PL_PENNA === n) ? null : n;
@@ -2811,7 +2827,7 @@ function plPrendiAutista(ev, nome, nodo, k) {
     plPulisci();
     if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
     PL_DRAG = null;
-    if (!mosso) { plPenna(k); return; }              // tocco secco: pennello, come prima
+    if (!mosso) { if (k >= 0) plPenna(k); else plPennaNome(nome); return; }   // tocco secco: pennello
     var s = sopra ? srvPl(sopra.getAttribute('data-id')) : null;
     if (!s) { render(); return; }
     plCon(function () { plDaiAutista(s, nome); });
@@ -3509,6 +3525,10 @@ function renderPlancia_() {
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
         + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
         + ' title="' + esc((s.domani ? 'DOMANI ' : '') + fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'
+        /* la presa: da qui si prende l'autista di QUESTO servizio e lo si porta su un altro
+           blocco. Sta dentro il blocco perché è lì che lo vedi, e non fa partire lo
+           spostamento del servizio: il suo gestore ferma l'evento. */
+        + (!AUT && s.autista && W2 >= 56 ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
         + '<b>' + fmtMin(s.startMin) + ' ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + (male ? ' ⚠' : '') + '</b>'
         + '<span>' + esc((s.nome || s.da) + ' → ' + s.per) + '</span></div>';
     });
@@ -3593,6 +3613,15 @@ function renderPlancia_() {
   aggancia('.pltile');
   /* le caselle degli autisti: tocco secco = pennello, trascinamento = poso quel nome
      sul servizio su cui lascio il mouse */
+  var prese = document.querySelectorAll('.plgrip');
+  for (var ig = 0; ig < prese.length; ig++) (function (nodo) {
+    var nome = nodo.getAttribute('data-aut');
+    if (!nome) return;
+    nodo.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();          // se no parte lo spostamento del servizio
+      plPrendiAutista(e, nome, nodo, -1);
+    });
+  })(prese[ig]);
   var caselle = document.querySelectorAll('.plautc');
   for (var ic = 0; ic < caselle.length; ic++) (function (nodo) {
     var k = +nodo.getAttribute('data-aut'), nome = PL_AUTLISTA[k];

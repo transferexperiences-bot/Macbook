@@ -1265,6 +1265,44 @@ const SEED=`(function(){
     await q.close();
   }
 
+  console.log('\n=== 9quindecies. La barra in cima resta ferma, scorrono solo le corsie ===');
+  {
+    const q=await nuova(1680,900);
+    await q.evaluate(()=>setTab('plancia'));await q.waitForTimeout(250);
+    // una flotta lunga, altrimenti non c'è niente da scorrere
+    await q.evaluate(()=>{
+      var v=[];for(var i=1;i<=9;i++)v.push({nome:'Mezzo '+i,tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'});
+      DATA.veicoli=v;DATA.services.forEach(function(s,i){s.veicolo='Mezzo '+((i%9)+1);});
+      _BYID_SRC=null;render();});
+    await q.waitForTimeout(400);
+    const p0=await q.evaluate(()=>{
+      var box=document.getElementById('plscroll');
+      return {scorre:box.scrollHeight>box.clientHeight+2,
+              ore:Math.round(document.querySelector('.plrow.plhead').getBoundingClientRect().top),
+              barra:Math.round(document.querySelector('.plbar').getBoundingClientRect().top),
+              box:Math.round(box.getBoundingClientRect().top),
+              sotto:Math.round(window.innerHeight-box.getBoundingClientRect().bottom)};});
+    t('la plancia scorre da sola in verticale', p0.scorre, p0);
+    t('e non finisce sotto la barra delle schede', p0.sotto>=60, p0);
+    await q.evaluate(()=>{document.getElementById('plscroll').scrollTop=400;});
+    await q.waitForTimeout(200);
+    const p1=await q.evaluate(()=>{
+      var box=document.getElementById('plscroll');
+      var prima=document.querySelectorAll('.plrow')[1];
+      return {ore:Math.round(document.querySelector('.plrow.plhead').getBoundingClientRect().top),
+              barra:Math.round(document.querySelector('.plbar').getBoundingClientRect().top),
+              box:Math.round(box.getBoundingClientRect().top),
+              corsia:Math.round(prima.getBoundingClientRect().top),
+              scrollTop:box.scrollTop};});
+    t('scorrendo, la riga delle ore resta in cima', Math.abs(p1.ore-p1.box)<=2&&p1.scrollTop>0, {p0:p0,p1:p1});
+    t('e i comandi non si muovono di un pixel', p1.barra===p0.barra, {p0:p0,p1:p1});
+    t('mentre le corsie sì', p1.corsia<p0.box, {p0:p0,p1:p1});
+    // e l'etichetta dell'angolo non dice più «00:00 › 00:00»
+    const ang=await q.evaluate(()=>document.querySelector('.plrow.plhead .plrail span').textContent);
+    t('l\'angolo dice l\'orario vero, non 00:00 › 00:00', !/^00:00 › 00:00$/.test(ang), ang);
+    await q.close();
+  }
+
   await b.close();
   bilancio();
 })();

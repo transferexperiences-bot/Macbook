@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (215 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (221 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -397,6 +397,15 @@ ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in 
 senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista**, togliere
 **l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
 
+**La plancia scorre da sola**, in tutte e due le direzioni (`.plscroll{overflow:auto}`, con
+l'altezza calcolata dopo il disegno da `plAltezzaFinestra()`: quel che resta di finestra
+sotto i comandi, meno la barra delle schede e quella gialla del salvataggio). Così scendendo
+si muovono **solo le corsie**: la riga delle ore resta incollata in cima (`plhead` è
+`position:sticky`, e uno sticky funziona solo dentro il contenitore che scorre — prima era
+dentro un contenitore che in verticale non scorreva, e non teneva niente), la colonna dei
+mezzi resta a sinistra, i comandi e i chip degli autisti non si muovono. L'angolo in alto a
+sinistra dice l'orario della giornata mostrata: `24:00`, non `00:00` come prima.
+
 **Lo zoom** si comanda in quattro modi e resta sempre **ancorato al punto che stai
 guardando** — il minuto sotto il dito (o sotto il puntatore, o al centro) non si sposta:
 i tre bottoni `−` `adatta` `+`, le **due dita** sul telefono, il **pinch del trackpad** sul
@@ -528,7 +537,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **393 controlli automatici, tutti verdi.**
+libera. **399 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -539,7 +548,8 @@ del salvataggio · **9septies** il pennello autista · **9septies bis** l'autist
 **9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo ·
 **9undecies** lo zoom da Mac, telefono e tastiera, e la Plancia a tutta finestra ·
 **9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo ·
-**9quaterdecies** giornata fitta e nomi lunghi: niente si accavalla, niente si taglia.
+**9quaterdecies** giornata fitta e nomi lunghi: niente si accavalla, niente si taglia ·
+**9quindecies** la barra in cima resta ferma, scorrono solo le corsie.
 
 Da fare fuori dal codice:
 

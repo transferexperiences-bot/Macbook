@@ -246,11 +246,16 @@ main{padding:12px;}
   border-radius:9px;padding:8px 11px;margin-bottom:8px;font-size:13px;line-height:1.35}
 
 .plwrap{border:1px solid var(--bordo);border-radius:10px;background:var(--card);overflow:hidden}
-.plscroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+/* La plancia scorre da sola in TUTTE E DUE le direzioni: così scendendo si muovono solo
+   le corsie, mentre la riga delle ore resta incollata in cima (`plhead` è sticky, e uno
+   sticky funziona solo dentro il suo contenitore che scorre). L'altezza gliela dà il
+   codice dopo il disegno — quello che resta di finestra sotto la barra dei comandi. */
+.plscroll{overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .plgrid{position:relative;display:inline-block;min-width:100%}
 .plrow{display:flex;border-bottom:1px solid var(--bordo)}
 .plrow:last-child{border-bottom:0}
-.plrow.plhead{border-bottom:2px solid var(--testo);position:sticky;top:0;z-index:5;background:var(--card)}
+.plrow.plhead{border-bottom:2px solid var(--testo);position:sticky;top:0;z-index:6;background:var(--card)}
+.plrow.plhead .plrail{z-index:8}   /* l'angolo in alto a sinistra sta sopra tutti e due */
 .plrail{flex:0 0 116px;position:sticky;left:0;z-index:4;background:var(--card);border-right:1px solid var(--bordo);
   padding:7px 8px;font-size:12px;line-height:1.25}
 .plrail b{display:block;font-size:12.5px}
@@ -3425,7 +3430,11 @@ function renderPlancia_() {
 
   h += '<div class="plmain">' + vass + '<div class="plwrap"><div class="plscroll" id="plscroll"><div class="plgrid" id="plgrid">';
   /* riga delle ore */
-  h += '<div class="plrow plhead"><div class="plrail"><b>Ora</b><span>' + ('0' + (sc.h0 % 24)).slice(-2) + ':00 › ' + ('0' + (sc.h1 % 24)).slice(-2) + ':00</span></div>'
+  /* «00:00 › 00:00» non voleva dire niente: la fine della giornata è 24:00, e con i due
+     giorni accesi è un'ora del giorno dopo. */
+  var fine0 = sc.h1 >= 24 ? (sc.h1 === 24 ? '24:00' : ('0' + (sc.h1 - 24)).slice(-2) + ':00 di domani')
+                          : ('0' + sc.h1).slice(-2) + ':00';
+  h += '<div class="plrow plhead"><div class="plrail"><b>Ora</b><span>' + ('0' + (sc.h0 % 24)).slice(-2) + ':00 › ' + fine0 + '</span></div>'
     + '<div class="pllane plhrs" style="width:' + Math.round(tot) + 'px">';
   // il passo non lo decide solo lo zoom: due etichette non devono toccarsi
   var passo = 15, PASSI = [15, 30, 60, 120, 180, 240, 360, 720];
@@ -3835,6 +3844,7 @@ function renderPlancia_() {
     PL_RIFATTO = true; renderPlancia_(); PL_RIFATTO = false; return;
   }
   if (box) {
+    plAltezzaFinestra();
     plAggiungiZoomGesti(box, sc);
     if (armato) box.scrollLeft = Math.max(0, (armato.startMin - sc.m0) * px - box.clientWidth / 2 + 60);
     else if (scrollX >= 0) box.scrollLeft = scrollX;
@@ -3846,6 +3856,20 @@ function renderPlancia_() {
   plMiniatura();
 }
 
+
+/* Quanta finestra resta alla plancia: dal suo bordo di sopra fino in fondo, meno la barra
+   delle schede (e quella gialla del salvataggio, quando c'è). Senza questa misura il
+   contenitore non ha un'altezza e non scorre: le ore se ne andrebbero su come prima. */
+function plAltezzaFinestra() {
+  var box = document.getElementById('plscroll');
+  if (!box) return;
+  var sotto = 78;                                   // la barra delle schede, in fondo
+  var salva = document.querySelector('.plsalva');
+  if (salva) sotto = Math.max(sotto, 96 + salva.offsetHeight);   // la barra gialla sta a 88px
+  var h = Math.round(window.innerHeight - box.getBoundingClientRect().top - sotto - 8);
+  box.style.maxHeight = Math.max(240, h) + 'px';
+}
+window.addEventListener('resize', function () { if (TAB === 'plancia') plAltezzaFinestra(); });
 
 /* ---------- vista rent ---------- */
 function renderRent(){

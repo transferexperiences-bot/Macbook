@@ -1391,6 +1391,70 @@ const SEED=`(function(){
     await q.close();
   }
 
+  console.log('\n=== 9septdecies. Una giornata piena non deve appesantire la plancia ===');
+  {
+    const q=await nuova(1680,950);
+    await q.evaluate(()=>setTab('plancia'));await q.waitForTimeout(250);
+    // trenta mezzi, quindici autisti, centoventi servizi: la giornata di una stagione vera
+    await q.evaluate(()=>{
+      var V=[],A=[],k;
+      for(k=1;k<=30;k++)V.push({nome:'Mezzo '+k,tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'});
+      for(k=1;k<=15;k++)A.push({nome:'Autista '+k,categoria:'Fisso',stato:'ON',esclusoMotivo:''});
+      DATA.veicoli=V;DATA.autisti=A;
+      var base=JSON.parse(JSON.stringify(DATA.services[0])),S=[];
+      for(k=0;k<120;k++){var s=JSON.parse(JSON.stringify(base));
+        s.id='P'+k;s.startMin=300+((k*37)%900);s.durMin=30+((k*7)%60);s.endMin=s.startMin+s.durMin;
+        s.time=('0'+Math.floor(s.startMin/60)).slice(-2)+':'+('0'+(s.startMin%60)).slice(-2);
+        s.da='Masseria Torre Abate Risi, C.da Cerasino';s.per='Aeroporto di Bari - Arrivi';
+        s.nome='Gruppo '+k;s.pax=4+(k%4);s.autista=A[k%15].nome;s.veicolo=V[k%30].nome;
+        s.stato='';s.allert='';s.rientroMin=20;S.push(s);}
+      DATA.services=S;DATA.transfers={};
+      S.forEach(function(a){S.forEach(function(z){if(a!==z&&Math.abs(a.startMin-z.startMin)<240)
+        DATA.transfers[a.id+'->'+z.id]={min:20,buffer:15,km:15};});});
+      _BYID_SRC=null;render();});
+    await q.waitForTimeout(600);
+    /* Il conto delle verifiche è il termometro: una per blocco. Quando la plancia si
+       disegnava due volte (il ridisegno di misurazione scattava sempre, perché con la
+       scala minima la giornata è più larga della finestra per costruzione) erano il
+       doppio, e il trascinamento andava a scatti. */
+    const giro=await q.evaluate(()=>{
+      var n=0, f=window.plVerifica;
+      window.plVerifica=function(){n++;return f.apply(null,arguments);};
+      var t0=performance.now(); render(); var ms=performance.now()-t0;
+      window.plVerifica=f;
+      return {verifiche:n, blocchi:document.querySelectorAll('.plblk').length, ms:Math.round(ms)};});
+    t('un disegno = una verifica per blocco, non due',
+      giro.verifiche<=giro.blocchi+giro.blocchi/4, giro);
+    t('e centoventi servizi si disegnano in un lampo', giro.ms<400, giro);
+    // trascinando dentro la stessa corsia il verdetto non si rifà a ogni pixel
+    const blk=await q.evaluate(()=>{var n=document.querySelector('.plblk');var r=n.getBoundingClientRect();
+      window.__V=0; var f=window.plVerifica;
+      window.plVerifica=function(){window.__V++;return f.apply(null,arguments);};
+      return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};});
+    await q.mouse.move(blk.x,blk.y);await q.mouse.down();
+    for(let i=0;i<12;i++)await q.mouse.move(blk.x+30+i*6, blk.y+2,{steps:1});
+    const dur=await q.evaluate(()=>window.__V);
+    await q.mouse.up();await q.waitForTimeout(200);
+    t('trascinando nella stessa corsia il verdetto si calcola una volta', dur<=3, dur);
+    // ai bordi la plancia si sposta da sola, se no le corsie fuori schermo non si raggiungono
+    const scorso=await q.evaluate(async()=>{
+      var box=document.getElementById('plscroll');
+      box.scrollLeft=0;
+      return {prima:box.scrollLeft, r:box.getBoundingClientRect().right, y:box.getBoundingClientRect().top+80};});
+    await q.mouse.move(blk.x,blk.y);await q.mouse.down();
+    await q.mouse.move(blk.x+40,blk.y,{steps:1});
+    await q.mouse.move(scorso.r-12,scorso.y,{steps:1});
+    await q.waitForTimeout(260);
+    const dopo=await q.evaluate(()=>document.getElementById('plscroll').scrollLeft);
+    await q.mouse.up();await q.waitForTimeout(250);
+    t('e verso il bordo scorre da sola', dopo>scorso.prima, {prima:scorso.prima,dopo:dopo});
+    t('ma appena molli si ferma', await q.evaluate(async()=>{
+      var a=document.getElementById('plscroll').scrollLeft;
+      await new Promise(function(r){setTimeout(r,300);});
+      return document.getElementById('plscroll').scrollLeft===a;}), null);
+    await q.close();
+  }
+
   await b.close();
   bilancio();
 })();

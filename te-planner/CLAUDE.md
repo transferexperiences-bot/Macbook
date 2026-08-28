@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (234 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (239 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -328,6 +328,26 @@ zone, leggi `docs/REVISIONE_v5.md`.
     ritardo si scrive in rosso. Regola generale: **i numeri che si leggono non si calcolano
     mai da una variabile nata per disegnare.**
 
+20. **La plancia disegnata due volte.** C'è un ridisegno di misurazione: al primo giro la
+    colonna dei mezzi non esiste ancora, quindi «adatta» sbaglia la larghezza e si rifà
+    **una volta** (`PL_MISURATO`, `PL_RIFATTO`). La condizione era
+    `box.scrollWidth > box.clientWidth + 2` — «la giornata non ci sta nella finestra». Con
+    la **scala minima** del Mac (3 px al minuto) quella condizione è vera **per
+    costruzione**: la plancia si è messa a disegnarsi due volte a ogni giro, con il doppio
+    delle verifiche e il trascinamento a scatti. Ora il ridisegno scatta solo quando la
+    scala è davvero quella «adatta» (`plLarghezzaUtile()/(m1-m0) > plPxMin()`). Regola:
+    quando cambi il modo in cui si sceglie la scala, ricontrolla chi legge `scrollWidth`.
+    Il termometro è in `app.test.js` 9septdecies: **una verifica per blocco, non due**.
+
+21. **Il verdetto ricalcolato a ogni pixel.** Mentre trascini, `plVerifica(s, veic, true)`
+    ricostruisce la catena: la risposta però è la stessa finché resti sulla stessa corsia.
+    Si tiene l'ultima e si rifà solo al cambio di corsia (26 verifiche → 11 su un
+    trascinamento di venticinque mosse). E da quando la plancia scorre dentro il suo
+    riquadro serve lo **scorrimento automatico ai bordi** (`plTrascina`), se no una corsia
+    fuori schermo è irraggiungibile: si resta col blocco in mano senza poterlo posare.
+    L'intervallo che scorre si spegne da sé appena `PL_DRAG` è nullo — un intervallo che
+    non si spegne è la app che scorre da sola per sempre.
+
 ---
 
 ## Convenzioni
@@ -564,7 +584,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **412 controlli automatici, tutti verdi.**
+libera. **417 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -577,7 +597,8 @@ del salvataggio · **9septies** il pennello autista · **9septies bis** l'autist
 **9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo ·
 **9quaterdecies** giornata fitta e nomi lunghi: niente si accavalla, niente si taglia ·
 **9quindecies** la barra in cima resta ferma, scorrono solo le corsie ·
-**9sexdecies** dalla scheda ridotta: chi guida e a che ora.
+**9sexdecies** dalla scheda ridotta: chi guida e a che ora ·
+**9septdecies** una giornata piena non appesantisce la plancia.
 
 Da fare fuori dal codice:
 

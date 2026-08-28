@@ -2448,6 +2448,7 @@ function plLarghezzaUtile() {
   var w = PL_RAIL_W || (window.innerWidth >= 820 ? 176 : 116);
   return Math.max(200, (m ? m.clientWidth : 360) - w - 26);
 }
+function plPxMin() { return PL_GRANDE ? 3 : 0.12; }
 function plPx(sc) {
   if (PL_PX) return PL_PX;
   var adatta = plLarghezzaUtile() / (sc.m1 - sc.m0);
@@ -2456,7 +2457,7 @@ function plPx(sc) {
      sotto una scala minima non si scende: un'ora sono 180 px, e la plancia scorre di lato
      (c'è la miniatura sotto, e lo zoom con + − 0 resta a portata). Sul telefono no: lì
      lo schermo è corto davvero e la giornata intera serve, si ingrandisce con le dita. */
-  return Math.max(0.12, PL_GRANDE ? Math.max(adatta, 3) : adatta);
+  return Math.max(0.12, Math.max(adatta, PL_GRANDE ? plPxMin() : 0));
 }
 function plSetPx(v) {
   PL_PX = v ? Math.max(0.12, Math.min(9, v)) : 0;
@@ -3082,7 +3083,7 @@ function plSpegni() {
   var t = document.getElementById('pltiles');
   if (t) t.className = t.className.replace(/\s*pldrop\b/g, '');
 }
-function plPulisci() { plSpegni(); plMsgOff(); }
+function plPulisci() { plSpegni(); plMsgOff(); plScorriFerma(); }
 function plRisali(n, cls) {
   while (n && n !== document.body) {
     if (n.id === cls) return n;
@@ -3095,6 +3096,7 @@ function plPrendi(ev, s, nodo, colore) {
   if (ev.pointerType === 'mouse' && ev.button !== 0) return;
   if (PL_PINCH || ev.isPrimary === false || PL_DRAG) return;
   var x0 = ev.clientX, y0 = ev.clientY, mosso = false, ghost = null, dove;
+  var ultimaCorsia = null, ultimoR = null;   // il verdetto costa: si rifà solo se cambi corsia
   function muovi(e) {
     if (PL_PINCH) { mosso = false; return; }
     if (!mosso) {
@@ -3120,17 +3122,22 @@ function plPrendi(ev, s, nodo, colore) {
     plSpegni();
     if (tray) tray.className += ' pldrop';
     dove = undefined;
+    plTrascina(e);                      // ai bordi la plancia si sposta da sola
     if (lane && lane.getAttribute('data-v') !== null) {
       var veic = lane.getAttribute('data-v');
-      var r = plVerifica(s, veic, true);
+      /* Ricostruire la catena a ogni pixel di movimento era il grosso dello scatto: la
+         risposta è la stessa finché il dito resta sulla stessa corsia. */
+      if (veic !== ultimaCorsia) { ultimaCorsia = veic; ultimoR = plVerifica(s, veic, true); }
+      var r = ultimoR;
       lane.className += ' ' + (r.ok ? 'plok' : 'plno');
       plMsg(e.clientX, e.clientY, r.ok ? r.msg : (r.msg + ' — lo metto lo stesso'), !r.ok);
       // dove lasci la scheda, lì va: la app avvisa, non decide al posto tuo
       dove = veic;
     } else if (tray) {
+      ultimaCorsia = null;
       plMsg(e.clientX, e.clientY, 'Torna fra i da assegnare', false);
       dove = '';
-    } else plMsgOff();
+    } else { ultimaCorsia = null; plMsgOff(); }
   }
   var finito = false;
   function molla() {
@@ -3159,11 +3166,36 @@ function plPrendi(ev, s, nodo, colore) {
   window.addEventListener('pointercancel', molla, true);
   window.addEventListener('blur', molla, true);
 }
+/* Trascinando verso il bordo la plancia si sposta da sola: da quando scorre dentro il suo
+   riquadro, una corsia fuori schermo era irraggiungibile — si restava col blocco in mano
+   senza poterlo posare. Vale in tutte e due le direzioni; il passo cresce vicino al bordo. */
+var PL_SCORRI = null;
+function plTrascina(e) {
+  var box = document.getElementById('plscroll');
+  if (!box) return;
+  var r = box.getBoundingClientRect(), soglia = 46, dx = 0, dy = 0;
+  if (e.clientX < r.left + soglia) dx = -Math.ceil((r.left + soglia - e.clientX) / 3);
+  else if (e.clientX > r.right - soglia) dx = Math.ceil((e.clientX - (r.right - soglia)) / 3);
+  if (e.clientY < r.top + soglia) dy = -Math.ceil((r.top + soglia - e.clientY) / 3);
+  else if (e.clientY > r.bottom - soglia) dy = Math.ceil((e.clientY - (r.bottom - soglia)) / 3);
+  if (!dx && !dy) { plScorriFerma(); return; }
+  box.scrollLeft += dx; box.scrollTop += dy;
+  // e continua anche se il dito resta fermo contro il bordo
+  if (!PL_SCORRI) PL_SCORRI = setInterval(function () {
+    // si ferma da sé appena il blocco non è più in mano: un intervallo che non si spegne
+    // è la app che scorre da sola per sempre
+    var b = document.getElementById('plscroll');
+    if (!b || !PL_DRAG) return plScorriFerma();
+    b.scrollLeft += dx; b.scrollTop += dy;
+  }, 60);
+}
+function plScorriFerma() { if (PL_SCORRI) { clearInterval(PL_SCORRI); PL_SCORRI = null; } }
+
 /* Rete di sicurezza: qualunque cosa succeda, un trascinamento non deve poter restare
    acceso. Se resta, render() esce subito e la app smette di disegnarsi — è così che si
    restava appesi alla rotella con il fantasma a mezz'aria. */
 function plMollaTutto() {
-  PL_DRAG = null; PL_PINCH = null;
+  PL_DRAG = null; PL_PINCH = null; plScorriFerma();
   plPulisci();
   var g = document.querySelectorAll('.plghost');
   for (var i = 0; i < g.length; i++) if (g[i].parentNode) g[i].parentNode.removeChild(g[i]);
@@ -3999,10 +4031,13 @@ function renderPlancia_() {
     nodo.addEventListener('pointerdown', function (e) { plPrendiAutista(e, nome, nodo, k); });
   })(caselle[ic]);
   var box = document.getElementById('plscroll');
-  if (box && !PL_PX && !PL_MISURATO && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
-    // al primo disegno la colonna dei mezzi non esisteva ancora e la misura era teorica:
-    // ora che è a schermo rifaccio UNA volta, e poi basta — rifarlo a ogni tocco costava
-    // il doppio del disegno su una flotta vera
+  /* Il ridisegno di misurazione serve solo quando la scala è davvero «adatta alla
+     finestra»: allora la larghezza della colonna dei mezzi cambia il risultato. Con la
+     scala minima (sul Mac non si scende sotto i 3 px/minuto) la giornata è più larga della
+     finestra PER COSTRUZIONE, e quella condizione era sempre vera: la plancia si
+     ridisegnava due volte a ogni giro — il doppio del lavoro, e il trascinamento a scatti. */
+  var suMisura = !PL_PX && (plLarghezzaUtile() / (sc.m1 - sc.m0)) > plPxMin();
+  if (box && suMisura && !PL_MISURATO && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
     PL_MISURATO = true;
     PL_RIFATTO = true; renderPlancia_(); PL_RIFATTO = false; return;
   }

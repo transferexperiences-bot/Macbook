@@ -326,7 +326,9 @@ eq('il pennello del mezzo non eredita un autista cancellato', F.plUltimoAutista(
 // controprova: la stessa riga senza Allert torna a contare
 F.setDATA(Object.assign({},canc,{services:[Object.assign({},XCANC,{allert:''}),CDOPO]}));
 eq('senza Allert il mezzo è di nuovo occupato', !!F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], true);
-eq('e l\'ultimo autista del mezzo si ritrova',  F.plUltimoAutista('Vito 1',CDOPO), 'Marco Rossi');
+// (qui Marco è occupato proprio da quel servizio: l'ereditato salta chi non può guidare,
+//  quindi il controllo giusto è che la riga sia tornata nella catena del mezzo)
+eq('e il servizio torna nella catena del mezzo', F.catenaDi('veicolo','Vito 1',null).length, 1);
 
 sezione('Cancellato nelle Note: stesso effetto dell\'Allert');
 /* Frontend e backend devono dare la stessa risposta sulla stessa riga: qui si controlla
@@ -346,5 +348,32 @@ eq('per la app è cancellato',           F.isCanc(NOTA), true);
 eq('non entra nell\'indice del mezzo',  F.srvDi('veicolo','Vito 1').length, 0);
 eq('il mezzo resta libero',             F.availability(canc.veicoli,s=>s.veicolo,CDOPO,'veicolo')['Vito 1'], null);
 eq('e l\'autista non se lo porta dietro', F.plUltimoAutista('Vito 1',CDOPO), '');
+
+sezione('L\'autista che viene dietro al mezzo dev\'essere uno che può farlo');
+/* Il caso vero: il mezzo l'aveva guidato Angelo, ma oggi Angelo è a riposo e chi sta
+   lavorando è Katiuscia. Prendere «l'ultimo che l'aveva» senza guardare se può è come
+   assegnare a caso: si passa al candidato successivo. */
+const V1 = srv({id:'V1',time:'06:00',startMin:360,durMin:60,endMin:420,
+  da:'Polignano a Mare',per:'Monopoli',autista:'Angelo Riposo',veicolo:'Vito 1'});
+const V2 = srv({id:'V2',time:'08:00',startMin:480,durMin:60,endMin:540,
+  da:'Monopoli',per:'Bari',autista:'Katiuscia',veicolo:'Vito 1'});
+const NUOVO = srv({id:'V3',time:'11:00',startMin:660,durMin:60,endMin:720,
+  da:'Bari',per:'Ostuni',autista:'',veicolo:''});
+const mezzi={date:'2026-08-28',today:'2026-08-28',weekday:'venerdì',nowMin:-1,bufferDefault:15,
+  services:[V1,V2,NUOVO],
+  transfers:{'V1->V3':{min:20,buffer:15},'V2->V3':{min:20,buffer:15},'V1->V2':{min:20,buffer:15}},
+  autisti:[{nome:'Angelo Riposo',categoria:'Extra',stato:'ON',esclusoMotivo:'Riposo fisso (venerdì)'},
+           {nome:'Katiuscia',categoria:'Fisso',stato:'ON',esclusoMotivo:''}],
+  veicoli:[{nome:'Vito 1',tipo:'Minivan',pax:8,fuoriServizio:false,inRent:false,stato:'ON'}],
+  rents:[],prossimi:[],luoghiNomi:[],fornitori:[],base:'Polignano a Mare'};
+F.setDATA(mezzi);
+eq('Angelo oggi non può',                 F.valutaAutista(NUOVO,'Angelo Riposo').k, 'off');
+eq('Katiuscia sì',                        F.valutaAutista(NUOVO,'Katiuscia').k !== 'off', true);
+eq('il mezzo porta dietro chi può guidarlo', F.plUltimoAutista('Vito 1',NUOVO), 'Katiuscia');
+// e se nessuno dei due può, meglio vuoto che un nome impossibile
+F.setDATA(Object.assign({},mezzi,{autisti:[
+  {nome:'Angelo Riposo',categoria:'Extra',stato:'ON',esclusoMotivo:'Riposo fisso (venerdì)'},
+  {nome:'Katiuscia',categoria:'Fisso',stato:'ON',esclusoMotivo:'Indisponibile'}]}));
+eq('se non può nessuno, il campo resta vuoto', F.plUltimoAutista('Vito 1',NUOVO), '');
 
 bilancio();

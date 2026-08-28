@@ -496,8 +496,13 @@ const SEED=`(function(){
   await p.evaluate(()=>{PEND={};PL_ARM=null;PL_DRAG=null;setDue(false);render();});await p.waitForTimeout(250);
   const au=await p.evaluate(()=>{
     var out={};
-    // 1. servizio senza autista e senza mezzo → prende l'ultimo autista di quel mezzo
-    var s=DATA.services.filter(x=>!x.veicolo&&!x.autista)[0];
+    // 1. servizio senza autista e senza mezzo → prende l'ultimo autista di quel mezzo.
+    //    Lo metto in un'ora in cui quell'autista è davvero libero: da quando l'ereditato
+    //    salta chi non può guidare, un servizio sovrapposto non erediterebbe nessuno.
+    var s=JSON.parse(JSON.stringify(DATA.services[0]));
+    s.id='EREDE';s.startMin=1290;s.durMin=45;s.endMin=1335;s.time='21:30';
+    s.da='Bari';s.per='Ostuni';s.autista='';s.veicolo='';s.nome='Erede';s.allert='';s.note='';
+    DATA.services.push(s);_BYID_SRC=null;
     out.atteso=plUltimoAutista('Vito 1',s);
     plSposta(s,'Vito 1');
     var d=DATA.services.filter(x=>x.id===s.id)[0];
@@ -610,7 +615,7 @@ const SEED=`(function(){
   t('col pennello in mano vince il nome che tieni tu',
     vince.aut==='Pietro Salvi'&&vince.pend==='Pietro Salvi', vince);
   t('e non l\'ultimo autista che aveva quel mezzo',
-    vince.vecchio!==''&&vince.vecchio!=='Pietro Salvi', vince);
+    vince.vecchio!=='Pietro Salvi', vince);
   t('il mezzo resta quello che hai scelto', vince.vei==='Vito 1', vince);
   await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
   await p.evaluate(()=>plPosa());await p.waitForTimeout(200);
@@ -907,6 +912,30 @@ const SEED=`(function(){
             gap:gap?parseFloat(getComputedStyle(gap).fontSize):0,
             ov:document.documentElement.scrollWidth-document.documentElement.clientWidth};});
   t('a 1900px la plancia usa tutta la finestra', mac.main>=mac.vp-40, mac);
+  // blocchi più alti, e il nome del cliente nella fascia quando il blocco è stretto
+  const grande=await p.evaluate(()=>{
+    var h=Math.round(document.querySelector('.plblk').getBoundingClientRect().height);
+    var stretti=[].slice.call(document.querySelectorAll('.plblk')).filter(function(n){
+      return n.getBoundingClientRect().width<74;});
+    var fascia=[].slice.call(document.querySelectorAll('.plora.plofin')).map(function(n){return n.textContent;}).join(' | ');
+    var nomiFuori=stretti.filter(function(n){
+      var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
+      return s&&fascia.indexOf(s.nome||s.da)>=0;});
+    return {h:h, stretti:stretti.length, conNome:nomiFuori.length, fascia:fascia.slice(0,80)};});
+  t('i blocchi sono più alti sullo schermo grande', grande.h>=44, grande);
+  t('e il nome esce nella fascia quando il blocco è stretto',
+    grande.stretti===0||grande.conNome>0, grande);
+  // viaggio e attesa devono sembrare due cose diverse
+  const barre=await p.evaluate(()=>{
+    var v=document.querySelector('.plgvia'), a=document.querySelector('.plgatt');
+    if(!v||!a)return null;
+    var sv=getComputedStyle(v), sa=getComputedStyle(a);
+    return {viaggio:sv.backgroundImage.slice(0,30), attesa:sa.backgroundImage.slice(0,30),
+            bordoV:sv.boxShadow!=='none', bordoA:sa.boxShadow!=='none',
+            hV:Math.round(v.getBoundingClientRect().height)};});
+  t('il viaggio è righe, l\'attesa è liscia',
+    !!barre&&barre.viaggio!==barre.attesa&&barre.viaggio.indexOf('gradient')>=0, barre);
+  t('e tutte e due hanno un bordo che le stacca', !!barre&&barre.bordoV&&barre.bordoA, barre);
   t('e le scritte non sono più da telefono',    mac.ore>=11&&mac.gap>=11, mac);
   t('senza far scorrere la pagina di lato',     mac.ov<=2, mac.ov);
   // le altre schede restano incolonnate, non si allargano

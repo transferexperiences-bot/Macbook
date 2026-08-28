@@ -48,8 +48,8 @@ src/Code.gs           backend: legge il foglio, calcola durate e incastri, scriv
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (170 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (112 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (174 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -403,18 +403,25 @@ mano, i servizi di quell'autista sono cerchiati sulla plancia. Gli autisti sono 
 carico di giornata, e chi non può lavorare sta in fondo con 🚫 (assegnabile lo stesso: la
 plancia avvisa, non blocca). **Assegnando un mezzo, l'autista viene dietro**: quello che
 guidava quel mezzo prima di questo servizio (o, se prima non c'è nessuno, il primo che lo
-prende dopo) — ma se hai un nome **in mano col pennello**, vince quello: è una scelta, non
+prende dopo) — **saltando chi non può guidarlo**: uno in riposo, uno indisponibile o uno che
+in quel momento sta guidando altrove non è «l'autista di quel mezzo», si passa al candidato
+successivo, e se non ne resta nessuno il campo si lascia vuoto invece di riempirlo con un
+nome impossibile. Se hai un nome **in mano col pennello**, vince quello: è una scelta, non
 un automatismo. Se sul servizio l'autista c'è già, **non si tocca**. Il salvataggio è una barra
 gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
 giornata, e `💾 Salva tutto` deve restare a portata di pollice.
 
 Ogni corsia ha in cima una **fascia riservata alle ore**: sopra ogni blocco si legge
-**`07:00 → 08:10 · 42 km · 1h 10m`** — partenza, arrivo, distanza, tempo. Dentro il blocco il
+**`07:00 → 08:10 · 42 km · 1h 10m`** — partenza, arrivo, distanza, tempo. Se il blocco è
+troppo stretto per contenere il nome del cliente, **il nome lo scrive la fascia**
+(`07:00 → 08:10 · Famiglia Bianchi · 38 km`): si legge di chi è il servizio senza passarci
+sopra col mouse. Sullo schermo grande i blocchi sono anche più alti (46px invece di 38). Dentro il blocco il
 testo è quasi sempre tagliato (`06:…`), e sopra il blocco senza fascia l'etichetta finiva
 coperta dal blocco stesso: la fascia è l'unico modo perché quelle ore si vedano **sempre**.
 C'è solo quando la corsia ha una riga sola — con i servizi impilati non si capirebbe di chi
-sono. Fra un servizio e l'altro la barra è divisa in **viaggio** (tratteggiato) e **attesa**
-(liscia), e sotto la barra, dove il viaggio finisce, c'è **`arrivo 10:30 · 25m · 18 km`**:
+sono. Fra un servizio e l'altro la barra è divisa in **viaggio** (azzurro a righe oblique, bordo
+pieno: è strada) e **attesa** (grigio chiaro, liscia: è tempo fermo) — prima erano due grigi
+quasi uguali e non si distinguevano, e sotto la barra, dove il viaggio finisce, c'è **`arrivo 10:30 · 25m · 18 km`**:
 l'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Sopra e sotto perché così
 non si accavallano mai. Lo spazio per quell'etichetta si misura su **tutto il buco**, non
 sulla sola attesa: con le catene strette l'attesa è zero e l'ora d'arrivo non compariva mai —
@@ -452,7 +459,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **334 controlli automatici, tutti verdi.**
+libera. **342 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

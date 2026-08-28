@@ -285,9 +285,14 @@ main{padding:12px;}
 .plora.plarr{color:#1c7a45;background:#eaf6ee}
 .plora.pltardi{color:#a3231c;background:#fdecea;z-index:4;box-shadow:0 0 0 1px #f3b6b1}
 .plgap i{font-style:normal;font-size:9.5px;color:#3c4650;line-height:16px;white-space:nowrap}
-.plgvia{background:repeating-linear-gradient(135deg,#b9c3cc 0 4px,#cdd5db 4px 8px);opacity:.95}
-.plgvia i{color:#2b3a45;font-weight:700}
-.plgatt{background:#e6e9ec;opacity:.9}
+/* Viaggio e attesa sono due cose diverse e devono sembrarlo: il viaggio è una strada
+   (azzurro, righe oblique, bordo pieno), l'attesa è tempo fermo (grigio chiaro, liscia,
+   bordo tratteggiato). Prima erano due grigi quasi uguali. */
+.plgvia{background:repeating-linear-gradient(135deg,#8fb8dd 0 5px,#b9d4ee 5px 10px);
+  box-shadow:inset 0 0 0 1.5px #4b86bb;border-radius:4px}
+.plgvia i{color:#123a5c;font-weight:700}
+.plgatt{background:#eef0f2;box-shadow:inset 0 0 0 1.5px #cbd2d8;border-radius:4px}
+.plgatt i{color:#5b6670;font-weight:600}
 .plgno{background:repeating-linear-gradient(135deg,rgba(197,34,31,.55) 0 4px,rgba(197,34,31,.25) 4px 8px)}
 .plgno i{color:#7d1512;font-weight:700}
 .plov{position:absolute;top:0;bottom:0;pointer-events:none;z-index:3;
@@ -500,8 +505,9 @@ main{padding:12px;}
   .plora{font-size:11.5px;height:15px;line-height:15px;padding:0 4px}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
-  .plblk{font-size:12px;line-height:13.5px}
-  .plblk b{font-size:12px}
+  .plblk{font-size:13px;line-height:15px;padding:4px 8px}
+  .plblk b{font-size:13px}
+  .plora{font-weight:700}
   .plov i{font-size:11.5px}
   .plslot i{font-size:13px}
   .plrail b{font-size:14px}
@@ -2579,18 +2585,35 @@ function plEtichetta(esito, centro, tot) {
 /* Chi guida quel mezzo in giornata: l'ultimo che l'aveva prima di questo servizio, e se
    prima non c'è nessuno il primo che lo prende dopo. Serve solo a proporre: se l'autista
    sul servizio c'è già, non si tocca. */
+/* L'autista che viene dietro al mezzo: l'ultimo che l'ha guidato prima di questo servizio,
+   se no il primo che lo prende dopo, se no il più vicino d'orario. Con un filtro che manca-
+   va e che è costato un'assegnazione sbagliata: **chi non può fare quel servizio non lo si
+   propone**. Uno in riposo, uno indisponibile o uno che in quel momento sta guidando
+   altrove non è «l'autista di quel mezzo»: si passa al candidato dopo, e se non ne resta
+   nessuno il campo si lascia vuoto invece di riempirlo con un nome impossibile. */
 function plUltimoAutista(veic, S) {
   var giro = srvDi('veicolo', veic).filter(function (P) { return P.id !== S.id && P.autista; });
   if (!giro.length) return '';
-  var prima = null, dopo = null, vicino = null, dist = 1e9;
+  var prima = [], dopo = [], vicino = giro.slice();
   giro.forEach(function (P) {
-    if (plFine(P) <= S.startMin) { if (!prima || plFine(P) > plFine(prima)) prima = P; }
-    else if (P.startMin >= plFine(S)) { if (!dopo || P.startMin < dopo.startMin) dopo = P; }
-    var d = Math.abs(P.startMin - S.startMin);
-    if (d < dist) { dist = d; vicino = P; }     // servizi accavallati: il più vicino d'orario
+    if (plFine(P) <= S.startMin) prima.push(P);
+    else if (P.startMin >= plFine(S)) dopo.push(P);
   });
-  var q = prima || dopo || vicino;
-  return q ? q.autista : '';
+  prima.sort(function (a, b) { return plFine(b) - plFine(a); });          // il più recente
+  dopo.sort(function (a, b) { return a.startMin - b.startMin; });          // il primo dopo
+  vicino.sort(function (a, b) {
+    return Math.abs(a.startMin - S.startMin) - Math.abs(b.startMin - S.startMin);
+  });
+  var visti = {}, ordine = prima.concat(dopo).concat(vicino), ripiego = '';
+  for (var i = 0; i < ordine.length; i++) {
+    var nome = ordine[i].autista;
+    if (visti[nome]) continue;
+    visti[nome] = true;
+    var v = valutaAutista(S, nome);
+    if (v.k === 'off' || v.k === 'no') { if (!ripiego) ripiego = ''; continue; }
+    return nome;
+  }
+  return ripiego;
 }
 function plSposta(s, veic) {
   if (!s) return;
@@ -3137,7 +3160,8 @@ function renderPlancia_() {
        La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
        etichette non saprebbero a quale blocco appartengono. */
     var banda = nr > 1 ? 0 : (PL_GRANDE ? 17 : 14);
-    var H = nr > 1 ? 32 : 38, alt = nr * H + (nr + 1) * 5 + banda;
+    var H = PL_GRANDE ? (nr > 1 ? 38 : 46) : (nr > 1 ? 32 : 38);
+    var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
     for (var g = Math.ceil(sc.m0 / 60) * 60; g <= sc.m1; g += 60)
@@ -3263,10 +3287,19 @@ function renderPlancia_() {
            quasi sempre tagliato («06:…»): qui invece le ore si leggono sempre. */
         var spazio = ((S2 ? S2.startMin : sc.m1) - S1.startMin) * px;
         var kmS = S1.km ? ' · ' + S1.km + ' km' : '';
+        /* Se il blocco è troppo stretto per contenere il nome (sotto i 74px il CSS lascia
+           solo l'ora, sotto i 30 solo il colore), il nome lo scrive la fascia: così si legge
+           di chi è il servizio senza passarci sopra col mouse. */
+        var ore = fmtMin(S1.startMin) + ' → ' + fmtMin(fin1);
+        var largo = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(S1) * px));
+        var chi = largo < 74 ? ' · ' + (S1.nome || S1.da) : '';
         var tFin = plEtich([
-          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1) + kmS + ' · ' + fmtDur(plDurata(S1)),
-          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1) + kmS,
-          fmtMin(S1.startMin) + ' → ' + fmtMin(fin1),
+          ore + chi + kmS + ' · ' + fmtDur(plDurata(S1)),
+          ore + chi + kmS,
+          ore + chi,
+          ore + kmS + ' · ' + fmtDur(plDurata(S1)),
+          ore + kmS,
+          ore,
           '→ ' + fmtMin(fin1),
           fmtMin(fin1)
         ], spazio);
@@ -3282,7 +3315,7 @@ function renderPlancia_() {
       var male = veic && !plVerifica(s, veic).ok;
       var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s.autista ? ' plnoaut' : '')
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '');
-      var W2 = Math.max(px < 0.5 ? 12 : 34, Math.round(plDurata(s) * px));
+      var W2 = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(s) * px));
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
       c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : '');
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'

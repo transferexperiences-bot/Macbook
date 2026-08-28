@@ -57,7 +57,15 @@ docs/                 revisione v4→v5, scheda Assegna, catene, handoff, instal
 docs/blocco-catene.js   il motore delle catene, pronto da incollare in un'altra copia
 ```
 
-`preview.html` e `shots/` sono generati, non versionarli.
+`preview.html`, `shots/` e `tools/artifact-index.html` sono generati, non versionarli.
+
+**La pagina «Index TE Planner»** (il pannello a destra da cui Agostino copia il file per
+Apps Script) si rigenera con `python3 tools/artifact-index.py` e si ripubblica **sullo stesso
+indirizzo**: `https://claude.ai/code/artifact/fc8e5034-a0f0-4011-8fa3-e5083b04c42d`. Il
+modello è `tools/artifact-index.tpl.html`; lo script ci infila il sorgente, il numero di
+righe, i KB, il commit e l'ultimo messaggio. Da fare **una volta a fine sessione**, non a
+ogni modifica: per ripubblicare bisogna prima rileggere tutta la pagina viva (270 KB), e
+costa.
 
 ---
 

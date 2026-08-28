@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (223 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (226 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -387,7 +387,12 @@ motore. Il pennello lì non serve e sparisce: la corsia **è** l'autista. La sce
 
 **A destra** la colonna dei servizi ancora scoperti, che scorre da sola e resta
 sott'occhio. **Sul telefono** quella colonna non sta a destra: diventa una **striscia in cima**,
-sopra le corsie, che si scorre di lato e resta appiccicata sotto l'intestazione. Scelto un
+sopra le corsie, che si scorre di lato e resta appiccicata sotto l'intestazione — e **parte
+chiusa** (28/08), perché aperta si prendeva un terzo dello schermo e alle corsie restavano
+novanta pixel: il titolo dice comunque quanti servizi aspettano, `▾ vedi l'elenco` la apre e
+la scelta resta in `localStorage` (`te_plvass`). Sempre sul telefono, comandi, chip degli
+autisti e schede del vassoio sono più bassi (bersagli da 34px invece di 44): nessuno
+sparisce, si stringono e basta. Scelto un
 servizio si richiude da sola (`▾ vedi l'elenco` la riapre): la striscia gialla dice già cosa
 hai in mano, e le corsie si riprendono lo schermo. Con **🗓 2 giorni** oggi e domani stanno sullo stesso asse (i servizi di domani a
 +1440 minuti, la mezzanotte segnata da una riga e dalla data): una catena che scavalla la
@@ -540,7 +545,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **401 controlli automatici, tutti verdi.**
+libera. **404 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

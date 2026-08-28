@@ -888,7 +888,23 @@ const SEED=`(function(){
   t('e non allargano la pagina',                 oreTel.ov<=2, oreTel.ov);
 
   console.log('\n=== 9nonies. PLANCIA sul telefono: il vassoio si vede subito ===');
-  await p.evaluate(()=>{PL_ARM=null;PEND={};render();});await p.waitForTimeout(250);
+  // sul telefono parte CHIUSO: si prendeva un terzo dello schermo. Il titolo dice quanti
+  // sono, e un tocco lo apre — la scelta poi resta.
+  await p.evaluate(()=>{PL_ARM=null;PEND={};
+    try{localStorage.removeItem('te_plvass');}catch(e){}
+    PL_VASS_OFF=true;render();});
+  await p.waitForTimeout(300);
+  const vc=await p.evaluate(()=>({
+    ridotto:document.querySelector('.pltray').className.indexOf('plridotto')>=0,
+    titolo:document.querySelector('.pltray>h4').textContent.replace(/\s+/g,' ').trim(),
+    lista:getComputedStyle(document.querySelector('.pltiles')).display!=='none',
+    corsie:Math.round(document.getElementById('plscroll').getBoundingClientRect().height),
+    apri:!!document.querySelector('.plvass')}));
+  t('sul telefono il vassoio parte chiuso', vc.ridotto&&!vc.lista, vc);
+  t('ma dice quanti servizi aspettano',     /Da assegnare/.test(vc.titolo)&&vc.apri, vc);
+  t('e le corsie si prendono lo schermo',   vc.corsie>=300, vc);
+  await p.evaluate(()=>document.querySelector('.plvass').click());
+  await p.waitForTimeout(300);
   const vt=await p.evaluate(()=>{
     var tr=document.querySelector('.pltray').getBoundingClientRect();
     var gr=document.querySelector('.plwrap').getBoundingClientRect();

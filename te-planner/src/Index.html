@@ -493,6 +493,7 @@ main{padding:12px;}
   -webkit-overflow-scrolling:touch}
 .pltile{width:auto}
 .plriapri{display:none}
+.pltray>h4 .plvass{margin-left:auto;min-height:28px;padding:0 9px;font-size:11.5px}
 @media (min-width:900px){
   /* nell'HTML il vassoio viene prima: qui torna nella colonna di destra, dov'era */
   .plmain{grid-template-columns:minmax(0,1fr) 250px}
@@ -507,6 +508,22 @@ main{padding:12px;}
    hai in mano, e le corsie si riprendono lo schermo. */
 @media (max-width:899px){
   .plmain{display:block}
+  /* Sul telefono la testata si mangiava mezzo schermo e alle corsie restavano novanta
+     pixel: qui i comandi, i chip degli autisti, il suggerimento e il vassoio si stringono
+     tutti. Nessuno sparisce — si stringono e basta. */
+  .plbar{gap:5px;margin-bottom:5px}
+  .plzoom button{min-height:34px;padding:4px 10px;font-size:13px;min-width:38px}
+  .plbar .chip{min-height:34px;padding:0 9px;font-size:12px;border-radius:8px}
+  .plautbar{gap:5px;padding-bottom:2px;margin-bottom:5px}
+  .plautc{min-height:32px;padding:0 9px;font-size:12px;border-radius:8px}
+  .plautt{font-size:11px}
+  .plhint{font-size:11px;margin:0 0 5px;line-height:1.3}
+  .pltray>h4{padding:5px 9px;font-size:12.5px}
+  .pltiles{padding:6px 8px;gap:6px}
+  .pltile{width:172px;padding:6px 8px;font-size:11.5px;line-height:1.3}
+  .pltile b{font-size:12px}
+  .pltile em{font-size:10.5px;margin-top:1px}
+  .pltile u{margin-top:4px;font-size:10px;padding:1px 6px}
   .pltray{position:sticky;top:var(--plsotto,96px);z-index:9;max-height:none;margin:0 0 10px;
     box-shadow:0 6px 16px rgba(11,61,102,.13)}
   .pltray>h4{padding:7px 10px}
@@ -2599,6 +2616,16 @@ function plSegno(m) { return (m > 0 ? '+' : '') + fmtDur(m); }
 /* La plancia si guarda da due parti: una corsia per MEZZO (chi ha il van) o una corsia per
    AUTISTA (che giornata ha la persona). È la stessa plancia, gli stessi controlli, le stesse
    catene: cambia solo la chiave con cui si raggruppa e si assegna. */
+/* Il vassoio dei «da assegnare»: sul telefono parte CHIUSO — si prendeva un terzo dello
+   schermo e alle corsie restava una striscia. Il titolo dice comunque quanti sono, e un
+   tocco lo apre. Sul desktop è la colonna di destra e resta aperto. */
+var PL_VASS_OFF = (typeof window !== 'undefined' && window.innerWidth < 900);
+try { var _vs = localStorage.getItem('te_plvass'); if (_vs) PL_VASS_OFF = _vs === 'no'; } catch (e) { }
+function plVassoio() {
+  PL_VASS_OFF = !PL_VASS_OFF;
+  try { localStorage.setItem('te_plvass', PL_VASS_OFF ? 'no' : 'si'); } catch (e) { }
+  render();
+}
 var PL_VISTA = 'mezzi';
 try { PL_VISTA = localStorage.getItem('te_plvista') === 'autisti' ? 'autisti' : 'mezzi'; } catch (e) { }
 function plChiave() { return PL_VISTA === 'autisti' ? 'autista' : 'veicolo'; }
@@ -3393,17 +3420,23 @@ function renderPlancia_() {
        dentro .plpiu, che sotto i 900px sparisce */
     /* il suggerimento sullo zoom non va nascosto sul telefono: è lì che serve, perché
        le due dita non le scopre nessuno da solo */
-    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga ' + (AUT ? 'dell\'autista' : 'del mezzo') + ''
-      + '</span> · <b>due dita</b> per lo zoom<span class="plpiu">'
+    h += '<p class="plhint">Tocca un servizio<span class="plpiu"> per vedere <b>dove può andare</b>, oppure trascinalo direttamente sulla riga '
+      + (AUT ? 'dell\'autista' : 'del mezzo') + '</span> · <b>due dita</b> per lo zoom<span class="plpiu">'
       + (px < 0.9 ? ', <b>+</b> per leggere i nomi dentro i blocchi' : '') + '</span>.</p>';
   }
 
   /* Il vassoio dei da assegnare sta PRIMA della griglia nell'HTML: sul telefono deve
      essere la prima cosa che si vede, in cima, non in fondo a tutta la plancia (lì non
      lo trovava nessuno). Sul desktop torna a destra con grid-column, dov'era. */
-  var vass = '<aside class="pltray' + (armato ? ' plridotto' : '') + '">'
+  /* Sul telefono il vassoio si prende un terzo dello schermo: chi sta guardando le corsie
+     lo chiude, e la scelta resta (`te_plvass`). Il titolo con quanti sono resta sempre. */
+  var stretto = typeof window !== 'undefined' && window.innerWidth < 900;
+  var chiuso = stretto && PL_VASS_OFF && !armato;
+  var vass = '<aside class="pltray' + (armato || chiuso ? ' plridotto' : '') + '">'
     + '<h4>🅿️ Da assegnare <em>' + senza.length + '</em>'
-    + (armato ? '<button class="chip plriapri" style="border:none" onclick="plArma(null)">▾ vedi l\'elenco</button>' : '')
+    + (armato ? '<button class="chip plriapri" style="border:none" onclick="plArma(null)">▾ vedi l\'elenco</button>'
+      : (stretto ? '<button class="chip plvass" style="border:none" onclick="plVassoio()">'
+                   + (chiuso ? '▾ vedi l\'elenco' : '▴ nascondi') + '</button>' : ''))
     + '</h4><div class="pltiles" id="pltiles">';
   if (!senza.length) vass += '<div class="plvuoto">Tutti i servizi hanno un mezzo. 👌</div>';
   senza.slice().sort(function (a, b) { return a.startMin - b.startMin; }).forEach(function (s) {

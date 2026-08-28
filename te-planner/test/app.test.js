@@ -597,6 +597,22 @@ const SEED=`(function(){
   t('ritoccando lo stesso servizio l\'autista si toglie',
     await p.evaluate(i=>DATA.services.filter(x=>x.id===i)[0].autista==='',blocco.id), null);
 
+  // col pennello in mano, assegnare il MEZZO non deve far vincere l'ultimo autista
+  // che quel mezzo aveva: il nome che tieni in mano è una scelta, l'altro un ripiego
+  const vince=await p.evaluate(()=>{
+    var s=DATA.services.filter(function(x){return !x.autista&&x.startMin>=0;})[0];
+    if(!s){s=DATA.services.filter(function(x){return x.startMin>=0;})[0];s.autista='';}
+    var vecchio=plCon(function(){return plUltimoAutista('Vito 1',s);});
+    plPenna(PL_AUTLISTA.indexOf('Pietro Salvi'));
+    plSposta(s,'Vito 1');
+    return {aut:s.autista, pend:PEND[s.id]?PEND[s.id].autista:null,
+            vecchio:vecchio, vei:s.veicolo};});
+  t('col pennello in mano vince il nome che tieni tu',
+    vince.aut==='Pietro Salvi'&&vince.pend==='Pietro Salvi', vince);
+  t('e non l\'ultimo autista che aveva quel mezzo',
+    vince.vecchio!==''&&vince.vecchio!=='Pietro Salvi', vince);
+  t('il mezzo resta quello che hai scelto', vince.vei==='Vito 1', vince);
+  await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
   await p.evaluate(()=>plPosa());await p.waitForTimeout(200);
   t('«posa» lascia il pennello',
     await p.evaluate(()=>PL_PENNA===null&&!document.querySelector('.plarmp')), null);
@@ -880,6 +896,24 @@ const SEED=`(function(){
   t('a 390px si vedono tutti i bottoni della barra', bar390.dentro&&bar390.n===4, bar390);
   t('vanno a capo invece di nascondersi di lato',    bar390.righe>1, bar390);
   t('e il telefono sa che si zooma con due dita',    /due dita/.test(bar390.hint), bar390.hint);
+  // 5. sullo schermo grande la plancia si prende tutta la finestra, e le scritte crescono
+  await p.close();p=await nuova(1900,900);
+  await p.evaluate(PLSEED);await p.waitForTimeout(350);
+  const mac=await p.evaluate(()=>{
+    var m=document.querySelector('main').getBoundingClientRect();
+    var ore=document.querySelector('.plora'), gap=document.querySelector('.plgap i');
+    return {main:Math.round(m.width), vp:window.innerWidth,
+            ore:parseFloat(getComputedStyle(ore).fontSize),
+            gap:gap?parseFloat(getComputedStyle(gap).fontSize):0,
+            ov:document.documentElement.scrollWidth-document.documentElement.clientWidth};});
+  t('a 1900px la plancia usa tutta la finestra', mac.main>=mac.vp-40, mac);
+  t('e le scritte non sono più da telefono',    mac.ore>=11&&mac.gap>=11, mac);
+  t('senza far scorrere la pagina di lato',     mac.ov<=2, mac.ov);
+  // le altre schede restano incolonnate, non si allargano
+  const altre=await p.evaluate(()=>{setTab('servizi');render();
+    return Math.round(document.querySelector('main').getBoundingClientRect().width);});
+  t('le altre schede restano larghe come prima', altre<mac.main-100, {plancia:mac.main,servizi:altre});
+  await p.evaluate(()=>setTab('plancia'));await p.waitForTimeout(250);
 
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();

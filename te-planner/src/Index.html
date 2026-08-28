@@ -227,6 +227,12 @@ main{padding:12px;}
 @media (min-width:1400px){
   header h1,.datebar,main{max-width:1320px;}
 }
+/* Sul Mac la Plancia restava dentro i 1320px con mezzo schermo bianco a destra: la
+   giornata è larga per natura, e ogni pixel in più è mezz'ora in più senza scorrere.
+   Qui la scheda si prende tutta la finestra — le altre restano incolonnate. */
+@media (min-width:1000px){
+  body[data-tab="plancia"] main{max-width:none;padding-left:16px;padding-right:16px;}
+}
 
 /* ---------- plancia: mezzi in riga, tempo sull'asse ---------- */
 .plbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
@@ -487,6 +493,20 @@ main{padding:12px;}
 .pltile em.pldomani{display:inline-block;font-size:10.5px;font-weight:700;color:var(--blu);
   background:#e7eef5;border-radius:5px;padding:1px 6px;margin-top:2px}
 @media (min-width:820px){ .plrail{flex-basis:176px} .pltile{width:224px} }
+/* 22. sullo schermo grande le scritte della plancia erano da telefono: 9,5px per le ore
+   e per attesa/tragitto. Su un Mac non si leggono, e ingrandire la pagina col browser
+   fa perdere pezzi ai lati. Qui crescono solo loro, senza toccare il resto della app. */
+@media (min-width:820px){
+  .plora{font-size:11.5px;height:15px;line-height:15px;padding:0 4px}
+  .plgap{height:18px}
+  .plgap i{font-size:11.5px;line-height:18px}
+  .plblk{font-size:12px;line-height:13.5px}
+  .plblk b{font-size:12px}
+  .plov i{font-size:11.5px}
+  .plslot i{font-size:13px}
+  .plrail b{font-size:14px}
+  .plrail span{font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -2458,9 +2478,17 @@ function plSegno(m) { return (m > 0 ? '+' : '') + fmtDur(m); }
    Sul telefono la giornata intera sta in 390 px: «arrivo 10:25 · 25m» non entra quasi mai,
    ma «▸10:25» sì — e quell'ora è il motivo per cui si guarda la plancia. Meglio corta che
    assente. Le larghezze sono stimate sul carattere della plancia (9,5px). */
+/* Quanto è larga in pixel una lettera delle etichette: sul desktop il carattere è più
+   grande (vedi il blocco CSS «22»), quindi anche la stima dello spazio deve crescere,
+   se no le scritte sbordano. Un posto solo, usato da tutte le misure. */
+var PL_GRANDE = false, PL_CH = 5.4;
+function plMisuraCarattere() {
+  PL_GRANDE = (typeof window !== 'undefined' && window.innerWidth >= 820);
+  PL_CH = PL_GRANDE ? 6.3 : 5.4;
+}
 function plEtich(scritte, spazio) {
   for (var i = 0; i < scritte.length; i++)
-    if (spazio >= scritte[i].length * 5.4 + 10) return scritte[i];
+    if (spazio >= scritte[i].length * PL_CH + 10) return scritte[i];
   return '';
 }
 /* conCatena = calcola anche da dove arriva il mezzo e cosa succede a valle.
@@ -2568,9 +2596,15 @@ function plSposta(s, veic) {
   if (!s) return;
   if ((veic || '') === (s.veicolo || '')) { PL_ARM = null; render(); return; }
   var r = veic ? plVerifica(s, veic) : { ok: true };
-  // l'autista lo porta dietro il mezzo, ma solo se il servizio non ce l'ha già:
-  // quello che hai messo tu resta quello che hai messo tu
-  var aut = s.autista || '', preso = '';
+  /* Chi guida, in ordine di priorità:
+     1. l'autista che il servizio ha già — quello che hai messo tu non si tocca;
+     2. il nome che hai IN MANO col pennello — è una scelta esplicita, e deve battere
+        qualunque automatismo: assegnare il mezzo mentre tieni Katiuscia in mano e
+        ritrovarsi Angelo, che quel mezzo l'aveva ieri, è esattamente il contrario di
+        quello che hai chiesto;
+     3. solo se non c'è né l'uno né l'altro, l'ultimo autista di quel mezzo. */
+  var aut = s.autista || '', preso = '', pennello = '';
+  if (!aut && veic && PL_PENNA) { pennello = PL_PENNA; aut = pennello; }
   if (!aut && veic) { preso = plCon(function () { return plUltimoAutista(veic, s); }); aut = preso; }
   PEND[s.id] = { autista: aut, veicolo: veic || '' };
   s.veicolo = veic || '';
@@ -2582,6 +2616,7 @@ function plSposta(s, veic) {
   // corto: la barra gialla del salvataggio è lì sotto e si vede, non serve ripeterlo —
   // e un messaggio lungo sul telefono va a capo quattro volte e le finisce sopra
   toast((r.ok ? '🕐 ' : '⚠️ forzato · ') + veic
+    + (pennello ? ' · con ' + pennello + ' (che hai in mano)' : '')
     + (preso ? ' · con ' + preso + ' (ultimo che l\'aveva)' : '')
     + (r.ok ? '' : ' · ' + r.breve));
 }
@@ -2967,6 +3002,7 @@ function plPosizionaCard() {
 
 function renderPlancia() { return plCon(renderPlancia_); }
 function renderPlancia_() {
+  plMisuraCarattere();
   var m = document.getElementById('main');
   var vecchio = document.getElementById('plscroll');
   var scrollX = vecchio ? vecchio.scrollLeft : -1;
@@ -3100,7 +3136,7 @@ function renderPlancia_() {
        blocco stesso. Qui invece «07:00 → 08:10 · 42 km · 1h 10m» si legge sempre.
        La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
        etichette non saprebbero a quale blocco appartengono. */
-    var banda = nr > 1 ? 0 : 14;
+    var banda = nr > 1 ? 0 : (PL_GRANDE ? 17 : 14);
     var H = nr > 1 ? 32 : 38, alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3194,7 +3230,7 @@ function renderPlancia_() {
              una scritta sbordi sul blocco che segue. In rosso, che è un allarme. */
           if (!tArr && tardi > 0) tArr = '▸' + fmtMin(arrivo) + ' ⚠ +' + fmtDur(tardi);
           if (tArr) {
-            var largA = tArr.length * 5.4 + 10, mLab = arrivo;
+            var largA = tArr.length * PL_CH + 10, mLab = arrivo;
             if ((B.startMin - mLab) * px < largA) mLab = Math.max(f, B.startMin - largA / px);
             b += '<div class="plora plarr' + (tardi > 0 ? ' pltardi' : '') + '" data-m0="' + Math.round(mLab)
               + '" style="left:' + Math.round((mLab - sc.m0) * px)

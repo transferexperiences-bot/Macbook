@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (163 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (170 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -389,6 +389,10 @@ Mac (che arriva come rotella con `ctrl`: se non lo prendessimo noi zoomerebbe tu
 pagina) e i tasti `+` `−` `0`, che non rubano niente mentre scrivi in un campo. Durante il
 gesto si ridisegnano solo le larghezze (`plRidisegnaScala`), il disegno completo si fa
 quando ti fermi. Il livello di zoom è ricordato in `localStorage` (`te_plz`).
+Sullo schermo grande la Plancia **si prende tutta la finestra** (le altre schede restano
+incolonnate a 1320px) e le sue scritte crescono: ore, attesa e tragitto passano da 9,5 a
+11,5px sopra gli 820px. La stima della larghezza di una scritta (`PL_CH`, usata da
+`plEtich`) cresce insieme al carattere, se no le etichette sbordano.
 
 Si assegna in tre modi: trascinando il blocco, toccandolo (si «arma» e su ogni mezzo compare
 una piazzola) o dalla scheda. Per l'**autista** c'è in più il **pennello**: nella fila in alto
@@ -399,7 +403,8 @@ mano, i servizi di quell'autista sono cerchiati sulla plancia. Gli autisti sono 
 carico di giornata, e chi non può lavorare sta in fondo con 🚫 (assegnabile lo stesso: la
 plancia avvisa, non blocca). **Assegnando un mezzo, l'autista viene dietro**: quello che
 guidava quel mezzo prima di questo servizio (o, se prima non c'è nessuno, il primo che lo
-prende dopo). Se sul servizio l'autista c'è già, **non si tocca**. Il salvataggio è una barra
+prende dopo) — ma se hai un nome **in mano col pennello**, vince quello: è una scelta, non
+un automatismo. Se sul servizio l'autista c'è già, **non si tocca**. Il salvataggio è una barra
 gialla **fissa in fondo allo schermo** finché c'è qualcosa in sospeso: si assegna scorrendo la
 giornata, e `💾 Salva tutto` deve restare a portata di pollice.
 
@@ -447,7 +452,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **327 controlli automatici, tutti verdi.**
+libera. **334 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -456,7 +461,7 @@ Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) s
 **9quinquies** il trascinamento non resta appeso · **9sexies** autista dal mezzo e barra
 del salvataggio · **9septies** il pennello autista · **9octies** i cancellati non occupano niente ·
 **9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo ·
-**9undecies** lo zoom da Mac, telefono e tastiera.
+**9undecies** lo zoom da Mac, telefono e tastiera, e la Plancia a tutta finestra.
 
 Da fare fuori dal codice:
 

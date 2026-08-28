@@ -417,6 +417,15 @@ main{padding:12px;}
   border-radius:6px;padding:4px 7px;font-weight:600}
 #plcard .plccat.mid{background:#fff3e2;color:#8a4b00}
 #plcard .plccat.no{background:#fdecea;color:#8c1a17}
+#plcard .plcora{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 11px 9px;font-size:12.5px}
+#plcard .plcora select{flex:1 1 120px;min-width:0;height:36px;font:inherit;font-size:13px;font-weight:600;
+  border:1px solid var(--bordo);border-radius:8px;padding:0 6px;background:var(--card);color:var(--testo)}
+#plcard .plcora input{flex:1 1 78px;min-width:74px;height:36px;font:inherit;font-size:14px;font-weight:700;
+  border:1px solid var(--bordo);border-radius:8px;padding:0 8px;background:var(--card);color:var(--testo)}
+#plcard .plcora button{min-height:36px;min-width:42px;border:1px solid var(--bordo);background:var(--card);
+  border-radius:8px;font:inherit;font-size:12.5px;cursor:pointer;padding:0 8px}
+#plcard .plcora button.blu{flex:1 1 auto;background:var(--blu);border-color:var(--blu);color:#fff;font-weight:700}
+#plcard .plcora button[disabled]{opacity:.45;cursor:default}
 #plcard .plcaz{display:flex;gap:6px;padding:0 11px 11px;flex-wrap:wrap}
 #plcard .plcaz button{flex:1 1 auto;min-height:38px;border:1px solid var(--bordo);background:var(--card);
   border-radius:9px;font-size:12.5px;cursor:pointer;padding:0 10px}
@@ -3308,6 +3317,20 @@ function plMiniatura_() {
               : '✕ nessun ' + (AUTV ? 'autista libero' : 'mezzo libero') + ' in questa fascia'))
           + (anteprima ? '' : '</div>');
       })()
+    /* Chi guida, da qui. Nella vista dei mezzi si sceglie l'AUTISTA (il mezzo non si tocca),
+       in quella degli autisti il MEZZO: sempre l'altra metà dell'accoppiata, quella che la
+       corsia non dice già. Finisce in sospeso come ogni assegnazione della plancia — si
+       salva dalla barra gialla, non scrive da solo sul foglio. */
+    + (anteprima ? '' : '<div class="plcora plcchi">' + (AUTV ? '🚐' : '👤')
+      + ' <select id="plcChi" onchange="plCardMetti()">' + plCardElenco(s, AUTV) + '</select></div>')
+    /* Spostare l'ora da qui: sulla plancia il gesto naturale è «questo va un quarto d'ora
+       più tardi», e per farlo bisognava aprire la scheda intera. I due bottoni muovono di
+       15 minuti, il campo accetta un'ora qualsiasi; si scrive sul foglio solo con «sposta»,
+       e prima si chiede conferma — è una riga vera del gestionale. */
+    + (anteprima ? '' : '<div class="plcora">🕐 <button onclick="plOraMuovi(-15)" title="quindici minuti prima">−15</button>'
+      + '<input type="time" id="plcOra" value="' + esc(fmtMin(s.startMin % 1440)) + '" onchange="plOraTocca()">'
+      + '<button onclick="plOraMuovi(15)" title="quindici minuti dopo">+15</button>'
+      + '<button class="blu" id="plcOraOk" onclick="plOraSalva()" disabled>sposta</button></div>')
     + (anteprima ? '' : '<div class="plcaz"><button class="blu" onclick="plCardApri()">📋 Apri scheda</button>'
       + (s.veicolo ? '<button onclick="plStacca(\'veicolo\')" title="lascia l\'autista, libera il mezzo">🚐 Togli il mezzo</button>' : '')
       + (s.autista ? '<button onclick="plStacca(\'autista\')" title="lascia il mezzo, libera l\'autista">👤 Togli l\'autista</button>' : '')
@@ -3316,6 +3339,111 @@ function plMiniatura_() {
   c.className = anteprima ? 'plcpeek' : '';
   c.style.display = 'block';
   plPosizionaCard();
+}
+/* L'elenco della scheda ridotta: prima chi ci sta, poi chi va forzato — con il motivo
+   scritto accanto, come sulle piazzole. Gli autisti in ordine di quanto si incastrano
+   (lo stesso punteggio dei consigli), i mezzi nell'ordine dell'anagrafica. */
+function plCardElenco(s, AUTV) {
+  var cur = (AUTV ? s.veicolo : s.autista) || '';
+  var righe = [];
+  (AUTV ? DATA.veicoli : DATA.autisti).forEach(function (v, i) {
+    /* la verifica è quella dell'ALTRA metà: in vista mezzi si controlla l'autista, in
+       vista autisti il mezzo. `plVerifica` guarda la vista e qui direbbe il contrario. */
+    var r = AUTV ? plVerifica_(s, v.nome, false) : plVerificaAut_(s, v.nome, false);
+    var p = i;
+    if (!AUTV) { var val = valutaAutista(s, v.nome); p = punteggioAutista(v, val); }
+    righe.push({ nome: v.nome, ok: r.ok, breve: r.breve, p: p });
+  });
+  if (!AUTV) righe.sort(function (x, y) { return x.p - y.p; });
+  var ok = '', male = '';
+  righe.forEach(function (r) {
+    var o = '<option value="' + esc(r.nome) + '"' + (r.nome === cur ? ' selected' : '') + '>'
+      + esc(r.nome) + (r.ok ? '' : ' — ' + esc(r.breve)) + '</option>';
+    if (r.ok) ok += o; else male += o;
+  });
+  return '<option value="">— ' + (AUTV ? 'senza mezzo' : 'senza autista') + ' —</option>'
+    + (ok ? '<optgroup label="\u2705 ci stanno">' + ok + '</optgroup>' : '')
+    + (male ? '<optgroup label="\u26a0\ufe0f forzabili">' + male + '</optgroup>' : '');
+}
+function plCardMetti() {
+  var n = document.getElementById('plcChi');
+  if (!n) return;
+  plCon(function () {
+    var s = PL_CARD_ID ? plSrv(PL_CARD_ID) : null;
+    if (!s) return;
+    var AUTV = (plChiave() === 'autista');
+    var val = n.value, cur = (AUTV ? s.veicolo : s.autista) || '';
+    if (val === cur) return;
+    if (!val) {                       // togliere: l'altra metà resta dov'è
+      PEND[s.id] = { autista: AUTV ? (s.autista || '') : '', veicolo: AUTV ? '' : (s.veicolo || '') };
+      if (AUTV) s.veicolo = ''; else s.autista = '';
+      if (s.orig) { if (AUTV) s.orig.veicolo = ''; else s.orig.autista = ''; }
+      render();
+      toast('🕐 ' + (AUTV ? 'mezzo tolto' : 'autista tolto') + ' da ' + (s.nome || s.da));
+      return;
+    }
+    if (AUTV) plDaiMezzo(s, val); else plDaiAutista(s, val);
+  });
+}
+/* Il gemello di plDaiAutista dalla parte dei mezzi: mette il MEZZO e non tocca chi guida. */
+function plDaiMezzo(s, veic) {
+  var r = plVerifica_(s, veic, false);
+  PEND[s.id] = { autista: s.autista || '', veicolo: veic };
+  s.veicolo = veic;
+  if (s.orig) s.orig.veicolo = veic;
+  render();
+  toast((r.ok ? '🕐 ' : '⚠️ forzato · ') + veic + ' → ' + (s.nome || s.da) + (r.ok ? '' : ' · ' + r.breve));
+}
+
+/* ---- spostare l'ora dalla scheda ridotta ----
+   Il campo si muove liberamente; «sposta» si accende solo se l'ora è cambiata davvero.
+   La scrittura è quella di sempre (`updateService` con il solo campo `time`: il backend
+   riscrive la cella Ora solo se è diversa), preceduta da una conferma — qui si tocca una
+   riga vera del gestionale, non un'assegnazione in sospeso. */
+function plOraCampo() { return document.getElementById('plcOra'); }
+function plOraTocca() {
+  var n = plOraCampo(), b = document.getElementById('plcOraOk');
+  if (!n || !b) return;
+  var s = plCon(function () { return PL_CARD_ID ? plSrv(PL_CARD_ID) : null; });
+  b.disabled = !(s && n.value && n.value !== fmtMin(s.startMin % 1440));
+}
+function plOraMuovi(d) {
+  var n = plOraCampo();
+  if (!n) return;
+  var p = String(n.value || '').split(':');
+  var m = p.length === 2 ? (+p[0]) * 60 + (+p[1]) : 0;
+  m = ((Math.round((m + d) / 5) * 5) % 1440 + 1440) % 1440;
+  n.value = fmtMin(m);
+  plOraTocca();
+}
+function plOraSalva() {
+  var n = plOraCampo();
+  if (!n || !n.value) return;
+  plCon(function () {
+    var s = PL_CARD_ID ? plSrv(PL_CARD_ID) : null;
+    if (!s) return;
+    var p = n.value.split(':'), nuovo = (+p[0]) * 60 + (+p[1]);
+    var vecchio = s.startMin % 1440;
+    if (nuovo === vecchio) return;
+    var quando = s.domani ? ' di domani' : '';
+    if (!confirm('Sposto ' + (s.nome || s.da) + ' dalle ' + fmtMin(vecchio) + ' alle '
+      + fmtMin(nuovo) + quando + '?\n\nScrive subito sul gestionale.')) return;
+    /* prima a schermo, poi sul foglio: la plancia si ridisegna sull'ora nuova e il
+       messaggio dice se il salvataggio è andato o no */
+    var durata = Math.max(0, s.endMin - s.startMin);
+    var base = s.domani ? 1440 : 0;
+    s.time = fmtMin(nuovo);
+    s.startMin = nuovo + base;
+    s.endMin = s.startMin + durata;
+    if (s.orig) { s.orig.time = s.time; s.orig.startMin = nuovo; s.orig.endMin = nuovo + durata; }
+    PL_ARM = null;
+    render();
+    toast('🕐 sposto alle ' + fmtMin(nuovo) + '…');
+    google.script.run
+      .withSuccessHandler(function () { toast('✅ ' + (s.nome || s.da) + ' ora alle ' + fmtMin(nuovo)); load(true); })
+      .withFailureHandler(function (e) { toast('❌ ora NON salvata: ' + e.message); load(true); })
+      .updateService(s.id, { time: fmtMin(nuovo) });
+  });
 }
 function plPosizionaCard() {
   var c = document.getElementById('plcard');

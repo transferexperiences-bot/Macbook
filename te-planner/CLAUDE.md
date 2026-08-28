@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (226 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (234 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -409,6 +409,17 @@ assegnarlo scrive sulla riga giusta. **Il mouse sopra un quadratino** apre la st
 ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in sola lettura,
 senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista**, togliere
 **l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
+Dalla scheda si **cambia anche chi guida e a che ora** (28/08), senza aprire il dettaglio:
+- un **menù** con l'altra metà dell'accoppiata — l'autista se guardi i mezzi, il mezzo se
+  guardi gli autisti — diviso in *✅ ci stanno* e *⚠️ forzabili* col motivo accanto, gli
+  autisti in ordine di quanto si incastrano (`punteggioAutista`). La scelta finisce **in
+  sospeso** come ogni altra assegnazione: si salva dalla barra gialla.
+- l'**ora**: `−15` `+15` e un campo, e il tasto **sposta** che si accende solo se l'ora è
+  cambiata davvero. Questo **scrive subito sul gestionale** (`updateService` col solo campo
+  `time`, che riscrive la cella Ora solo se è diversa) e per questo chiede conferma dicendo
+  da che ora a che ora. La durata resta quella, l'ora di fine si sposta insieme.
+  Attenzione: `plVerifica` guarda la vista corrente, quindi per il menù serve la verifica
+  **dell'altra metà** — `plVerifica_` per i mezzi, `plVerificaAut_` per gli autisti.
 
 **Le ore in cima si toccano**: un tocco e la plancia va a quella fascia (`plVaiAllOra`, che
 mette quel minuto subito dopo la colonna dei mezzi, con lo scorrimento morbido). Con una
@@ -553,7 +564,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **404 controlli automatici, tutti verdi.**
+libera. **412 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -565,7 +576,8 @@ del salvataggio · **9septies** il pennello autista · **9septies bis** l'autist
 **9undecies** lo zoom da Mac, telefono e tastiera, e la Plancia a tutta finestra ·
 **9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo ·
 **9quaterdecies** giornata fitta e nomi lunghi: niente si accavalla, niente si taglia ·
-**9quindecies** la barra in cima resta ferma, scorrono solo le corsie.
+**9quindecies** la barra in cima resta ferma, scorrono solo le corsie ·
+**9sexdecies** dalla scheda ridotta: chi guida e a che ora.
 
 Da fare fuori dal codice:
 

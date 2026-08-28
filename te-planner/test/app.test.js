@@ -1338,6 +1338,59 @@ const SEED=`(function(){
     await q.close();
   }
 
+  console.log('\n=== 9sexdecies. Dalla scheda ridotta: chi guida e a che ora ===');
+  {
+    const q=await nuova(1680,950);
+    await q.evaluate(()=>setTab('plancia'));await q.waitForTimeout(250);
+    await q.evaluate(()=>{PEND={};PL_PENNA=null;
+      var s=DATA.services.filter(function(x){return x.autista&&x.veicolo&&x.startMin>=0;})[0];
+      plArma(s.id);});
+    await q.waitForTimeout(350);
+    const c0=await q.evaluate(()=>{
+      var sel=document.getElementById('plcChi'), ora=document.getElementById('plcOra');
+      var s=plSrv(PL_ARM);
+      return {sel:!!sel, scelto:sel?sel.value:null, aut:s.autista, ora:ora?ora.value:null,
+        vera:fmtMin(s.startMin), spegne:document.getElementById('plcOraOk').disabled,
+        gruppi:sel?[].slice.call(sel.querySelectorAll('optgroup')).map(function(g){return g.label;}):[],
+        altri:sel?[].slice.call(sel.querySelectorAll('option')).map(function(o){return o.value;}):[]};});
+    t('la scheda ha il menù di chi guida', c0.sel&&c0.scelto===c0.aut, c0);
+    t('divisi fra chi ci sta e chi va forzato', c0.gruppi.length>=1, c0);
+    t('e l\'ora del servizio, col tasto spento finché non cambia',
+      c0.ora===c0.vera&&c0.spegne===true, c0);
+    // cambiare autista: va in sospeso, il mezzo non si tocca
+    const nuovoAut=await q.evaluate(()=>{
+      var s=plSrv(PL_ARM), sel=document.getElementById('plcChi');
+      var altro=[].slice.call(sel.querySelectorAll('option')).map(function(o){return o.value;})
+        .filter(function(v){return v&&v!==s.autista;})[0];
+      var veiPrima=s.veicolo;
+      sel.value=altro; plCardMetti();
+      var d=plSrv(s.id);
+      return {altro:altro, aut:d.autista, vei:d.veicolo, veiPrima:veiPrima, pend:!!PEND[s.id],
+        foglio:DATA.services.filter(function(x){return x.id===s.id;})[0].autista};});
+    t('scegliendo un autista il servizio lo prende',
+      nuovoAut.aut===nuovoAut.altro&&nuovoAut.pend, nuovoAut);
+    t('e il mezzo resta il suo',       nuovoAut.vei===nuovoAut.veiPrima, nuovoAut);
+    // spostare l'ora: −15 accende il tasto, «sposta» muove il servizio
+    await q.waitForTimeout(250);
+    const oraDopo=await q.evaluate(()=>{
+      window.confirm=function(){return true;};
+      var s=plSrv(PL_ARM||PL_CARD_ID)||plSrv(PL_CARD_ID);
+      var prima=s.startMin, id=s.id;
+      plOraMuovi(-15);
+      var acceso=!document.getElementById('plcOraOk').disabled;
+      var campo=document.getElementById('plcOra').value;
+      plOraSalva();
+      var d=DATA.services.filter(function(x){return x.id===id;})[0];
+      return {prima:prima, campo:campo, acceso:acceso, dopo:d.startMin, ora:d.time,
+        durata:d.endMin-d.startMin};});
+    t('«−15» accende il tasto e sposta il campo', oraDopo.acceso, oraDopo);
+    t('e «sposta» porta indietro il servizio di un quarto d\'ora',
+      oraDopo.dopo===oraDopo.prima-15&&oraDopo.ora===oraDopo.campo, oraDopo);
+    t('la durata non cambia',
+      oraDopo.durata>0, oraDopo);
+    await q.close();
+  }
+
   await b.close();
   bilancio();
 })();

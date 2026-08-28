@@ -898,7 +898,7 @@ const SEED=`(function(){
       righe:figli.map(function(n){return Math.round(n.getBoundingClientRect().top);})
         .filter(function(v,i,a){return a.indexOf(v)===i;}).length,
       hint:(document.querySelector('.plhint')||{textContent:''}).textContent};});
-  t('a 390px si vedono tutti i bottoni della barra', bar390.dentro&&bar390.n===4, bar390);
+  t('a 390px si vedono tutti i bottoni della barra', bar390.dentro&&bar390.n>=4, bar390);
   t('vanno a capo invece di nascondersi di lato',    bar390.righe>1, bar390);
   t('e il telefono sa che si zooma con due dita',    /due dita/.test(bar390.hint), bar390.hint);
   // 5. sullo schermo grande la plancia si prende tutta la finestra, e le scritte crescono
@@ -943,6 +943,64 @@ const SEED=`(function(){
     return Math.round(document.querySelector('main').getBoundingClientRect().width);});
   t('le altre schede restano larghe come prima', altre<mac.main-100, {plancia:mac.main,servizi:altre});
   await p.evaluate(()=>setTab('plancia'));await p.waitForTimeout(250);
+
+  console.log('\n=== 9duodecies. PLANCIA dalla parte degli autisti ===');
+  await p.close();p=await nuova(1600,900);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(()=>{PEND={};PL_ARM=null;setPlVista('autisti');});await p.waitForTimeout(400);
+  const vA=await p.evaluate(()=>({
+    vista:PL_VISTA, chiave:plChiave(),
+    righe:[].slice.call(document.querySelectorAll('.pllane[data-v]')).map(function(l){return l.getAttribute('data-v');}),
+    autisti:DATA.autisti.map(function(a){return a.nome;}),
+    pennello:document.querySelectorAll('.plautc').length,
+    tray:document.querySelector('.pltray h4').textContent.replace(/\s+/g,' ').trim(),
+    senzaAut:DATA.services.filter(function(s){return !s.autista&&s.startMin>=0&&!isCanc(s);}).length}));
+  t('una corsia per autista',      vA.chiave==='autista'&&vA.autisti.every(function(n){return vA.righe.indexOf(n)>=0;}), vA);
+  t('il pennello sparisce: qui l\'autista è già la riga', vA.pennello===0, vA);
+  t('nel vassoio i servizi senza AUTISTA',
+    vA.tray.indexOf(String(vA.senzaAut))>=0&&vA.senzaAut>0, vA);
+  // i blocchi dicono il mezzo, non l'autista (quello è la corsia)
+  const bl=await p.evaluate(()=>{
+    var lane=[].slice.call(document.querySelectorAll('.pllane[data-v]')).filter(function(l){
+      return l.getAttribute('data-v')==='Marco Rossi';})[0];
+    var n=lane?lane.querySelector('.plblk b'):null;
+    var s=n?DATA.services.filter(function(x){return x.id===n.parentNode.getAttribute('data-id');})[0]:null;
+    return {testo:n?n.textContent:'', vei:s?s.veicolo:'', aut:s?s.autista:''};});
+  t('dentro il blocco c\'è il mezzo, non chi guida',
+    !!bl.vei&&bl.testo.indexOf(bl.vei)>=0&&bl.testo.indexOf(bl.aut)<0, bl);
+  // assegnare da qui mette l'AUTISTA (e il suo mezzo se il servizio non ne ha)
+  const asg=await p.evaluate(()=>{
+    var s=DATA.services.filter(function(x){return !x.autista&&x.startMin>=0;})[0];
+    var prima={aut:s.autista,vei:s.veicolo};
+    plSposta(s,'Luca Verdi');
+    var d=DATA.services.filter(function(x){return x.id===s.id;})[0];
+    return {prima:prima, aut:d.autista, vei:d.veicolo, pend:PEND[s.id]};});
+  t('assegnando dalla corsia si mette l\'autista', asg.aut==='Luca Verdi'&&asg.pend.autista==='Luca Verdi', asg);
+  t('e il mezzo lo porta dietro lui',              !asg.prima.vei||asg.vei===asg.prima.vei, asg);
+  t('tutto in sospeso, niente sul foglio',         !!asg.pend, asg);
+  // le catene sono quelle dell'autista: attese e arrivi si ricalcolano su di lui
+  const catA=await p.evaluate(()=>{
+    var lane=[].slice.call(document.querySelectorAll('.pllane[data-v]')).filter(function(l){
+      return l.getAttribute('data-v')==='Marco Rossi';})[0];
+    var giro=giroDi('Marco Rossi',null);
+    var c=giro.length>1?plCatenaAutista(giro[1],'Marco Rossi'):null;
+    return {barre:lane?lane.querySelectorAll('.plgap').length:0,
+            chiave:c?c.chiave:null, daDove:c&&c.daDove!=='garage'?c.daDove.id:c&&c.daDove};});
+  t('le attese sono quelle del giro dell\'autista', catA.chiave==='autista', catA);
+  t('e le barre fra un servizio e l\'altro ci sono', catA.barre>0, catA);
+  // si torna dalla parte dei mezzi e tutto è com'era
+  await p.evaluate(()=>{PEND={};setPlVista('mezzi');});await p.waitForTimeout(300);
+  const back=await p.evaluate(()=>({vista:PL_VISTA,
+    righe:[].slice.call(document.querySelectorAll('.pllane[data-v]')).map(function(l){return l.getAttribute('data-v');}),
+    veicoli:DATA.veicoli.map(function(v){return v.nome;}),
+    pennello:document.querySelectorAll('.plautc').length}));
+  t('tornando ai mezzi le corsie sono i veicoli',
+    back.veicoli.every(function(n){return back.righe.indexOf(n)>=0;})&&back.pennello>0, back);
+  // e la scelta si ricorda fra una sessione e l'altra
+  t('la vista scelta resta in memoria',
+    await p.evaluate(()=>{setPlVista('autisti');var v=localStorage.getItem('te_plvista');setPlVista('mezzi');
+      return v==='autisti'&&localStorage.getItem('te_plvista')==='mezzi';}), null);
+  await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
 
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();

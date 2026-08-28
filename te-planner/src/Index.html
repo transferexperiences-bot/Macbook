@@ -2419,7 +2419,7 @@ function plZoom(d, clientX) {
 }
 function plToggleGap() { PL_GAP = !PL_GAP; render(); }
 function plToggleSolo() { PL_SOLO = !PL_SOLO; render(); }
-function plMostraTutti() { VEI_HIDE = {}; render(); }
+function plMostraTutti() { if (plChiave() === 'autista') AUT_HIDE = {}; else VEI_HIDE = {}; render(); }
 
 /* ---- due giorni sulla stessa plancia ----
    Oggi e domani su un asse solo: i servizi di domani vivono a +1440 minuti, così una
@@ -2487,6 +2487,17 @@ function plSegno(m) { return (m > 0 ? '+' : '') + fmtDur(m); }
 /* Quanto è larga in pixel una lettera delle etichette: sul desktop il carattere è più
    grande (vedi il blocco CSS «22»), quindi anche la stima dello spazio deve crescere,
    se no le scritte sbordano. Un posto solo, usato da tutte le misure. */
+/* La plancia si guarda da due parti: una corsia per MEZZO (chi ha il van) o una corsia per
+   AUTISTA (che giornata ha la persona). È la stessa plancia, gli stessi controlli, le stesse
+   catene: cambia solo la chiave con cui si raggruppa e si assegna. */
+var PL_VISTA = 'mezzi';
+try { PL_VISTA = localStorage.getItem('te_plvista') === 'autisti' ? 'autisti' : 'mezzi'; } catch (e) { }
+function plChiave() { return PL_VISTA === 'autisti' ? 'autista' : 'veicolo'; }
+function setPlVista(v) {
+  PL_VISTA = (v === 'autisti') ? 'autisti' : 'mezzi';
+  try { localStorage.setItem('te_plvista', PL_VISTA); } catch (e) { }
+  PL_ARM = null; PL_PENNA = null; render();
+}
 var PL_GRANDE = false, PL_CH = 5.4;
 function plMisuraCarattere() {
   PL_GRANDE = (typeof window !== 'undefined' && window.innerWidth >= 820);
@@ -2500,7 +2511,26 @@ function plEtich(scritte, spazio) {
 /* conCatena = calcola anche da dove arriva il mezzo e cosa succede a valle.
    Si chiede solo per le piazzole del servizio armato: farlo per ogni blocco di ogni
    riga significherebbe ricostruire la catena quaranta volte per disegno. */
-function plVerifica(s, veic, conCatena) { return plCon(function () { return plVerifica_(s, veic, conCatena); }); }
+function plVerifica(s, valore, conCatena) {
+  return plCon(function () {
+    return PL_VISTA === 'autisti' ? plVerificaAut_(s, valore, conCatena) : plVerifica_(s, valore, conCatena);
+  });
+}
+/* Stessa domanda, ma sulla persona: può fare questo servizio? Non disponibile oggi, già in
+   giro altrove, non ci arriva, ci arriva ma poi salta il servizio dopo. Il verdetto della
+   catena è lo stesso codice di quello dei mezzi (plVerdetto_): cambia solo la catena. */
+function plVerificaAut_(s, nome, conCatena) {
+  if (!nome) return { ok: true, k: 'ok', msg: 'Torna fra i da assegnare', breve: 'libera' };
+  var a = null;
+  DATA.autisti.forEach(function (x) { if (x.nome === nome) a = x; });
+  if (a && a.esclusoMotivo) return { ok: false, k: 'no', msg: nome + ': ' + a.esclusoMotivo, breve: 'non disponibile' };
+  if (!conCatena) {
+    var w = availability(a ? [a] : [{ nome: nome }], function (sv) { return sv.autista; }, s, 'autista')[nome];
+    if (w) return { ok: false, k: 'no', msg: 'Occupato: si libera alle ' + fmtMin(w.freeAt) + ' · ' + (w.con.nome || w.con.per || ''), breve: 'libero ' + fmtMin(w.freeAt) };
+    return { ok: true, k: 'ok', msg: nome + ' è libero in questa fascia', breve: 'ci sta' };
+  }
+  return plVerdetto_(plCatenaAutista(s, nome), nome, s);
+}
 function plVerifica_(s, veic, conCatena) {
   if (!veic) return { ok: true, k: 'ok', msg: 'Torna fra i da assegnare', breve: 'libera' };
   var v = plVeicolo(veic);
@@ -2516,7 +2546,10 @@ function plVerifica_(s, veic, conCatena) {
   /* Il DOVE e il QUANTO. Il verdetto è lo stesso di plScontro — stessa regola, stesse
      tratte — ma detto con il motivo giusto: "occupato" era fuorviante quando il mezzo
      è liberissimo e il problema è il servizio DOPO, che non si raggiunge più. */
-  var c = plCatena(s, veic), r = { ok: true, k: 'ok', cat: c, msg: '', breve: 'ci sta' };
+  return plVerdetto_(plCatena(s, veic), veic, s);
+}
+function plVerdetto_(c, nome, s) {
+  var r = { ok: true, k: 'ok', cat: c, msg: '', breve: 'ci sta' };
   var rotto = null;
   for (var iv = 0; iv < c.aValle.length; iv++) if (c.aValle[iv].diventa === 'rotto') { rotto = c.aValle[iv]; break; }
   if (c.sovrapposti.length) {
@@ -2550,10 +2583,10 @@ function plVerifica_(s, veic, conCatena) {
     r.garage = c.rientro.prima === null
       ? 'rientro in garage alle ' + fmtMin(c.rientro.dopo)
       : 'rientro ' + fmtMin(c.rientro.dopo) + ' invece di ' + fmtMin(c.rientro.prima);
-  r.msg = v.nome + ' è libero in questa fascia';
+  r.msg = nome + ' è libero in questa fascia';
   if (c.daDove === 'garage') {
     r.breve = 'dal garage';
-    r.msg = v.nome + ' non ha servizi prima: parte dal garage';
+    r.msg = nome + ' non ha servizi prima: parte dal garage';
   } else if (c.arrivo !== null) {
     r.k = (c.k === 'ok') ? 'ok' : 'stretto';   // stretto o dentro i bagagli: ambra, non verde
     r.breve = fmtMin(c.arrivo) + ' · ' + plSegno(c.margine);
@@ -2567,7 +2600,7 @@ function plVerifica_(s, veic, conCatena) {
      va detto adesso, non dopo il salvataggio */
   if (r.garage) r.msg += ' · 🏠 ' + r.garage;
   if (c.aValle.length) {
-    var a = c.aValle[0], chi = (a.srv.nome || a.srv.da) + ' delle ' + fmtMin(a.srv.startMin);
+    var a = c.aValle[0], chi = (a.srnome || a.srv.da) + ' delle ' + fmtMin(a.srv.startMin);
     if (a.diventa === 'stretto' && a.era === 'ok') r.valle = '⏱ dopo questo, ' + chi + ' resta con ' + fmtDur(a.margine);
     else if (a.diventa === 'finestra') r.valle = '⏱ dopo questo, ' + chi + ' arriva coi bagagli (' + plSegno(a.margine) + ')';
     if (r.valle && r.k === 'ok') r.k = 'stretto';
@@ -2615,8 +2648,32 @@ function plUltimoAutista(veic, S) {
   }
   return ripiego;
 }
-function plSposta(s, veic) {
+/* Il mezzo che viene dietro all'autista: il simmetrico di plUltimoAutista, per quando
+   si assegna dalla parte delle persone. Stesso filtro — un mezzo fermo, a noleggio o già
+   in giro in quel momento non è «il mezzo di quell'autista». */
+function plUltimoMezzo(nome, S) {
+  var giro = srvDi('autista', nome).filter(function (P) { return P.id !== S.id && P.veicolo; });
+  if (!giro.length) return '';
+  var prima = [], dopo = [];
+  giro.forEach(function (P) {
+    if (plFine(P) <= S.startMin) prima.push(P); else if (P.startMin >= plFine(S)) dopo.push(P);
+  });
+  prima.sort(function (a, b) { return plFine(b) - plFine(a); });
+  dopo.sort(function (a, b) { return a.startMin - b.startMin; });
+  var ordine = prima.concat(dopo).concat(giro), visti = {};
+  for (var i = 0; i < ordine.length; i++) {
+    var v = ordine[i].veicolo;
+    if (visti[v]) continue;
+    visti[v] = true;
+    if (plVerifica_(S, v, false).ok) return v;
+  }
+  return '';
+}
+function plSposta(s, valore) {
   if (!s) return;
+  var CH = plChiave();
+  if (CH === 'autista') return plSpostaAut(s, valore);
+  var veic = valore;
   if ((veic || '') === (s.veicolo || '')) { PL_ARM = null; render(); return; }
   var r = veic ? plVerifica(s, veic) : { ok: true };
   /* Chi guida, in ordine di priorità:
@@ -2643,6 +2700,24 @@ function plSposta(s, veic) {
     + (preso ? ' · con ' + preso + ' (ultimo che l\'aveva)' : '')
     + (r.ok ? '' : ' · ' + r.breve));
 }
+/* Assegnare dalla parte delle persone: si mette l'AUTISTA, e il mezzo viene dietro con la
+   stessa regola al contrario (l'ultimo che quell'autista guidava, se può essere usato). */
+function plSpostaAut(s, nome) {
+  if ((nome || '') === (s.autista || '')) { PL_ARM = null; render(); return; }
+  var r = nome ? plVerifica(s, nome) : { ok: true };
+  var vei = s.veicolo || '', preso = '';
+  if (!vei && nome) { preso = plCon(function () { return plUltimoMezzo(nome, s); }); vei = preso; }
+  PEND[s.id] = { autista: nome || '', veicolo: vei };
+  s.autista = nome || ''; s.veicolo = vei;
+  if (s.orig) { s.orig.autista = nome || ''; s.orig.veicolo = vei; }
+  PL_ARM = null;
+  render();
+  if (!nome) { toast('🕐 ' + (s.nome || s.da) + ' torna fra i da assegnare'); return; }
+  toast((r.ok ? '🕐 ' : '⚠️ forzato · ') + nome
+    + (preso ? ' · con ' + preso + ' (il suo mezzo)' : '')
+    + (r.ok ? '' : ' · ' + r.breve));
+}
+
 /* ---- pennello autista ----
    Si prende un autista dalla fila in alto e resta "in mano": da lì ogni servizio che si
    tocca prende quel nome, uno dietro l'altro, e il mezzo resta quello che ha già.
@@ -2676,6 +2751,7 @@ function plPennella(s) {
    può lavorare. Il nome non entra mai nell'onclick (gli apostrofi romperebbero l'HTML):
    si passa l'indice e il nome si rilegge da PL_AUTLISTA. */
 function plBarraAutisti() {
+  if (plChiave() === 'autista') return '';   // qui l'autista è già la riga
   var righe = [];
   DATA.autisti.forEach(function (a) {
     var n = srvDi('autista', a.nome).length;
@@ -2938,9 +3014,10 @@ function plMiniatura_() {
   if (!s) { c.style.display = 'none'; PL_CARD_ID = null; return; }
   PL_CARD_ID = s.id;
   var col = s.autista ? colorOf(s.autista) : '#5f6368';
-  var quanti = 0;
-  // il conto dei mezzi liberi serve solo alla riga del consiglio, che in anteprima non c'è
-  if (!anteprima) DATA.veicoli.forEach(function (v) { if (!VEI_HIDE[v.nome] && plVerifica(s, v.nome).ok) quanti++; });
+  var quanti = 0, AUTV = (plChiave() === 'autista');
+  // il conto dei liberi serve solo alla riga del consiglio, che in anteprima non c'è
+  if (!anteprima) (AUTV ? DATA.autisti : DATA.veicoli).forEach(function (v) {
+    if (!(AUTV ? AUT_HIDE : VEI_HIDE)[v.nome] && plVerifica(s, v.nome).ok) quanti++; });
   var info = '';
   info += '<span>' + (s.pax ? esc(s.pax) + ' pax' : '? pax') + '</span>';
   info += s.veicolo ? '<span>🚐 ' + esc(s.veicolo) + '</span>' : '<span class="vuoto">🚐 senza mezzo</span>';
@@ -2984,10 +3061,16 @@ function plMiniatura_() {
     + cr
     + (nota ? '<div class="plcnota">📝 ' + esc(nota) + '</div>' : '')
     + '</div>'
-    + (anteprima ? '' : '<div class="plcsug' + (s.veicolo && !plVerifica(s, s.veicolo).ok ? ' plcno' : '') + '">')
-    + (s.veicolo && !plVerifica(s, s.veicolo).ok ? '⚠️ forzato su ' + esc(s.veicolo) + ': ' + esc(plVerifica(s, s.veicolo).msg)
-      : (quanti ? '✓ tocca una piazzola verde: ' + quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi')
-        : '✕ nessun mezzo libero in questa fascia')) + (anteprima ? '' : '</div>')
+    + (function () {
+        var mio = AUTV ? s.autista : s.veicolo;           // la risorsa della vista corrente
+        var male = mio && !plVerifica(s, mio).ok;
+        var cosa = AUTV ? 'autist' : 'mezz';
+        return (anteprima ? '' : '<div class="plcsug' + (male ? ' plcno' : '') + '">')
+          + (male ? '⚠️ forzato su ' + esc(mio) + ': ' + esc(plVerifica(s, mio).msg)
+            : (quanti ? '✓ tocca una piazzola verde: ' + quanti + ' ' + cosa + (quanti === 1 ? (AUTV ? 'a libero' : 'o libero') : (AUTV ? 'i liberi' : 'i liberi'))
+              : '✕ nessun ' + (AUTV ? 'autista libero' : 'mezzo libero') + ' in questa fascia'))
+          + (anteprima ? '' : '</div>');
+      })()
     + (anteprima ? '' : '<div class="plcaz"><button class="blu" onclick="plCardApri()">📋 Apri scheda</button>'
       + (s.veicolo ? '<button onclick="plStacca(\'veicolo\')" title="lascia l\'autista, libera il mezzo">🚐 Togli il mezzo</button>' : '')
       + (s.autista ? '<button onclick="plStacca(\'autista\')" title="lascia il mezzo, libera l\'autista">👤 Togli l\'autista</button>' : '')
@@ -3033,32 +3116,37 @@ function renderPlancia_() {
   if (!attivi.length) { m.innerHTML = '<div class="vuoto">Nessun servizio con orario per ' + fmtData(DATA.date) + '</div>'; return; }
   var sc = plScala(), px = plPx(sc), tot = (sc.m1 - sc.m0) * px;
   var armato = plArmato();
-  var senza = attivi.filter(function (s) { return !s.veicolo; });
+  var CH = plChiave(), AUT = (CH === 'autista');
+  var senza = attivi.filter(function (s) { return !s[CH]; });
   var h = '';
 
-  /* --- righe: un mezzo ciascuna, più quelli scritti a mano che non stanno in anagrafica --- */
+  /* --- righe: una per mezzo, oppure una per autista se guardi la giornata dalla parte
+     delle persone. Cambia la chiave, non il resto: catene, piazzole e trascinamento
+     lavorano tutti su `CH`. Chi è scritto sul foglio ma non sta in anagrafica non deve
+     far sparire il suo servizio: gli si dà una riga lo stesso. --- */
   var righe = [], nascosti = 0, noti = {};
-  DATA.veicoli.forEach(function (v) {
+  var elenco = AUT ? DATA.autisti : DATA.veicoli;
+  elenco.forEach(function (v) {
     noti[v.nome] = true;
-    if (VEI_HIDE[v.nome]) { nascosti++; return; }
-    var mine = attivi.filter(function (s) { return s.veicolo === v.nome; });
+    if (!AUT && VEI_HIDE[v.nome]) { nascosti++; return; }
+    if (AUT && AUT_HIDE[v.nome]) { nascosti++; return; }
+    var mine = attivi.filter(function (s) { return s[CH] === v.nome; });
     var r = armato ? plVerifica(armato, v.nome, true) : null;
     if (PL_SOLO && armato && r && !r.ok) return;
     righe.push({ nome: v.nome, v: v, mine: mine, esito: r });
   });
-  // un mezzo scritto nel foglio ma assente dal tab Veicoli non deve far sparire il suo servizio
   var fuori = {};
-  attivi.forEach(function (s) { if (s.veicolo && !noti[s.veicolo]) fuori[s.veicolo] = true; });
+  attivi.forEach(function (s) { if (s[CH] && !noti[s[CH]]) fuori[s[CH]] = true; });
   Object.keys(fuori).forEach(function (nome) {
     righe.push({ nome: nome, v: { nome: nome, pax: 0, tipo: 'non in anagrafica' }, fuori: true,
-      mine: attivi.filter(function (s) { return s.veicolo === nome; }), esito: null });
+      mine: attivi.filter(function (s) { return s[CH] === nome; }), esito: null });
   });
 
-  /* i mezzi che non possono lavorare (fermi, dati a noleggio, o presi fuori flotta)
-     vanno in fondo: in alto resta quello su cui puoi davvero appoggiare un servizio */
+  /* chi non può lavorare (mezzo fermo o a noleggio, autista a riposo o indisponibile)
+     va in fondo: in alto resta chi può davvero prendersi un servizio */
   function plPeso(r) {
     if (r.fuori) return 2;
-    if (r.v.fuoriServizio || r.v.inRent) return 1;
+    if (AUT ? !!r.v.esclusoMotivo : (r.v.fuoriServizio || r.v.inRent)) return 1;
     return 0;
   }
   righe.forEach(function (r, i) { r._i = i; });
@@ -3069,9 +3157,11 @@ function renderPlancia_() {
     + '<div class="plzoom"><button onclick="plZoom(-1)" title="Riduci">−</button>'
     + '<button onclick="plZoom(0)" title="Tutta la giornata">adatta</button>'
     + '<button onclick="plZoom(1)" title="Ingrandisci">+</button></div>'
+    + '<div class="plzoom"><button onclick="setPlVista(\'mezzi\')"' + (AUT ? '' : ' class="att"') + ' title="una corsia per mezzo">🚐 Mezzi</button>'
+    + '<button onclick="setPlVista(\'autisti\')"' + (AUT ? ' class="att"' : '') + ' title="una corsia per autista">🚹 Autisti</button></div>'
     + '<button class="chip' + (PL_GAP ? ' verde' : '') + '" style="border:none" onclick="plToggleGap()">🕳 attese</button>'
     + '<button class="chip' + (PL_SOLO ? ' verde' : '') + '" style="border:none" onclick="plToggleSolo()">🎯 solo dove ci sta</button>'
-    + (nascosti ? '<button class="chip ambra" style="border:none" onclick="plMostraTutti()">👁 ' + nascosti + ' mezzi nascosti</button>' : '')
+    + (nascosti ? '<button class="chip ambra" style="border:none" onclick="plMostraTutti()">👁 ' + nascosti + (AUT ? ' autisti nascosti' : ' mezzi nascosti') + '</button>' : '')
     + '<button class="chip' + (DUE ? ' verde' : '') + '" style="border:none" title="oggi e domani sullo stesso asse"'
     + ' onclick="setDue(' + (DUE ? 'false' : 'true') + ')">🗓 2 giorni</button>'
     + (DUE && !plPronta() ? '<span class="plsolo1">carico domani…</span>' : '')
@@ -3093,7 +3183,7 @@ function renderPlancia_() {
        dentro .plpiu, che sotto i 900px sparisce */
     /* il suggerimento sullo zoom non va nascosto sul telefono: è lì che serve, perché
        le due dita non le scopre nessuno da solo */
-    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga del mezzo'
+    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga ' + (AUT ? 'dell\'autista' : 'del mezzo') + ''
       + '</span> · <b>due dita</b> per lo zoom<span class="plpiu">'
       + (px < 0.9 ? ', <b>+</b> per leggere i nomi dentro i blocchi' : '') + '</span>.</p>';
   }
@@ -3108,17 +3198,19 @@ function renderPlancia_() {
   if (!senza.length) vass += '<div class="plvuoto">Tutti i servizi hanno un mezzo. 👌</div>';
   senza.slice().sort(function (a, b) { return a.startMin - b.startMin; }).forEach(function (s) {
     var quanti = 0, quantiNascosti = 0;
-    DATA.veicoli.forEach(function (v) {
+    (AUT ? DATA.autisti : DATA.veicoli).forEach(function (v) {
       if (!plVerifica(s, v.nome).ok) return;
-      if (VEI_HIDE[v.nome]) quantiNascosti++; else quanti++;
+      if ((AUT ? AUT_HIDE : VEI_HIDE)[v.nome]) quantiNascosti++; else quanti++;
     });
     vass += '<div class="pltile' + (PL_ARM === s.id ? ' plsel' : '') + (quanti ? '' : ' plzero')
       + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '') + '" data-id="' + esc(s.id) + '">'
       + '<b>' + fmtMin(s.startMin) + ' <i class="plstima">≈ ' + fmtDur(plDurata(s)) + '</i></b>'
       + esc(s.nome || s.da) + (s.domani ? '<em class="pldomani">🌙 domani</em>' : '')
       + '<em>' + esc(s.da + ' → ' + s.per) + '</em>'
-      + '<em>' + (s.pax || '?') + ' pax · ' + esc(s.autista || 'senza autista') + '</em>'
-      + '<u class="' + (quanti ? 'ok' : 'no') + '">' + (quanti ? quanti + (quanti === 1 ? ' mezzo libero' : ' mezzi liberi') : 'nessun mezzo libero')
+      + '<em>' + (s.pax || '?') + ' pax · ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + '</em>'
+      + '<u class="' + (quanti ? 'ok' : 'no') + '">'
+      + (quanti ? quanti + (AUT ? (quanti === 1 ? ' autista libero' : ' autisti liberi') : (quanti === 1 ? ' mezzo libero' : ' mezzi liberi'))
+                : (AUT ? 'nessun autista libero' : 'nessun mezzo libero'))
       + (quantiNascosti ? ' · ' + quantiNascosti + ' nascosti' : '') + '</u></div>';
   });
   vass += '</div></aside>';
@@ -3311,9 +3403,13 @@ function renderPlancia_() {
       }
     }
     srt.forEach(function (s) {
-      var col = s.autista ? colorOf(s.autista) : '#8f9aa4';
+      /* Dalla parte dei mezzi il colore è l'autista (chi guida quel van); dalla parte
+         delle persone è il mezzo (con che van sta girando). Il blocco dice sempre l'altra
+         metà dell'accoppiata: quella della corsia la sai già, è la riga. */
+      var col = AUT ? (s.veicolo ? colorOfVeicolo(s.veicolo) : '#8f9aa4')
+                    : (s.autista ? colorOf(s.autista) : '#8f9aa4');
       var male = veic && !plVerifica(s, veic).ok;
-      var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s.autista ? ' plnoaut' : '')
+      var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s[AUT ? 'veicolo' : 'autista'] ? ' plnoaut' : '')
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '');
       var W2 = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(s) * px));
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
@@ -3322,7 +3418,7 @@ function renderPlancia_() {
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
         + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
         + ' title="' + esc((s.domani ? 'DOMANI ' : '') + fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'
-        + '<b>' + fmtMin(s.startMin) + ' ' + esc(s.autista || 'senza autista') + (male ? ' ⚠' : '') + '</b>'
+        + '<b>' + fmtMin(s.startMin) + ' ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + (male ? ' ⚠' : '') + '</b>'
         + '<span>' + esc((s.nome || s.da) + ' → ' + s.per) + '</span></div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
@@ -3345,22 +3441,30 @@ function renderPlancia_() {
   righe.forEach(function (r, k) {
     if (!sepFatta && plPeso(r) > 0) {
       sepFatta = true;
-      h += '<div class="plsep"><b>fermi, a noleggio o fuori flotta</b> — ci puoi mettere un servizio lo stesso, ma sai cosa stai facendo</div>';
+      h += '<div class="plsep"><b>' + (AUT ? 'a riposo, non disponibili o non in anagrafica' : 'fermi, a noleggio o fuori flotta')
+        + '</b> — ci puoi mettere un servizio lo stesso, ma sai cosa stai facendo</div>';
     }
     var srt = r.mine.slice().sort(function (a, b) { return a.startMin - b.startMin; });
     var nOv = 0;
     for (var i = 0; i < srt.length; i++) for (var j = i + 1; j < srt.length; j++)
       if (srt[j].startMin < plFine(srt[i])) nOv++;
     var occ = 0; r.mine.forEach(function (s) { occ += plDurata(s); });
-    var stato = r.fuori ? ' · non in anagrafica' : (r.v.fuoriServizio ? ' · fuori servizio' : (r.v.inRent ? ' · a noleggio' : ''));
+    var stato = r.fuori ? ' · non in anagrafica'
+      : (AUT ? (r.v.esclusoMotivo ? ' · ' + r.v.esclusoMotivo : (r.v.categoria ? ' · ' + r.v.categoria : ''))
+             : (r.v.fuoriServizio ? ' · fuori servizio' : (r.v.inRent ? ' · a noleggio' : '')));
+    // dalla parte delle persone: quanti servizi ha e quanto dura la sua giornata
+    var ore = AUT ? oreAutista(r.nome) : null;
     var kr = r.esito ? (r.esito.ok ? (r.esito.k === 'stretto' ? 'mid' : 'ok') : 'no') : '';
     var cl = 'plrow' + (nOv ? ' plovl' : '') + (r.fuori ? ' plfuori' : '')
       + (kr ? (kr === 'ok' ? ' plcanok' : (kr === 'mid' ? ' plcanmid' : ' plcanno')) : '');
     h += '<div class="' + cl + '"><div class="plrail"><b>' + esc(r.nome) + (nOv ? ' <em class="plwarn">⚠ ' + nOv + '</em>' : '') + '</b>'
-      + '<span>' + (r.v.pax ? r.v.pax + ' posti' : esc(r.v.tipo || '')) + stato + ' · ' + (occ ? fmtDur(occ) : 'fermo') + '</span>'
+      + '<span>' + (AUT
+          ? (r.mine.length ? r.mine.length + (r.mine.length === 1 ? ' servizio' : ' servizi') : 'nessun servizio')
+            + stato + (ore ? ' · ' + fmtMin(ore.inizio) + '→' + fmtMin(ore.fine) + (ore.oltre ? ' ⏰' : '') : '')
+          : (r.v.pax ? r.v.pax + ' posti' : esc(r.v.tipo || '')) + stato + ' · ' + (occ ? fmtDur(occ) : 'fermo')) + '</span>'
       + (r.esito ? '<em class="plbadge ' + kr + '" title="' + esc(r.esito.msg) + '">' + plSegnoK(r.esito) + ' ' + esc(r.esito.breve) + '</em>' : '')
       // sulla riga da cui il servizio se ne va: quanto respira il giro togliendolo di lì
-      + (liberato && armato && r.nome === armato.veicolo ? '<em class="plfree">🅿️ ' + esc(liberato) + '</em>' : '')
+      + (liberato && armato && r.nome === armato[CH] ? '<em class="plfree">🅿️ ' + esc(liberato) + '</em>' : '')
       + '</div>' + lane(r.mine, r.nome, r.esito, k) + '</div>'
       + (r.esito && r.esito.valle ? '<div class="plavv ' + (r.esito.valle.indexOf('⚠️') === 0 ? 'rotto' : 'stretto') + '">'
           + esc(r.nome) + ' — ' + esc(r.esito.valle) + '</div>' : '');

@@ -530,13 +530,16 @@ main{padding:12px;}
 
 <main id="main"><div class="spin"></div></main>
 
+<!-- Le schede in barra sono quelle che si usano. Assegna, Flotta e Timeline restano nel
+     codice ma non hanno più il bottone: per rimetterle basta togliere il commento qui —
+     tutto il resto (render, filtri, test) è ancora al suo posto. -->
 <div class="tabs">
   <button id="tabS" class="att" onclick="setTab('servizi')">📋 Servizi</button>
-  <button id="tabA" onclick="setTab('assegna')">🧩 Assegna</button>
   <button id="tabP" onclick="setTab('plancia')">🎛 Plancia</button>
-  <button id="tabF" onclick="setTab('flotta')">⏳ Flotta</button>
-  <button id="tabT" onclick="setTab('timeline')">📊 Timeline</button>
   <button id="tabR" onclick="setTab('rent')">🔑 Rent</button>
+  <!-- <button id="tabA" onclick="setTab('assegna')">🧩 Assegna</button> -->
+  <!-- <button id="tabF" onclick="setTab('flotta')">⏳ Flotta</button> -->
+  <!-- <button id="tabT" onclick="setTab('timeline')">📊 Timeline</button> -->
 </div>
 
 <div class="ovl" id="ovl" onclick="closeModal()"></div>
@@ -713,8 +716,11 @@ function goToday(){useDate(DATA?DATA.today:oggiLocal());}
 function shiftDay(d){useDate(addDaysC(document.getElementById('datePick').value,d));}
 function goDate(iso){closeModal();useDate(iso);}
 function setTab(t){TAB=t;
-  ['S','A','P','F','T','R'].forEach(function(k){document.getElementById('tab'+k).className='';});
-  document.getElementById('tab'+{servizi:'S',assegna:'A',plancia:'P',flotta:'F',timeline:'T',rent:'R'}[t]).className='att';
+  // le schede senza bottone si possono ancora aprire da codice: qui non si dà per scontato
+  // che il bottone esista, se no togliere una scheda dalla barra spaccherebbe tutto
+  ['S','A','P','F','T','R'].forEach(function(k){var n=document.getElementById('tab'+k);if(n)n.className='';});
+  var b=document.getElementById('tab'+{servizi:'S',assegna:'A',plancia:'P',flotta:'F',timeline:'T',rent:'R'}[t]);
+  if(b)b.className='att';
   render();}
 
 function load(silent){

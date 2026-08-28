@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (112 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (185 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (187 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -342,6 +342,12 @@ zone, leggi `docs/REVISIONE_v5.md`.
 
 ## Cosa fa la app, scheda per scheda
 
+**In barra ci sono tre schede: 📋 Servizi · 🎛 Plancia · 🔑 Rent.** *Assegna*, *Flotta* e
+*Timeline* non servivano al lavoro di tutti i giorni e hanno perso il bottone (28/08), ma il
+loro codice è **tutto ancora lì e funzionante**, test compresi: si riaccendono togliendo il
+commento ai tre `<button>` nella `.tabs`. `setTab()` non dà per scontato che il bottone
+esista, quindi togliere una scheda dalla barra non rompe niente.
+
 **📋 Servizi** — righe colorate (o card). Filtri *Tutti / Da fare / Svolti*; ordinamento per
 *Orario / Autista / Mezzo / Fornitore / Scoperti prima*; due file di chip per nascondere
 autisti e mezzi; interruttore **2 giorni** (oggi e domani impilati). Ordinando per autista o
@@ -468,7 +474,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **353 controlli automatici, tutti verdi.**
+libera. **355 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -478,7 +484,7 @@ Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) s
 del salvataggio · **9septies** il pennello autista · **9octies** i cancellati non occupano niente ·
 **9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo ·
 **9undecies** lo zoom da Mac, telefono e tastiera, e la Plancia a tutta finestra ·
-**9duodecies** la Plancia dalla parte degli autisti.
+**9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo.
 
 Da fare fuori dal codice:
 

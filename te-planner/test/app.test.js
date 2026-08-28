@@ -1002,6 +1002,25 @@ const SEED=`(function(){
       return v==='autisti'&&localStorage.getItem('te_plvista')==='mezzi';}), null);
   await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
 
+  console.log('\n=== 9terdecies. La barra in fondo: solo le schede che si usano ===');
+  await p.close();p=await nuova(1400,900);
+  await p.evaluate(SEED);await p.waitForTimeout(300);
+  const tabs=await p.evaluate(()=>({
+    visibili:[].slice.call(document.querySelectorAll('.tabs button')).map(function(b){return b.id;}),
+    testo:document.querySelector('.tabs').textContent.replace(/\s+/g,' ').trim()}));
+  t('in barra restano Servizi, Plancia e Rent',
+    tabs.visibili.join(',')==='tabS,tabP,tabR', tabs);
+  // le schede tolte dalla barra devono restare aperte da codice, senza errori
+  const nascoste=await p.evaluate(()=>{
+    var out={};
+    ['assegna','flotta','timeline'].forEach(function(x){
+      try{ setTab(x); out[x]=(document.getElementById('main').innerHTML||'').length>50; }
+      catch(e){ out[x]='ERRORE: '+e.message; }});
+    setTab('servizi');
+    return out;});
+  t('e restano apribili da codice, senza rompere niente',
+    nascoste.assegna===true&&nascoste.flotta===true&&nascoste.timeline===true, nascoste);
+
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();
   for(const [w,h] of [[1920,1080],[1440,900],[1024,768],[768,900],[390,844]]){

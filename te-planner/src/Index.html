@@ -277,6 +277,7 @@ main{padding:12px;}
 .plora{position:absolute;height:12px;line-height:12px;font-size:9.5px;font-weight:600;
   color:#5b6670;background:var(--card);padding:0 3px;border-radius:3px;white-space:nowrap;z-index:2}
 .plora.plarr{color:#1c7a45;background:#eaf6ee}
+.plora.pltardi{color:#a3231c;background:#fdecea;z-index:4;box-shadow:0 0 0 1px #f3b6b1}
 .plgap i{font-style:normal;font-size:9.5px;color:#3c4650;line-height:16px;white-space:nowrap}
 .plgvia{background:repeating-linear-gradient(135deg,#b9c3cc 0 4px,#cdd5db 4px 8px);opacity:.95}
 .plgvia i{color:#2b3a45;font-weight:700}
@@ -3108,16 +3109,25 @@ function renderPlancia_() {
         var A = srt[q - 1], B = srt[q];
         var f = plFine(A), buco = B.startMin - f;
         if (buco < 10) continue;
+        /* L'ora d'arrivo è quella VERA: fine del servizio + tragitto, sempre. Prima il
+           tragitto veniva tagliato alla lunghezza del buco (`Math.min(tt.min, buco)`) e
+           l'arrivo finiva per coincidere con l'inizio del servizio dopo: una bugia, e
+           proprio nel caso peggiore — quello in cui il mezzo NON ci arriva. Il taglio
+           serve solo a disegnare la barra, che non può sforare il buco. */
         var tt = trf(A.id, B.id);
-        var via = Math.max(0, Math.min(tt.min, buco));
-        var arrivo = f + via, attesa = buco - via;
+        var arrivo = f + tt.min;                              // ora vera
+        var via = Math.max(0, Math.min(tt.min, buco));        // solo per la barra
+        var arrivoBarra = f + via;
+        var attesa = Math.max(0, B.startMin - arrivo);
+        var tardi = arrivo - B.startMin;                      // > 0 = non ci arriva
         var stretto = tt.min + tt.buffer > buco;
         var titolo = 'Finisce alle ' + fmtMin(f)
           + (tt.min ? ' · ' + fmtDur(tt.min) + (tt.km ? ' e ' + tt.km + ' km' : '') + ' per arrivare a ' + B.da + ' · sul posto alle ' + fmtMin(arrivo)
                     : ' · stesso posto, non si sposta')
           + (attesa > 0 ? ' · ' + fmtDur(attesa) + ' di attesa' : '')
           + ' · riparte alle ' + fmtMin(B.startMin)
-          + (stretto ? ' — margine sotto i ' + fmtDur(tt.buffer) : '');
+          + (tardi > 0 ? ' — ci arriva ' + fmtDur(tardi) + ' DOPO che è già partito' : '')
+          + (stretto && tardi <= 0 ? ' — margine sotto i ' + fmtDur(tt.buffer) : '');
         var top = banda + Math.round((alt - banda) / 2 - 8);
         var wv = Math.max(3, Math.round(via * px)), arrSopra = false;
         if (via > 0) {
@@ -3136,24 +3146,30 @@ function renderPlancia_() {
              TUTTO il buco: se dall'arrivo in poi non ci sta, si appoggia alla fine del
              buco, contro il blocco che segue. L'ora è scritta, la posizione è un di più. */
           var kmT = tt.km ? ' · ' + tt.km + ' km' : '';
+          var rit = tardi > 0 ? ' ⚠ +' + fmtDur(tardi) : '';
           var tArr = plEtich(wv >= 62
-            ? ['arrivo ' + fmtMin(arrivo) + kmT, 'arrivo ' + fmtMin(arrivo), '▸' + fmtMin(arrivo)]
-            : ['arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via) + kmT,
-               'arrivo ' + fmtMin(arrivo) + ' · ' + fmtDur(via), 'arrivo ' + fmtMin(arrivo),
-               '▸' + fmtMin(arrivo) + ' ' + fmtDur(via), '▸' + fmtMin(arrivo)],
+            ? ['arrivo ' + fmtMin(arrivo) + rit + kmT, 'arrivo ' + fmtMin(arrivo) + rit, '▸' + fmtMin(arrivo) + rit]
+            : ['arrivo ' + fmtMin(arrivo) + rit + ' · ' + fmtDur(tt.min) + kmT,
+               'arrivo ' + fmtMin(arrivo) + rit + ' · ' + fmtDur(tt.min), 'arrivo ' + fmtMin(arrivo) + rit,
+               '▸' + fmtMin(arrivo) + rit + ' ' + fmtDur(tt.min), '▸' + fmtMin(arrivo) + rit],
             buco * px);
+          /* Se non ci arriva, l'ora vera si scrive comunque: il buco è stretto proprio
+             perché la catena è rotta, e questo è l'unico caso in cui vale la pena che
+             una scritta sbordi sul blocco che segue. In rosso, che è un allarme. */
+          if (!tArr && tardi > 0) tArr = '▸' + fmtMin(arrivo) + ' ⚠ +' + fmtDur(tardi);
           if (tArr) {
             var largA = tArr.length * 5.4 + 10, mLab = arrivo;
-            if ((B.startMin - arrivo) * px < largA) mLab = Math.max(f, B.startMin - largA / px);
-            b += '<div class="plora plarr" data-m0="' + Math.round(mLab) + '" style="left:' + Math.round((mLab - sc.m0) * px)
+            if ((B.startMin - mLab) * px < largA) mLab = Math.max(f, B.startMin - largA / px);
+            b += '<div class="plora plarr' + (tardi > 0 ? ' pltardi' : '') + '" data-m0="' + Math.round(mLab)
+              + '" style="left:' + Math.round((mLab - sc.m0) * px)
               + 'px;top:' + (top + 18) + 'px" title="' + esc(titolo) + '">' + tArr + '</div>';
             arrSopra = true;
           }
         }
         if (attesa > 0) {
           var wa = Math.max(3, Math.round(attesa * px));
-          b += '<div class="plgap plgatt" data-m0="' + arrivo + '" data-m1="' + B.startMin + '"'
-            + ' style="left:' + Math.round((arrivo - sc.m0) * px) + 'px;width:' + wa + 'px;top:' + top + 'px"'
+          b += '<div class="plgap plgatt" data-m0="' + arrivoBarra + '" data-m1="' + B.startMin + '"'
+            + ' style="left:' + Math.round((arrivoBarra - sc.m0) * px) + 'px;width:' + wa + 'px;top:' + top + 'px"'
             + ' title="' + esc(titolo) + '">'
             /* se l'ora d'arrivo è già scritta sopra — o se non ci si sposta, e allora è
                la stessa ora della fine — qui basta quanto si aspetta */

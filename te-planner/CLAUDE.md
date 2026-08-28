@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (149 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (153 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -268,6 +268,15 @@ zone, leggi `docs/REVISIONE_v5.md`.
     errore). Se aggiungi una funzione che tocca `DATA.services` dalla Plancia, falla passare
     di lì o vedrà solo oggi.
 
+19. **L'ora d'arrivo tagliata alla lunghezza del buco.** Nella Plancia il tragitto veniva
+    limitato con `Math.min(tt.min, buco)` — giusto per **disegnare la barra**, che non può
+    sforare — ma l'ora d'arrivo si calcolava da lì: `f + via`. Risultato: quando il tragitto
+    era più lungo del buco, l'arrivo coincideva esattamente con l'inizio del servizio dopo.
+    Una bugia, e proprio nel caso peggiore, quello in cui il mezzo **non** ci arriva. Ora
+    `arrivo = f + tt.min` sempre, il taglio resta solo per la barra (`arrivoBarra`), e il
+    ritardo si scrive in rosso. Regola generale: **i numeri che si leggono non si calcolano
+    mai da una variabile nata per disegnare.**
+
 15. **La app appesa alla rotella.** `render()` esce subito se `PL_DRAG` è acceso — giusto,
     non si ridisegna sotto il dito. Ma se il trascinamento non finiva mai (dito alzato fuori
     dalla finestra, oppure blocco sparito perché nel frattempo i dati si sono ricaricati e
@@ -397,7 +406,9 @@ l'ora in cui il mezzo è materialmente sul pick-up del servizio dopo. Sopra e so
 non si accavallano mai. Lo spazio per quell'etichetta si misura su **tutto il buco**, non
 sulla sola attesa: con le catene strette l'attesa è zero e l'ora d'arrivo non compariva mai —
 proprio nei casi in cui serve. Se dall'arrivo in poi non ci sta, si appoggia alla fine del
-buco, contro il blocco che segue. Ogni etichetta è ancorata al suo minuto (`data-m0`), quindi si sposta
+buco, contro il blocco che segue. Quell'ora è **fine + tragitto, sempre**: se il tragitto è
+più lungo del buco l'etichetta diventa rossa e dice di quanto (`▸09:40 ⚠ +45m`), e si scrive
+comunque, anche sbordando sul blocco che segue — è l'unico caso in cui vale la pena. Ogni etichetta è ancorata al suo minuto (`data-m0`), quindi si sposta
 da sola con lo zoom, e quando lo spazio è poco **si accorcia invece di sparire** (`plEtich`
 prova le scritte dalla più completa alla più secca): `07:00 → 08:10 · 42 km · 1h 10m` →
 `07:00 → 08:10` → `→ 08:10`. I **km** arrivano dal backend (`services[].km`,
@@ -428,7 +439,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **313 controlli automatici, tutti verdi.**
+libera. **317 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

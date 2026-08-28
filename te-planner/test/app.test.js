@@ -733,6 +733,32 @@ const SEED=`(function(){
   t('appoggiata al blocco che segue, senza coprirlo', stretta.dentro, stretta);
   await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
 
+  // il caso della bugia: il tragitto è più lungo del buco. L'ora d'arrivo deve restare
+  // quella vera (fine + tragitto), non essere schiacciata sull'inizio del servizio dopo
+  const bugia=await p.evaluate(()=>{
+    var A=DATA.services.filter(function(s){return s.veicolo==='Vito 1';})
+      .sort(function(x,y){return x.startMin-y.startMin;})[0];
+    var B=JSON.parse(JSON.stringify(A));
+    B.id='TARDI'; B.startMin=A.endMin+30; B.durMin=60; B.endMin=B.startMin+60;
+    B.time=('0'+Math.floor(B.startMin/60)).slice(-2)+':'+('0'+(B.startMin%60)).slice(-2);
+    B.nome='Non ci arriva'; B.da='Matera'; B.per='Bari';
+    DATA.services=DATA.services.filter(function(s){return s.veicolo!=='Vito 1'||s.id===A.id;});
+    DATA.services.push(B);
+    DATA.transfers[A.id+'->'+B.id]={min:75,buffer:15,km:60};   // 75' di strada in 30' di buco
+    _BYID_SRC=null; PL_ARM=null; render();
+    var lane=[].slice.call(document.querySelectorAll('.pllane')).filter(function(l){
+      return l.getAttribute('data-v')==='Vito 1';})[0];
+    var arr=lane.querySelector('.plora.plarr');
+    return {testo:arr?arr.textContent:null, rossa:!!(arr&&/pltardi/.test(arr.className)),
+            vero:fmtMin(A.endMin+75), finto:fmtMin(B.startMin), ritardo:fmtDur(45),
+            barra:lane.querySelectorAll('.plgatt').length};});
+  t('con un tragitto più lungo del buco l\'ora d\'arrivo resta quella vera',
+    !!bugia.testo&&bugia.testo.indexOf(bugia.vero)>=0&&bugia.testo.indexOf(bugia.finto)<0, bugia);
+  t('e dice di quanto è in ritardo',       bugia.testo.indexOf(bugia.ritardo)>=0, bugia);
+  t('scritta in rosso, non in verde',      bugia.rossa, bugia);
+  t('e non disegna un\'attesa che non c\'è', bugia.barra===0, bugia);
+  await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(300);
+
   // sul telefono la giornata sta in 390px: le scritte si accorciano invece di sparire
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(350);

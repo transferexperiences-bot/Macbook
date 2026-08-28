@@ -1045,7 +1045,8 @@ const SEED=`(function(){
             aut:s.autista,nome:s.nome,pax:s.pax,da:s.da,per:s.per};});
   t('prima riga: ora e chi guida',   !!tre&&tre.b.indexOf(tre.aut)>=0, tre);
   t('seconda riga: cliente e pax',
-    !!tre&&tre.sp.indexOf(tre.nome)>=0&&tre.sp.indexOf(tre.pax+' pax')>=0, tre);
+    // fra numero e «pax» c'è uno spazio unificatore: quei due non si spezzano mai
+    !!tre&&tre.sp.indexOf(tre.nome)>=0&&tre.sp.replace(/\u00a0/g,' ').indexOf(tre.pax+' pax')>=0, tre);
   t('terza riga: da → per',
     !!tre&&tre.uVisibile&&tre.u.indexOf(tre.da.split(' -')[0])>=0, tre);
   // la tratta si deve LEGGERE, non solo esistere: dentro i blocchi normali non è tagliata,
@@ -1191,6 +1192,73 @@ const SEED=`(function(){
     await q.close();
   }
   t('nessun errore JS e nessuno scroll orizzontale su 5 larghezze × 10 combinazioni', errs.length===0, errs.slice(0,6));
+
+  console.log('\n=== 9quaterdecies. Giornata fitta e nomi lunghi: niente si accavalla, niente si taglia ===');
+  {
+    // una giornata come quelle vere: servizi da dieci minuti uno dietro l'altro, e posti
+    // che si chiamano «Masseria Torre Abate Risi, C.da Cerasino, Fasano»
+    const semina = (righe) => `(function(){
+      var base=${JSON.stringify(righe)};
+      DATA.services=base.map(function(b,i){var s=JSON.parse(JSON.stringify(DATA.services[0]));
+        s.id='ZZ'+i;s.startMin=b[0];s.durMin=b[1];s.endMin=b[0]+b[1];
+        s.time=('0'+Math.floor(b[0]/60)).slice(-2)+':'+('0'+(b[0]%60)).slice(-2);
+        s.da=b[2];s.per=b[3];s.autista=b[4];s.veicolo=b[5];
+        s.nome='Gruppo Torre Abate Risi';s.pax=7;s.stato='';s.allert='';s.rientroMin=20;return s;});
+      DATA.transfers={};DATA.services.forEach(function(a){DATA.services.forEach(function(z){
+        if(a!==z)DATA.transfers[a.id+'->'+z.id]={min:12,buffer:10,km:9};});});
+      _BYID_SRC=null;render();})()`;
+    const misura = () => ({
+      sovrapposti: (function(){
+        var sovr=[],lanes={};
+        [].slice.call(document.querySelectorAll('.plblk')).forEach(function(n){
+          var k=n.parentNode.getAttribute('data-v')+'|'+Math.round(n.getBoundingClientRect().top);
+          (lanes[k]=lanes[k]||[]).push(n);});
+        Object.keys(lanes).forEach(function(k){
+          var a=lanes[k].map(function(n){var r=n.getBoundingClientRect();
+            return {id:n.getAttribute('data-id'),l:r.left,r:r.right};}).sort(function(x,y){return x.l-y.l;});
+          for(var i=1;i<a.length;i++) if(a[i].l<a[i-1].r-0.5) sovr.push([a[i-1].id,a[i].id]);});
+        return sovr;})(),
+      tagliati: [].slice.call(document.querySelectorAll('.plblk')).filter(function(n){
+        return n.scrollHeight>n.clientHeight+1;}).map(function(n){return n.getAttribute('data-id');}),
+      ore: [].slice.call(document.querySelectorAll('.plblk b')).map(function(n){return n.textContent;}),
+      alt: [].slice.call(document.querySelectorAll('.plblk')).map(function(n){
+        return Math.round(n.getBoundingClientRect().height);})
+    });
+    const q=await nuova(1680,900);
+    await q.evaluate(()=>setTab('plancia'));await q.waitForTimeout(250);
+    await q.evaluate(semina([[840,12,'Masseria Torre Abate Risi, C.da Cerasino, Fasano','Terre di San Vito','Marco Rossi','Vito 1'],
+                             [860,10,'Terre di San Vito','Aeroporto di Bari - Arrivi','Marco Rossi','Vito 1'],
+                             [875,15,'Aeroporto di Bari','Polignano a Mare','Marco Rossi','Vito 1'],
+                             [900,20,'Polignano a Mare','Monopoli','Marco Rossi','Vito 1'],
+                             [925,10,'Monopoli','Ostuni','Marco Rossi','Vito 1']]));
+    await q.waitForTimeout(400);
+    const fitto=await q.evaluate(misura);
+    t('giornata fitta: nessun blocco finisce sopra il successivo', fitto.sovrapposti.length===0, fitto.sovrapposti);
+    t('e l\'ora si legge per intero, non «1…»',
+      fitto.ore.length>0&&fitto.ore.every(function(x){return /^\d\d:\d\d/.test(x);}), fitto.ore);
+    t('niente testo tagliato dal bordo del blocco', fitto.tagliati.length===0, fitto.tagliati);
+
+    await q.evaluate(semina([[600,60,'Masseria Torre Abate Risi, C.da Cerasino, Fasano','Terre di San Vito, C.da Rascinuso','Marco Rossi','Vito 1'],
+                             [800,45,'Aeroporto di Bari - Arrivi','Masseria San Domenico, Savelletri di Fasano','Marco Rossi','Vito 1']]));
+    await q.waitForTimeout(400);
+    const lungo=await q.evaluate(()=>{
+      var m={tagliati:[],tratte:[],alt:[]};
+      [].slice.call(document.querySelectorAll('.plblk')).forEach(function(n){
+        var u=n.querySelector('u');
+        m.alt.push(Math.round(n.getBoundingClientRect().height));
+        if(n.scrollHeight>n.clientHeight+1)m.tagliati.push(n.getAttribute('data-id'));
+        if(u&&getComputedStyle(u).display!=='none')
+          m.tratte.push({t:u.textContent,tagliata:u.scrollHeight>u.clientHeight+1});});
+      return m;});
+    t('coi nomi lunghi la corsia si alza invece di tagliare',
+      lungo.alt.length>0&&lungo.alt.every(function(h){return h>=80;}), lungo.alt);
+    t('la tratta ci sta tutta, anche su due righe',
+      lungo.tratte.length>0&&lungo.tratte.every(function(x){return !x.tagliata;}), lungo.tratte);
+    t('e l\'indirizzo dopo la virgola non entra nel blocco',
+      lungo.tratte.every(function(x){return x.t.indexOf('C.da')<0;}), lungo.tratte);
+    t('niente testo tagliato nemmeno qui', lungo.tagliati.length===0, lungo.tagliati);
+    await q.close();
+  }
 
   await b.close();
   bilancio();

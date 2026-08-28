@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (207 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (214 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -455,8 +455,18 @@ c'è **anche sul telefono** appena il blocco è largo abbastanza (prima era spen
 820px e chi ingrandiva con le dita non la vedeva comunque); sparisce solo sotto i **96px**
 (`plmd`) e coi servizi impilati (`plduo`: il blocco è basso). Sotto i 74px resta solo l'ora
 (`plsm`), sotto i 30 solo il colore (`plxs`).
+**L'altezza della corsia si adatta al contenuto**: se una scritta su una riga non ci sta
+(«Masseria Torre Abate Risi → Terre di San Vito»), la corsia si alza di una riga — fino a
+due — e quella scritta va a capo. La **larghezza no**: quella è il tempo, e allungarla
+vorrebbe dire mentire sull'orario o coprire il blocco dopo. Per lo stesso motivo la
+larghezza minima (46px) è **tappata alla partenza del servizio successivo**: in una
+giornata fitta di servizi da dieci minuti quei 46px facevano finire ogni blocco sopra il
+seguente, e la corsia diventava una fila di rettangoli accavallati. La prima riga (ora +
+chi guida) non va mai a capo: se non ci sta **stringe il carattere** invece di tagliarsi.
 Nella tratta i posti si scrivono **corti** (`luogoBreve()`): «Aeroporto di Bari - Arrivi»
-diventa «Apt Bari», la stazione «Staz. Monopoli». Si toccano solo i prefissi lunghi e la
+diventa «Apt Bari», la stazione «Staz. Monopoli», e tutto quello che sta **dopo la prima
+virgola** (l'indirizzo: «, C.da Cerasino, Fasano») sparisce — era la ragione per cui nel
+blocco si leggeva solo il punto di partenza e mai il «→ per». Si toccano solo i prefissi lunghi e la
 coda dopo il trattino — le città no, o *Torre a Mare* diventerebbe *Torre*. Il nome intero
 resta nel titolo e nella scheda. Sotto i **150px** una coppia di nomi normale dentro il
 blocco finirebbe tagliata: lì la tratta la scrive la **fascia** sopra, che ha tutto il buco
@@ -509,7 +519,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **385 controlli automatici, tutti verdi.**
+libera. **392 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -519,7 +529,8 @@ Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) s
 del salvataggio · **9septies** il pennello autista · **9septies bis** l'autista trascinato dalla fila · **9septies ter** la presa sul blocco · **9octies** i cancellati non occupano niente ·
 **9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo ·
 **9undecies** lo zoom da Mac, telefono e tastiera, e la Plancia a tutta finestra ·
-**9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo.
+**9duodecies** la Plancia dalla parte degli autisti · **9terdecies** la barra in fondo ·
+**9quaterdecies** giornata fitta e nomi lunghi: niente si accavalla, niente si taglia.
 
 Da fare fuori dal codice:
 

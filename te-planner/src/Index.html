@@ -273,7 +273,8 @@ main{padding:12px;}
 .plblk{position:absolute;border-radius:6px;padding:3px 6px;overflow:hidden;cursor:grab;color:#fff;
   font-size:11px;line-height:12.5px;box-shadow:0 1px 2px rgba(0,0,0,.16);touch-action:none;user-select:none;z-index:2}
 .plblk b{display:block;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plblk span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.93}
+.plblk span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  white-space:normal;overflow:hidden;text-overflow:ellipsis;opacity:.93;word-break:break-word}
 .plblk.plpend{box-shadow:0 0 0 2px var(--ambra)}
 .plblk.plbad{box-shadow:0 0 0 2px var(--rosso)}
 .plblk.plsel{box-shadow:0 0 0 3px #1668c1}
@@ -373,8 +374,9 @@ main{padding:12px;}
 /* La tratta. Si scrive anche sul telefono, appena il blocco è largo abbastanza (sotto i
    96px la nascondono `plmd`/`plsm`/`plxs`): prima era spenta sempre sotto gli 820px, e
    chi ingrandiva con le dita non la vedeva comunque. */
-.plblk u{display:block;text-decoration:none;font-size:10.5px;line-height:1.2;opacity:.9;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plblk u{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  text-decoration:none;font-size:10.5px;line-height:1.2;opacity:.9;
+  white-space:normal;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
 .plblk.plsm{padding:3px 3px}
 .plblk.plsm span,.plblk.plsm u{display:none}
 .plblk.plsm b{font-size:10px;letter-spacing:-.2px;line-height:1.9}
@@ -524,8 +526,11 @@ main{padding:12px;}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
   .plblk{font-size:13.5px;line-height:16.5px;padding:5px 6px}   /* stretto ai lati: quei 6 px sono mezza parola di tratta */
-  .plblk u{display:block;font-size:12px;line-height:1.3;letter-spacing:-.1px}  /* la tratta */
+  .plblk u{display:-webkit-box;font-size:12px;line-height:1.3;letter-spacing:-.1px}  /* la tratta */
   .plblk b{font-size:14.5px;padding-right:20px}   /* il posto della presa 👤 */
+  /* ...ma non nei blocchi stretti: lì c'è solo l'ora, e quei 20 px la riducevano a «1…» */
+  .plblk.plsm b,.plblk.plmd b,.plblk.plxs b{padding-right:0}
+  .plblk.plstretta b{font-size:12.5px;letter-spacing:-.2px}
   .plblk.plduo u{display:none}   /* servizi impilati: il blocco è basso, la tratta non ci sta */
   .plora{font-weight:700}
   .plov i{font-size:11.5px}
@@ -2439,7 +2444,10 @@ function luogoBreve(x) {
   if (!x) return '';
   var k = String(x);
   if (_BREVE[k] != null) return _BREVE[k];
-  var t = k.split(/\s[-–—]\s/)[0].trim();
+  /* Prima la virgola: sul gestionale i posti arrivano con l'indirizzo appiccicato
+     («Masseria Torre Abate Risi, C.da Cerasino, Fasano») e nel blocco si leggeva solo
+     quello, senza mai arrivare al «→ per». Il posto è la prima parte. */
+  var t = k.split(',')[0].split(/\s[-–—]\s/)[0].trim();
   t = t.replace(/^aeroporto(\s+internazionale)?(\s+(di|d'))?\s*/i, 'Apt ');
   t = t.replace(/^stazione(\s+(ferroviaria|centrale))?(\s+di)?\s*/i, 'Staz. ');
   t = t.replace(/^porto(\s+di)?\s+/i, 'Porto ');
@@ -2447,12 +2455,21 @@ function luogoBreve(x) {
   _BREVE[k] = t || k;
   return _BREVE[k];
 }
-function plLargoBlocco(m0, m1, px, mLimite) {
+function plLargoBlocco(m0, m1, px, mLimite, mMax) {
   var W = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round((m1 - m0) * px));
   var comodo = PL_GRANDE ? 190 : 104;
   if (W < comodo && mLimite != null) {
     var spazio = Math.floor((mLimite - m0) * px) - 3;
     if (spazio > W) W = Math.min(comodo, spazio);
+  }
+  /* Il tetto: dove comincia il servizio dopo. Vale anche contro la larghezza MINIMA —
+     con una giornata fitta di servizi da dieci minuti quei 46 px facevano finire ogni
+     blocco sopra il successivo, e la corsia diventava una fila di rettangoli accavallati.
+     Meglio un blocco stretto che due blocchi sovrapposti: il tempo è la verità del
+     disegno. Sotto i 10 px però non si scende, o non si riesce più a toccarlo. */
+  if (mMax != null) {
+    var tetto = Math.floor((mMax - m0) * px) - 2;
+    if (tetto >= 10 && tetto < W) W = tetto;
   }
   return W;
 }
@@ -3147,8 +3164,8 @@ function plRidisegnaScala() {
       if (n.className.indexOf('plblk') >= 0) {
         // stessa regola del disegno completo, se no durante il pinch i blocchi corti
         // si stringono e poi risaltano larghi appena si stacca il dito
-        var mx = n.getAttribute('data-mx');
-        n.style.width = plLargoBlocco(a, e, px, mx == null ? null : +mx) + 'px';
+        var mx = n.getAttribute('data-mx'), mt = n.getAttribute('data-mt');
+        n.style.width = plLargoBlocco(a, e, px, mx == null ? null : +mx, mt == null ? null : +mt) + 'px';
       } else {
         var minimo = n.className.indexOf('plslot') >= 0 ? 46 : 3;
         n.style.width = Math.max(minimo, Math.round((e - a) * px)) + 'px';
@@ -3410,6 +3427,24 @@ function renderPlancia_() {
       riga[s.id] = k;
     });
     var nr = Math.max(fine.length, 1);
+    /* Per ogni servizio, dove comincia quello dopo sulla SUA sotto-riga: è il muro oltre
+       il quale un blocco corto non può allargarsi. Da qui escono anche le larghezze, che
+       servono PRIMA di decidere l'altezza della corsia. */
+    var muro = {}, tetto = {}, larg = {};
+    for (var wi = 0; wi < srt.length; wi++) {
+      var dopo = null;
+      for (var wj = wi + 1; wj < srt.length; wj++)
+        if (riga[srt[wj].id] === riga[srt[wi].id]) { dopo = srt[wj].startMin; break; }
+      var finW = plFine(srt[wi]), bucoW = dopo == null ? 0 : dopo - finW;
+      /* Nel buco fra due servizi ci stanno il tragitto e l'attesa, e il tragitto comincia
+         esattamente dove finisce il blocco: qualunque pixel che il blocco si prende è un
+         pixel di strada coperto. Quindi dove le barre ci sono il blocco non sconfina — si
+         allarga solo dove non c'è niente da coprire (ultimo servizio della corsia, buchi
+         da niente, servizi impilati). Per farli grandi c'è la scala, non lo sconfinamento. */
+      muro[srt[wi].id] = dopo == null ? sc.m1 : ((PL_GAP && nr === 1 && bucoW >= 10) ? finW : dopo);
+      tetto[srt[wi].id] = dopo == null ? sc.m1 : dopo;
+      larg[srt[wi].id] = plLargoBlocco(srt[wi].startMin, finW, px, muro[srt[wi].id], tetto[srt[wi].id]);
+    }
     /* Una fascia in cima alla corsia, riservata alle ore: dentro il blocco il testo è
        quasi sempre tagliato («06:…»), e sopra il blocco l'etichetta finiva coperta dal
        blocco stesso. Qui invece «07:00 → 08:10 · 42 km · 1h 10m» si legge sempre.
@@ -3419,6 +3454,25 @@ function renderPlancia_() {
     /* Alto abbastanza da contenere le tre righe senza tagliarle: sul Mac 68 px per la
        corsia normale, 48 per i servizi impilati (lì la tratta la nasconde il CSS). */
     var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 50);
+    /* ...e se in questa corsia c'è una scritta che su una riga non ci sta — i posti veri si
+       chiamano «Masseria Torre Abate Risi, C.da Cerasino» — la corsia si alza e quella
+       scritta va a capo (due righe al massimo per ognuna). L'altezza si adatta al
+       contenuto; la larghezza no, quella è il tempo e non si può allungare.
+       La stima è generosa apposta: se sbaglia, sbaglia lasciando spazio in più. */
+    var righeExtra = 0;
+    for (var hi = 0; hi < srt.length && nr === 1 && righeExtra < 2; hi++) {
+      var wH = larg[srt[hi].id], eH = 0;
+      if (wH >= 74) {                                   // il cliente si scrive
+        var cH = (srt[hi].nome || srt[hi].da) + (srt[hi].pax ? ' \u00b7 ' + srt[hi].pax + ' pax' : '');
+        if (cH.length * PL_CH > wH - 16) eH++;
+      }
+      if (wH >= 96) {                                   // e anche la tratta
+        var tH = luogoBreve(srt[hi].da) + ' \u2192 ' + luogoBreve(srt[hi].per);
+        if (tH.length * PL_CH > wH - 20) eH++;
+      }
+      if (eH > righeExtra) righeExtra = eH;
+    }
+    H += righeExtra * (PL_GRANDE ? 17 : 14);
     var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3532,24 +3586,6 @@ function renderPlancia_() {
         }
       }
     }
-    /* Per ogni servizio, dove comincia quello dopo sulla SUA sotto-riga: è il muro oltre
-       il quale un blocco corto non può allargarsi. */
-    var muro = {};
-    for (var wi = 0; wi < srt.length; wi++) {
-      var dopo = null;
-      for (var wj = wi + 1; wj < srt.length; wj++)
-        if (riga[srt[wj].id] === riga[srt[wi].id]) { dopo = srt[wj].startMin; break; }
-      var finW = plFine(srt[wi]);
-      if (dopo == null) { muro[srt[wi].id] = sc.m1; continue; }
-      var bucoW = dopo - finW;
-      /* Nel buco fra due servizi ci stanno il tragitto e l'attesa, e il tragitto comincia
-         esattamente dove finisce il blocco: qualunque pixel che il blocco si prende è un
-         pixel di strada coperto. Quindi dove le barre ci sono il blocco non sconfina — si
-         allarga solo dove non c'è niente da coprire (ultimo servizio della corsia, buchi
-         da niente, servizi impilati). Per farli grandi c'è la scala, non lo sconfinamento. */
-      muro[srt[wi].id] = (PL_GAP && nr === 1 && bucoW >= 10) ? finW : dopo;
-    }
-
     /* L'ora in cui il servizio finisce, scritta subito dopo il blocco: sulla plancia
        si legge l'inizio e si indovina la fine. Si scrive solo se c'è spazio prima del
        blocco successivo, altrimenti si accavallerebbe con la sua ora di partenza. */
@@ -3567,7 +3603,7 @@ function renderPlancia_() {
            solo l'ora, sotto i 30 solo il colore), il nome lo scrive la fascia: così si legge
            di chi è il servizio senza passarci sopra col mouse. */
         var ore = fmtMin(S1.startMin) + ' → ' + fmtMin(fin1);
-        var largo = plLargoBlocco(S1.startMin, fin1, px, muro[S1.id]);
+        var largo = larg[S1.id];
         var chi = largo < 74 ? ' · ' + (S1.nome || S1.da) : '';
         /* Anche la tratta: se il blocco è troppo stretto per scriversela dentro, la porta
            la fascia — è la domanda che si fa per prima guardando la plancia, «da dove a
@@ -3605,25 +3641,31 @@ function renderPlancia_() {
       var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s[AUT ? 'veicolo' : 'autista'] ? ' plnoaut' : '')
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '')
         + (nr > 1 ? ' plduo' : '');
-      var W2 = plLargoBlocco(s.startMin, plFine(s), px, muro[s.id]);
+      var W2 = larg[s.id];
+      /* La prima riga non va mai a capo (l'ora deve restare in cima e intera): se il nome
+         non ci sta, invece di tagliarlo si stringe il carattere. */
+      var pres = !AUT && s.autista && W2 >= 56;
+      var riga1 = fmtMin(s.startMin) + ' ' + (AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista'));
+      var stretta = riga1.length * PL_CH * 1.15 > W2 - 12 - (pres ? 20 : 0);
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore.
       // La tratta invece si scrive quasi sempre (da 96 px in su): tagliata a metà dice
       // comunque da dove si parte, ed è la cosa che si cercava di più
       c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : (W2 < 96 ? ' plmd' : ''));
+      if (stretta) c += ' plstretta';
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
-        + ' data-mx="' + muro[s.id] + '"'
+        + ' data-mx="' + muro[s.id] + '" data-mt="' + tetto[s.id] + '"'
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
         + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
         + ' title="' + esc((s.domani ? 'DOMANI ' : '') + fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'
         /* la presa: da qui si prende l'autista di QUESTO servizio e lo si porta su un altro
            blocco. Sta dentro il blocco perché è lì che lo vedi, e non fa partire lo
            spostamento del servizio: il suo gestore ferma l'evento. */
-        + (!AUT && s.autista && W2 >= 56 ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
+        + (pres ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
         + '<b>' + fmtMin(s.startMin) + ' ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + (male ? ' ⚠' : '') + '</b>'
         /* tre righe, in ordine di quello che serve: chi guida (o con che mezzo), CHI è il
            cliente e quanti sono, e la tratta vera da dove a dove. La terza riga la tiene
            solo il blocco largo abbastanza: sotto, il CSS la nasconde. */
-        + '<span>' + esc(s.nome || s.da) + (s.pax ? ' · ' + s.pax + ' pax' : '') + '</span>'
+        + '<span>' + esc(s.nome || s.da) + (s.pax ? ' \u00b7 ' + s.pax + '\u00a0pax' : '') + '</span>'
         + '<u>' + esc(luogoBreve(s.da)) + ' → ' + esc(luogoBreve(s.per)) + '</u></div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)

@@ -274,6 +274,11 @@ main{padding:12px;}
 .pllane{position:relative;flex:1 0 auto;min-height:44px;overflow:hidden}
 .plhrs{height:26px;min-height:26px}
 .plhrs i{position:absolute;top:6px;font-size:10.5px;color:var(--grigio);font-style:normal;transform:translateX(-50%);white-space:nowrap}
+/* le ore sono bottoni: bersaglio largo, e si vede che si toccano */
+.plhrs i.plvai{cursor:pointer;padding:3px 6px;top:3px;border-radius:6px;user-select:none}
+.plhrs i.plvai:hover{background:#e8eef4;color:var(--testo)}
+.plhrs i.plvai:active{background:#d7e3ee}
+.plhrs i.plvai:focus-visible{outline:2px solid #1668c1;outline-offset:1px}
 .plgline{position:absolute;top:0;bottom:0;width:1px;background:var(--bordo);opacity:.45}
 .plblk{position:absolute;border-radius:6px;padding:3px 6px;overflow:hidden;cursor:grab;color:#fff;
   font-size:11px;line-height:12.5px;box-shadow:0 1px 2px rgba(0,0,0,.16);touch-action:none;user-select:none;z-index:2}
@@ -377,22 +382,16 @@ main{padding:12px;}
 /* 11. quando la giornata è tutta a schermo i blocchi sono strettissimi:
    invece di scrivere dentro 12 px, tolgo il testo e lascio il colore.
    Il nome torna appena ingrandisci, e intanto il tocco lo mostra in alto. */
-/* La tratta. Si scrive anche sul telefono, appena il blocco è largo abbastanza (sotto i
-   96px la nascondono `plmd`/`plsm`/`plxs`): prima era spenta sempre sotto gli 820px, e
-   chi ingrandiva con le dita non la vedeva comunque. */
-.plblk u{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
-  text-decoration:none;font-size:10.5px;line-height:1.2;opacity:.9;
-  white-space:normal;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
+/* La seconda riga del blocco è la tratta coi pax: «Apt Bari → Ostuni · 3 pax». Il nome
+   del cliente nel blocco non c'è — sta nel titolo, nella scheda e nella fascia delle ore. */
 .plblk.plsm{padding:3px 3px}
-.plblk.plsm span,.plblk.plsm u{display:none}
+.plblk.plsm span{display:none}
 .plblk.plsm b{font-size:10px;letter-spacing:-.2px}
 /* Quante righe tocchino a ciascuna scritta lo decide il codice, blocco per blocco, con
    uno stile in riga: dipende da quanto è alto il blocco e da quanto è larga la scritta.
    Qui c'è solo il minimo — una riga — per chi non riceve niente. */
-.plblk.plmd u{display:none}   /* stretto: cliente sì, tratta no */
-.plblk.plduo u{display:none}  /* impilati: il blocco è basso, la tratta non ci sta */
 .plblk.plxs{padding:0}
-.plblk.plxs b,.plblk.plxs span,.plblk.plxs u{display:none}
+.plblk.plxs b,.plblk.plxs span{display:none}
 .plblk.plxs{box-shadow:inset 0 0 0 1px rgba(255,255,255,.62),0 1px 2px rgba(0,0,0,.18)}
 .plblk.plxs.plsel{box-shadow:0 0 0 3px #1668c1}
 /* 12. la prima e l'ultima ora non devono restare tagliate a metà dal bordo */
@@ -535,12 +534,10 @@ main{padding:12px;}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
   .plblk{font-size:13.5px;line-height:16.5px;padding:5px 6px}   /* stretto ai lati: quei 6 px sono mezza parola di tratta */
-  .plblk u{display:-webkit-box;font-size:12px;line-height:1.3;letter-spacing:-.1px}  /* la tratta */
   .plblk b{font-size:14.5px;padding-right:20px}   /* il posto della presa 👤 */
   /* ...ma non nei blocchi stretti: lì c'è solo l'ora, e quei 20 px la riducevano a «1…» */
   .plblk.plsm b,.plblk.plmd b,.plblk.plxs b{padding-right:0}
   .plblk.plstretta b{font-size:12.5px;letter-spacing:-.2px}
-  .plblk.plduo u{display:none}   /* servizi impilati: il blocco è basso, la tratta non ci sta */
   .plora{font-weight:700}
   .plov i{font-size:11.5px}
   .plslot i{font-size:13px}
@@ -3447,8 +3444,12 @@ function renderPlancia_() {
     if (xt < 22) cls.push('plt0'); else if (xt > tot - 24) cls.push('plt9');
     if (mm >= 1440) cls.push('pldom');
     var testo = (mm === 1440 && dom2) ? '🌙 ' + fmtData(dom2) : fmtMin(mm);
-    h += '<i' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + ' data-m0="' + mm
-      + '" style="left:' + xt + 'px">' + testo + '</i>';
+    /* Le ore si toccano: la plancia va lì. Con una giornata larga tremila pixel arrivare
+       alle 18:00 voleva dire trascinare la barra a occhio; così si sceglie la fascia. */
+    cls.push('plvai');
+    h += '<i class="' + cls.join(' ') + '" data-m0="' + mm + '" role="button" tabindex="0"'
+      + ' title="vai alle ' + fmtMin(mm % 1440) + (mm >= 1440 ? ' di domani' : '') + '"'
+      + ' style="left:' + xt + 'px">' + testo + '</i>';
   }
   h += '</div></div>';
 
@@ -3487,9 +3488,8 @@ function renderPlancia_() {
        La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
        etichette non saprebbero a quale blocco appartengono. */
     var banda = nr > 1 ? 0 : (PL_GRANDE ? 18 : 14);
-    /* Alto abbastanza da contenere le tre righe senza tagliarle: sul Mac 68 px per la
-       corsia normale, 48 per i servizi impilati (lì la tratta la nasconde il CSS). */
-    var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 50);
+    /* Alto abbastanza per le due righe: ora e chi guida, poi la tratta coi pax. */
+    var H = PL_GRANDE ? (nr > 1 ? 40 : 56) : (nr > 1 ? 32 : 42);
     /* Le tre scritte del blocco, e quante righe vogliono davvero: la prima (ora e chi
        guida), il cliente coi pax, la tratta. I posti veri si chiamano «Masseria Torre
        Abate Risi»: su un blocco stretto una riga non basta. Se in questa corsia c'è un
@@ -3500,19 +3500,19 @@ function renderPlancia_() {
     srt.forEach(function (s) {
       var w = larg[s.id], pr = !AUT && s.autista && w >= 56;
       var nm = AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista');
+      /* Nel blocco il nome del cliente non serve: quello che si guarda è da dove a dove va
+         e quanti sono. Il nome resta nel titolo, nella scheda e nella fascia delle ore. */
       var v = { pres: pr, nome: nm,
         t1: fmtMin(s.startMin) + ' ' + nm,
-        tC: (s.nome || s.da) + (s.pax ? ' \u00b7 ' + s.pax + '\u00a0pax' : ''),
-        tT: luogoBreve(s.da) + ' \u2192 ' + luogoBreve(s.per) };
+        tC: luogoBreve(s.da) + ' \u2192 ' + luogoBreve(s.per) + (s.pax ? ' \u00b7 ' + s.pax + '\u00a0pax' : '') };
       v.n1 = w < 30 ? 0 : plRigheServono(v.t1, w - 12 - (pr ? 20 : 0) - 12, 1.15);
       v.nC = w < 74 ? 0 : plRigheServono(v.tC, w - 14, 1);
-      v.nT = w < 96 ? 0 : plRigheServono(v.tT, w - 14, 1);
       voci[s.id] = v;
     });
     var righeExtra = 0;
     if (nr === 1) srt.forEach(function (s) {
-      var v = voci[s.id], tot = v.n1 + v.nC + v.nT;
-      if (tot - 3 > righeExtra) righeExtra = Math.min(2, tot - 3);
+      var v = voci[s.id], tot = v.n1 + v.nC;
+      if (tot - 2 > righeExtra) righeExtra = Math.min(2, tot - 2);
     });
     H += righeExtra * lineH;
     /* Quante righe ci stanno dentro il blocco, per davvero. Da qui si spartiscono: prima
@@ -3650,13 +3650,15 @@ function renderPlancia_() {
            di chi è il servizio senza passarci sopra col mouse. */
         var ore = fmtMin(S1.startMin) + ' → ' + fmtMin(fin1);
         var largo = larg[S1.id];
-        var chi = largo < 74 ? ' · ' + (S1.nome || S1.da) : '';
+        /* Il nome del cliente non sta più dentro il blocco: se c'è spazio lo scrive qui,
+           che è il posto dove le scritte possono allungarsi. */
+        var chi = ' · ' + (S1.nome || S1.da);
         /* Anche la tratta: se il blocco è troppo stretto per scriversela dentro, la porta
            la fascia — è la domanda che si fa per prima guardando la plancia, «da dove a
            dove va». Sotto i 150 px una coppia di nomi normale («Monopoli → Polignano a
            Mare») dentro il blocco finisce tagliata; sopra, nel blocco ci sta e qui non si
            ripete. */
-        var via1 = largo < 150 ? ' · ' + luogoBreve(S1.da) + ' → ' + luogoBreve(S1.per) : '';
+        var via1 = largo < 96 ? ' · ' + luogoBreve(S1.da) + ' → ' + luogoBreve(S1.per) : '';
         var tFin = plEtich([
           ore + chi + via1 + kmS + ' · ' + fmtDur(plDurata(S1)),
           ore + chi + via1 + kmS,
@@ -3692,7 +3694,7 @@ function renderPlancia_() {
       var resta = righeDisp;
       var a1 = Math.min(V.n1, resta); resta -= a1;
       var aC = Math.min(V.nC, resta); resta -= aC;
-      var aT = Math.min(V.nT, resta); resta -= aT;
+
       /* La prima riga tiene sempre l'ora intera. Se le tocca una riga sola e il nome non
          ci sta, si accorcia per gradi — nome intero → C. Cognome → Cognome → solo l'ora —
          e in ultima istanza stringe il carattere: mai un «13:40 Cl…». */
@@ -3732,12 +3734,12 @@ function renderPlancia_() {
            blocco. Sta dentro il blocco perché è lì che lo vedi, e non fa partire lo
            spostamento del servizio: il suo gestore ferma l'evento. */
         + (pres ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
-        /* tre righe, in ordine di quello che serve: chi guida (o con che mezzo), CHI è il
-           cliente e quanti sono, la tratta da dove a dove. Ognuna si prende le righe che
-           le sono state assegnate: quelle che non ci stanno non si scrivono a metà. */
+        /* due righe: chi guida (o con che mezzo) e l'ora, poi la tratta coi pax. Ognuna si
+           prende le righe che le sono state assegnate: quelle che non ci stanno non si
+           scrivono a metà. */
         + '<b style="-webkit-line-clamp:' + Math.max(1, a1) + '">' + esc(riga1) + '</b>'
         + (aC ? '<span style="-webkit-line-clamp:' + aC + '">' + esc(V.tC) + '</span>' : '')
-        + (aT ? '<u style="-webkit-line-clamp:' + aT + '">' + esc(V.tT) + '</u>' : '') + '</div>';
+        + '</div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
       b += '<div class="plnow" data-m0="' + DATA.nowMin + '" style="left:' + Math.round((DATA.nowMin - sc.m0) * px) + 'px"></div>';
@@ -3845,6 +3847,7 @@ function renderPlancia_() {
   }
   if (box) {
     plAltezzaFinestra();
+    plOreCliccabili();
     plAggiungiZoomGesti(box, sc);
     if (armato) box.scrollLeft = Math.max(0, (armato.startMin - sc.m0) * px - box.clientWidth / 2 + 60);
     else if (scrollX >= 0) box.scrollLeft = scrollX;
@@ -3856,6 +3859,31 @@ function renderPlancia_() {
   plMiniatura();
 }
 
+
+/* Toccando un'ora la plancia ci va: quel minuto si mette all'inizio della parte visibile,
+   subito dopo la colonna dei mezzi (che è appiccicata a sinistra e non conta). */
+function plVaiAllOra(m) {
+  var box = document.getElementById('plscroll');
+  if (!box) return;
+  var sc = plScala(), px = plPx(sc);
+  var x = Math.max(0, Math.round((m - sc.m0) * px) - 12);
+  if (box.scrollTo) { try { box.scrollTo({ left: x, behavior: 'smooth' }); } catch (e) { box.scrollLeft = x; } }
+  else box.scrollLeft = x;
+}
+function plOreCliccabili() {
+  var ore = document.querySelector('.plhrs');
+  if (!ore) return;
+  ore.addEventListener('click', function (e) {
+    var n = e.target;
+    while (n && n !== ore && !(n.getAttribute && n.getAttribute('data-m0'))) n = n.parentNode;
+    if (n && n !== ore) plVaiAllOra(+n.getAttribute('data-m0'));
+  });
+  ore.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var n = e.target;
+    if (n && n.getAttribute && n.getAttribute('data-m0')) { e.preventDefault(); plVaiAllOra(+n.getAttribute('data-m0')); }
+  });
+}
 
 /* Quanta finestra resta alla plancia: dal suo bordo di sopra fino in fondo, meno la barra
    delle schede (e quella gialla del salvataggio, quando c'è). Senza questa misura il

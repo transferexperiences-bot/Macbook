@@ -1012,7 +1012,7 @@ const SEED=`(function(){
       var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
       return s&&fascia.indexOf(s.nome||s.da)>=0;});
     return {h:h, stretti:stretti.length, conNome:nomiFuori.length, fascia:fascia.slice(0,80)};});
-  t('i blocchi sono più alti sullo schermo grande', grande.h>=64, grande);
+  t('i blocchi sono più alti sullo schermo grande', grande.h>=54, grande);
   // la scala di partenza: sul Mac un'ora non sta piu' in settanta pixel
   const scala=await p.evaluate(()=>{
     var sc=plScala();
@@ -1032,7 +1032,7 @@ const SEED=`(function(){
           bad.push([n.getAttribute('data-id'),Math.round(rb.right-rg.left)]);});});
     return bad;});
   t('e nessun blocco copre tragitto o attesa', copre.length===0, copre);
-  // dentro il blocco: chi guida · cliente e pax · da → per
+  // dentro il blocco: ora e chi guida, poi da → per coi pax. Il nome del cliente NO.
   const tre=await p.evaluate(()=>{
     var n=[].slice.call(document.querySelectorAll('.plblk')).filter(function(x){
       return x.getBoundingClientRect().width>=130&&x.className.indexOf('plsm')<0;})[0];
@@ -1040,25 +1040,25 @@ const SEED=`(function(){
     var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
     return {b:(n.querySelector('b')||{textContent:''}).textContent,
             sp:(n.querySelector('span')||{textContent:''}).textContent,
-            u:(n.querySelector('u')||{textContent:''}).textContent,
-            uVisibile:!!n.querySelector('u')&&getComputedStyle(n.querySelector('u')).display!=='none',
+            spVisibile:!!n.querySelector('span')&&getComputedStyle(n.querySelector('span')).display!=='none',
             aut:s.autista,nome:s.nome,pax:s.pax,da:s.da,per:s.per};});
   t('prima riga: ora e chi guida',   !!tre&&tre.b.indexOf(tre.aut)>=0, tre);
-  t('seconda riga: cliente e pax',
+  t('seconda riga: da → per coi pax',
     // fra numero e «pax» c'è uno spazio unificatore: quei due non si spezzano mai
-    !!tre&&tre.sp.indexOf(tre.nome)>=0&&tre.sp.replace(/\u00a0/g,' ').indexOf(tre.pax+' pax')>=0, tre);
-  t('terza riga: da → per',
-    !!tre&&tre.uVisibile&&tre.u.indexOf(tre.da.split(' -')[0])>=0, tre);
+    !!tre&&tre.spVisibile&&tre.sp.indexOf(tre.da.split(' -')[0].split(',')[0])>=0
+    &&tre.sp.replace(/\u00a0/g,' ').indexOf(tre.pax+' pax')>=0, tre);
+  t('e il nome del cliente nel blocco non c\'è', !!tre&&tre.sp.indexOf(tre.nome)<0, tre);
   // la tratta si deve LEGGERE, non solo esistere: dentro i blocchi normali non è tagliata,
   // e dove il blocco è troppo stretto la scrive la fascia sopra
   const tratte=await p.evaluate(()=>{
     var vis=[], tagliate=[], stretti=[];
     [].slice.call(document.querySelectorAll('.plblk')).forEach(function(n){
-      var u=n.querySelector('u'); if(!u||getComputedStyle(u).display==='none')return;
+      var u=n.querySelector('span'); if(!u||getComputedStyle(u).display==='none')return;
       var w=n.getBoundingClientRect().width;
       vis.push(Math.round(w));
-      if(u.scrollWidth>u.clientWidth+1){tagliate.push([Math.round(w),u.textContent]);
-        if(w>=150)stretti.push([Math.round(w),u.textContent]);}});
+      if(u.scrollWidth>u.clientWidth+1||u.scrollHeight>u.clientHeight+1){
+        tagliate.push([Math.round(w),u.textContent]);
+        if(w>=200)stretti.push([Math.round(w),u.textContent]);}});
     var fascia=[].slice.call(document.querySelectorAll('.plora.plofin'))
       .map(function(n){return n.textContent;}).join(' | ');
     return {quante:vis.length, tagliate:tagliate, larghiTagliati:stretti, fascia:fascia};});
@@ -1249,14 +1249,14 @@ const SEED=`(function(){
     const lungo=await q.evaluate(()=>{
       var m={tagliati:[],tratte:[],alt:[]};
       [].slice.call(document.querySelectorAll('.plblk')).forEach(function(n){
-        var u=n.querySelector('u');
+        var u=n.querySelector('span');
         m.alt.push(Math.round(n.getBoundingClientRect().height));
         if(n.scrollHeight>n.clientHeight+1)m.tagliati.push(n.getAttribute('data-id'));
         if(u&&getComputedStyle(u).display!=='none')
           m.tratte.push({t:u.textContent,tagliata:u.scrollHeight>u.clientHeight+1});});
       return m;});
     t('coi nomi lunghi la corsia si alza invece di tagliare',
-      lungo.alt.length>0&&lungo.alt.every(function(h){return h>=80;}), lungo.alt);
+      lungo.alt.length>0&&lungo.alt.every(function(h){return h>=70;}), lungo.alt);
     t('la tratta ci sta tutta, anche su due righe',
       lungo.tratte.length>0&&lungo.tratte.every(function(x){return !x.tagliata;}), lungo.tratte);
     t('e l\'indirizzo dopo la virgola non entra nel blocco',
@@ -1297,6 +1297,25 @@ const SEED=`(function(){
     t('scorrendo, la riga delle ore resta in cima', Math.abs(p1.ore-p1.box)<=2&&p1.scrollTop>0, {p0:p0,p1:p1});
     t('e i comandi non si muovono di un pixel', p1.barra===p0.barra, {p0:p0,p1:p1});
     t('mentre le corsie sì', p1.corsia<p0.box, {p0:p0,p1:p1});
+    // le ore in cima sono bottoni: si tocca e la plancia va a quella fascia
+    const salto=await q.evaluate(async()=>{
+      var box=document.getElementById('plscroll');
+      box.scrollLeft=0;
+      var ore=[].slice.call(document.querySelectorAll('.plhrs i[data-m0]'));
+      var meta=ore[Math.max(0,ore.length-3)];
+      var m=+meta.getAttribute('data-m0'), sc=plScala(), px=plPx(sc);
+      var prima=box.scrollLeft, cursore=getComputedStyle(meta).cursor;
+      meta.click();
+      // lo scorrimento è morbido: su tremila pixel ci mette quasi un secondo
+      await new Promise(function(r){setTimeout(r,1100);});
+      // oltre il fondo corsa non si va: l'atteso è quello, o il massimo possibile
+      var max=box.scrollWidth-box.clientWidth;
+      return {prima:prima, dopo:Math.round(box.scrollLeft),
+              atteso:Math.min(max,Math.round((m-sc.m0)*px-12)),
+              ora:meta.textContent, cursore:cursore, titolo:meta.getAttribute('title')};});
+    t('toccando un\'ora la plancia ci va',
+      salto.dopo>salto.prima&&Math.abs(salto.dopo-salto.atteso)<=6, salto);
+    t('e si vede che si può toccare', salto.cursore==='pointer'&&/^vai alle /.test(salto.titolo||''), salto);
     // e l'etichetta dell'angolo non dice più «00:00 › 00:00»
     const ang=await q.evaluate(()=>document.querySelector('.plrow.plhead .plrail span').textContent);
     t('l\'angolo dice l\'orario vero, non 00:00 › 00:00', !/^00:00 › 00:00$/.test(ang), ang);

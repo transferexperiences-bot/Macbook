@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (221 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (223 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -397,6 +397,10 @@ ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in 
 senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista**, togliere
 **l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
 
+**Le ore in cima si toccano**: un tocco e la plancia va a quella fascia (`plVaiAllOra`, che
+mette quel minuto subito dopo la colonna dei mezzi, con lo scorrimento morbido). Con una
+giornata larga tremila pixel arrivare alle 18:00 voleva dire trascinare la barra a occhio.
+
 **La plancia scorre da sola**, in tutte e due le direzioni (`.plscroll{overflow:auto}`, con
 l'altezza calcolata dopo il disegno da `plAltezzaFinestra()`: quel che resta di finestra
 sotto i comandi, meno la barra delle schede e quella gialla del salvataggio). Così scendendo
@@ -457,13 +461,12 @@ Ogni corsia ha in cima una **fascia riservata alle ore**: sopra ogni blocco si l
 **`07:00 → 08:10 · 42 km · 1h 10m`** — partenza, arrivo, distanza, tempo. Se il blocco è
 troppo stretto per contenere il nome del cliente, **il nome lo scrive la fascia**
 (`07:00 → 08:10 · Famiglia Bianchi · 38 km`): si legge di chi è il servizio senza passarci
-sopra col mouse. Sullo schermo grande i blocchi sono anche più alti (**68px** invece di 38, 48 quando due
-servizi si impilano) e dicono tre cose in
-tre righe: **ora e chi guida** · **cliente e quanti pax** · **da → per**. La terza riga
-c'è **anche sul telefono** appena il blocco è largo abbastanza (prima era spenta sotto gli
-820px e chi ingrandiva con le dita non la vedeva comunque); sparisce solo sotto i **96px**
-(`plmd`) e coi servizi impilati (`plduo`: il blocco è basso). Sotto i 74px resta solo l'ora
-(`plsm`), sotto i 30 solo il colore (`plxs`).
+sopra col mouse. Dentro il blocco ci sono **due righe**: **ora e chi guida** ·
+**da → per · N pax**. Il **nome del cliente nel blocco non c'è** (28/08): quello che si
+guarda su una plancia è da dove a dove va e quanti sono — il nome resta nel titolo, nella
+scheda e appunto nella fascia, dove le scritte hanno spazio per allungarsi. La seconda riga
+c'è anche sul telefono; sotto i 74px resta solo l'ora (`plsm`), sotto i 30 solo il colore
+(`plxs`).
 **L'altezza della corsia si adatta al contenuto**: si conta quante righe vuole ogni scritta
 (`plRigheServono` → `plStaIn`, che va a capo fra le parole come il browser, non a caratteri),
 e se un blocco ne vuole più di tre la corsia si alza — fino a due righe in più. Poi ogni
@@ -537,7 +540,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **399 controlli automatici, tutti verdi.**
+libera. **401 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

@@ -1221,6 +1221,9 @@ const SEED=`(function(){
       tagliati: [].slice.call(document.querySelectorAll('.plblk')).filter(function(n){
         return n.scrollHeight>n.clientHeight+1;}).map(function(n){return n.getAttribute('data-id');}),
       ore: [].slice.call(document.querySelectorAll('.plblk b')).map(function(n){return n.textContent;}),
+      troncate: [].slice.call(document.querySelectorAll('.plblk b')).filter(function(n){
+        return n.scrollWidth>n.clientWidth+1||n.scrollHeight>n.clientHeight+1;})
+        .map(function(n){return n.textContent;}),
       alt: [].slice.call(document.querySelectorAll('.plblk')).map(function(n){
         return Math.round(n.getBoundingClientRect().height);})
     });
@@ -1237,6 +1240,8 @@ const SEED=`(function(){
     t('e l\'ora si legge per intero, non «1…»',
       fitto.ore.length>0&&fitto.ore.every(function(x){return /^\d\d:\d\d/.test(x);}), fitto.ore);
     t('niente testo tagliato dal bordo del blocco', fitto.tagliati.length===0, fitto.tagliati);
+    // il nome si accorcia (cognome, iniziale) ma non finisce mai in tre puntini
+    t('e il nome di chi guida non finisce in «…»', fitto.troncate.length===0, fitto.troncate);
 
     await q.evaluate(semina([[600,60,'Masseria Torre Abate Risi, C.da Cerasino, Fasano','Terre di San Vito, C.da Rascinuso','Marco Rossi','Vito 1'],
                              [800,45,'Aeroporto di Bari - Arrivi','Masseria San Domenico, Savelletri di Fasano','Marco Rossi','Vito 1']]));

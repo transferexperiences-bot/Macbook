@@ -272,8 +272,9 @@ main{padding:12px;}
 .plgline{position:absolute;top:0;bottom:0;width:1px;background:var(--bordo);opacity:.45}
 .plblk{position:absolute;border-radius:6px;padding:3px 6px;overflow:hidden;cursor:grab;color:#fff;
   font-size:11px;line-height:12.5px;box-shadow:0 1px 2px rgba(0,0,0,.16);touch-action:none;user-select:none;z-index:2}
-.plblk b{display:block;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.plblk span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+.plblk b{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
+  font-size:10.5px;font-weight:700;white-space:normal;overflow:hidden;text-overflow:ellipsis}
+.plblk span{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
   white-space:normal;overflow:hidden;text-overflow:ellipsis;opacity:.93;word-break:break-word}
 .plblk.plpend{box-shadow:0 0 0 2px var(--ambra)}
 .plblk.plbad{box-shadow:0 0 0 2px var(--rosso)}
@@ -374,12 +375,15 @@ main{padding:12px;}
 /* La tratta. Si scrive anche sul telefono, appena il blocco è largo abbastanza (sotto i
    96px la nascondono `plmd`/`plsm`/`plxs`): prima era spenta sempre sotto gli 820px, e
    chi ingrandiva con le dita non la vedeva comunque. */
-.plblk u{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+.plblk u{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
   text-decoration:none;font-size:10.5px;line-height:1.2;opacity:.9;
   white-space:normal;overflow:hidden;text-overflow:ellipsis;word-break:break-word}
 .plblk.plsm{padding:3px 3px}
 .plblk.plsm span,.plblk.plsm u{display:none}
-.plblk.plsm b{font-size:10px;letter-spacing:-.2px;line-height:1.9}
+.plblk.plsm b{font-size:10px;letter-spacing:-.2px}
+/* Quante righe tocchino a ciascuna scritta lo decide il codice, blocco per blocco, con
+   uno stile in riga: dipende da quanto è alto il blocco e da quanto è larga la scritta.
+   Qui c'è solo il minimo — una riga — per chi non riceve niente. */
 .plblk.plmd u{display:none}   /* stretto: cliente sì, tratta no */
 .plblk.plduo u{display:none}  /* impilati: il blocco è basso, la tratta non ci sta */
 .plblk.plxs{padding:0}
@@ -2455,6 +2459,29 @@ function luogoBreve(x) {
   _BREVE[k] = t || k;
   return _BREVE[k];
 }
+/* Quante righe serve una scritta dentro `disp` pixel: una, o due se non ci sta. Più di
+   due mai — un blocco non è un paragrafo. La stima è quella di `plEtich` (PL_CH), con un
+   fattore per i caratteri più grandi della prima riga. */
+function plRigheServono(testo, disp, fatt) {
+  if (!testo || disp < 24) return 1;
+  return plStaIn(testo, disp, 1, fatt) ? 1 : 2;
+}
+/* Ci sta questa scritta in `righe` righe larghe `disp` pixel? Si va a capo fra le parole,
+   come fa il browser: contare i caratteri e dividere non basta — «13:40 Claudio Moccia»
+   in 55 px va a capo dopo l'ora e poi «Claudio Moccia» resta comunque fuori, e si
+   rileggeva «Claudio…». Qui invece si prova parola per parola, e se non ci sta si passa
+   alla scritta più corta. */
+function plStaIn(testo, disp, righe, fatt) {
+  var ch = PL_CH * (fatt || 1), parole = String(testo).split(/\s+/), n = 1, cur = 0, i, w;
+  for (i = 0; i < parole.length; i++) {
+    w = parole[i].length * ch;
+    if (w > disp) return false;                       // una parola sola non ci sta: mai
+    if (cur === 0) cur = w;
+    else if (cur + ch + w <= disp) cur += ch + w;
+    else { n++; cur = w; if (n > righe) return false; }
+  }
+  return n <= righe;
+}
 function plLargoBlocco(m0, m1, px, mLimite, mMax) {
   var W = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round((m1 - m0) * px));
   var comodo = PL_GRANDE ? 190 : 104;
@@ -3454,25 +3481,35 @@ function renderPlancia_() {
     /* Alto abbastanza da contenere le tre righe senza tagliarle: sul Mac 68 px per la
        corsia normale, 48 per i servizi impilati (lì la tratta la nasconde il CSS). */
     var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 50);
-    /* ...e se in questa corsia c'è una scritta che su una riga non ci sta — i posti veri si
-       chiamano «Masseria Torre Abate Risi, C.da Cerasino» — la corsia si alza e quella
-       scritta va a capo (due righe al massimo per ognuna). L'altezza si adatta al
-       contenuto; la larghezza no, quella è il tempo e non si può allungare.
-       La stima è generosa apposta: se sbaglia, sbaglia lasciando spazio in più. */
+    /* Le tre scritte del blocco, e quante righe vogliono davvero: la prima (ora e chi
+       guida), il cliente coi pax, la tratta. I posti veri si chiamano «Masseria Torre
+       Abate Risi»: su un blocco stretto una riga non basta. Se in questa corsia c'è un
+       blocco che ne vuole più di tre, la corsia si alza — l'altezza segue il contenuto.
+       La larghezza no: quella è il tempo, allungarla vorrebbe dire mentire sull'orario
+       o finire sopra il servizio dopo. */
+    var lineH = PL_GRANDE ? 17 : 14, voci = {};
+    srt.forEach(function (s) {
+      var w = larg[s.id], pr = !AUT && s.autista && w >= 56;
+      var nm = AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista');
+      var v = { pres: pr, nome: nm,
+        t1: fmtMin(s.startMin) + ' ' + nm,
+        tC: (s.nome || s.da) + (s.pax ? ' \u00b7 ' + s.pax + '\u00a0pax' : ''),
+        tT: luogoBreve(s.da) + ' \u2192 ' + luogoBreve(s.per) };
+      v.n1 = w < 30 ? 0 : plRigheServono(v.t1, w - 12 - (pr ? 20 : 0) - 12, 1.15);
+      v.nC = w < 74 ? 0 : plRigheServono(v.tC, w - 14, 1);
+      v.nT = w < 96 ? 0 : plRigheServono(v.tT, w - 14, 1);
+      voci[s.id] = v;
+    });
     var righeExtra = 0;
-    for (var hi = 0; hi < srt.length && nr === 1 && righeExtra < 2; hi++) {
-      var wH = larg[srt[hi].id], eH = 0;
-      if (wH >= 74) {                                   // il cliente si scrive
-        var cH = (srt[hi].nome || srt[hi].da) + (srt[hi].pax ? ' \u00b7 ' + srt[hi].pax + ' pax' : '');
-        if (cH.length * PL_CH > wH - 16) eH++;
-      }
-      if (wH >= 96) {                                   // e anche la tratta
-        var tH = luogoBreve(srt[hi].da) + ' \u2192 ' + luogoBreve(srt[hi].per);
-        if (tH.length * PL_CH > wH - 20) eH++;
-      }
-      if (eH > righeExtra) righeExtra = eH;
-    }
-    H += righeExtra * (PL_GRANDE ? 17 : 14);
+    if (nr === 1) srt.forEach(function (s) {
+      var v = voci[s.id], tot = v.n1 + v.nC + v.nT;
+      if (tot - 3 > righeExtra) righeExtra = Math.min(2, tot - 3);
+    });
+    H += righeExtra * lineH;
+    /* Quante righe ci stanno dentro il blocco, per davvero. Da qui si spartiscono: prima
+       l'ora e chi guida, poi il cliente, poi la tratta. Quello che non ci sta non si
+       scrive a metà — si accorcia (la prima riga) o resta al titolo e alla scheda. */
+    var righeDisp = Math.max(1, Math.floor((H - (PL_GRANDE ? 12 : 8)) / lineH));
     var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3641,12 +3678,37 @@ function renderPlancia_() {
       var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s[AUT ? 'veicolo' : 'autista'] ? ' plnoaut' : '')
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '')
         + (nr > 1 ? ' plduo' : '');
-      var W2 = larg[s.id];
-      /* La prima riga non va mai a capo (l'ora deve restare in cima e intera): se il nome
-         non ci sta, invece di tagliarlo si stringe il carattere. */
-      var pres = !AUT && s.autista && W2 >= 56;
-      var riga1 = fmtMin(s.startMin) + ' ' + (AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista'));
-      var stretta = riga1.length * PL_CH * 1.15 > W2 - 12 - (pres ? 20 : 0);
+      var W2 = larg[s.id], V = voci[s.id], pres = V.pres;
+      /* Spartizione delle righe disponibili, in ordine di importanza. */
+      var resta = righeDisp;
+      var a1 = Math.min(V.n1, resta); resta -= a1;
+      var aC = Math.min(V.nC, resta); resta -= aC;
+      var aT = Math.min(V.nT, resta); resta -= aT;
+      /* La prima riga tiene sempre l'ora intera. Se le tocca una riga sola e il nome non
+         ci sta, si accorcia per gradi — nome intero → C. Cognome → Cognome → solo l'ora —
+         e in ultima istanza stringe il carattere: mai un «13:40 Cl…». */
+      var ora1 = fmtMin(s.startMin), riga1 = V.t1, stretta = false;
+      {
+        /* il ⚠ fa parte della riga: se lo si aggiunge dopo aver misurato, è lui a far
+           finire il nome in «…» — ed è successo, «13:45 Tauro Ambrogio…» */
+        var suff = male ? ' \u26a0' : '';
+        var parti = V.nome.split(/\s+/), varianti = [V.t1 + suff];
+        if (parti.length > 1) {
+          varianti.push(ora1 + ' ' + parti[0].charAt(0) + '. ' + parti[parti.length - 1] + suff);
+          varianti.push(ora1 + ' ' + parti[parti.length - 1] + suff);
+        }
+        varianti.push(ora1 + suff);
+        var disp1 = W2 - 12 - (pres ? 20 : 0), vi;
+        riga1 = '';
+        for (vi = 0; vi < varianti.length; vi++)
+          if (plStaIn(varianti[vi], disp1, Math.max(1, a1), 1.15)) { riga1 = varianti[vi]; break; }
+        if (!riga1) {                       // niente ci sta: si stringe il carattere
+          stretta = true;
+          for (vi = 0; vi < varianti.length; vi++)
+            if (plStaIn(varianti[vi], disp1, Math.max(1, a1), 1)) { riga1 = varianti[vi]; break; }
+          if (!riga1) riga1 = varianti[varianti.length - 1];
+        }
+      }
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore.
       // La tratta invece si scrive quasi sempre (da 96 px in su): tagliata a metà dice
       // comunque da dove si parte, ed è la cosa che si cercava di più
@@ -3661,12 +3723,12 @@ function renderPlancia_() {
            blocco. Sta dentro il blocco perché è lì che lo vedi, e non fa partire lo
            spostamento del servizio: il suo gestore ferma l'evento. */
         + (pres ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
-        + '<b>' + fmtMin(s.startMin) + ' ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + (male ? ' ⚠' : '') + '</b>'
         /* tre righe, in ordine di quello che serve: chi guida (o con che mezzo), CHI è il
-           cliente e quanti sono, e la tratta vera da dove a dove. La terza riga la tiene
-           solo il blocco largo abbastanza: sotto, il CSS la nasconde. */
-        + '<span>' + esc(s.nome || s.da) + (s.pax ? ' \u00b7 ' + s.pax + '\u00a0pax' : '') + '</span>'
-        + '<u>' + esc(luogoBreve(s.da)) + ' → ' + esc(luogoBreve(s.per)) + '</u></div>';
+           cliente e quanti sono, la tratta da dove a dove. Ognuna si prende le righe che
+           le sono state assegnate: quelle che non ci stanno non si scrivono a metà. */
+        + '<b style="-webkit-line-clamp:' + Math.max(1, a1) + '">' + esc(riga1) + '</b>'
+        + (aC ? '<span style="-webkit-line-clamp:' + aC + '">' + esc(V.tC) + '</span>' : '')
+        + (aT ? '<u style="-webkit-line-clamp:' + aT + '">' + esc(V.tT) + '</u>' : '') + '</div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
       b += '<div class="plnow" data-m0="' + DATA.nowMin + '" style="left:' + Math.round((DATA.nowMin - sc.m0) * px) + 'px"></div>';

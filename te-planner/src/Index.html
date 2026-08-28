@@ -370,11 +370,14 @@ main{padding:12px;}
 /* 11. quando la giornata è tutta a schermo i blocchi sono strettissimi:
    invece di scrivere dentro 12 px, tolgo il testo e lascio il colore.
    Il nome torna appena ingrandisci, e intanto il tocco lo mostra in alto. */
+.plblk u{display:none;text-decoration:none;font-size:10.5px;line-height:1.25;opacity:.88;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plblk.plsm{padding:3px 3px}
-.plblk.plsm span{display:none}
+.plblk.plsm span,.plblk.plsm u{display:none}
 .plblk.plsm b{font-size:10px;letter-spacing:-.2px;line-height:1.9}
+.plblk.plmd u{display:none}   /* stretto: cliente sì, tratta no */
 .plblk.plxs{padding:0}
-.plblk.plxs b,.plblk.plxs span{display:none}
+.plblk.plxs b,.plblk.plxs span,.plblk.plxs u{display:none}
 .plblk.plxs{box-shadow:inset 0 0 0 1px rgba(255,255,255,.62),0 1px 2px rgba(0,0,0,.18)}
 .plblk.plxs.plsel{box-shadow:0 0 0 3px #1668c1}
 /* 12. la prima e l'ultima ora non devono restare tagliate a metà dal bordo */
@@ -512,7 +515,8 @@ main{padding:12px;}
   .plora{font-size:11.5px;height:15px;line-height:15px;padding:0 4px}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
-  .plblk{font-size:13px;line-height:15px;padding:4px 8px}
+  .plblk{font-size:12.5px;line-height:14.5px;padding:4px 8px}
+  .plblk u{display:block;font-size:11.5px}   /* la tratta: solo dove il blocco è alto */
   .plblk b{font-size:13px}
   .plora{font-weight:700}
   .plov i{font-size:11.5px}
@@ -3359,7 +3363,7 @@ function renderPlancia_() {
        La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
        etichette non saprebbero a quale blocco appartengono. */
     var banda = nr > 1 ? 0 : (PL_GRANDE ? 17 : 14);
-    var H = PL_GRANDE ? (nr > 1 ? 38 : 46) : (nr > 1 ? 32 : 38);
+    var H = PL_GRANDE ? (nr > 1 ? 40 : 56) : (nr > 1 ? 32 : 38);
     var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3520,7 +3524,7 @@ function renderPlancia_() {
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '');
       var W2 = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(s) * px));
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
-      c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : '');
+      c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : (W2 < 130 ? ' plmd' : ''));
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
         + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
@@ -3530,7 +3534,11 @@ function renderPlancia_() {
            spostamento del servizio: il suo gestore ferma l'evento. */
         + (!AUT && s.autista && W2 >= 56 ? '<i class="plgrip" data-aut="' + esc(s.autista) + '" title="trascina per dare ' + esc(s.autista) + ' a un altro servizio">👤</i>' : '')
         + '<b>' + fmtMin(s.startMin) + ' ' + esc(AUT ? (s.veicolo || 'senza mezzo') : (s.autista || 'senza autista')) + (male ? ' ⚠' : '') + '</b>'
-        + '<span>' + esc((s.nome || s.da) + ' → ' + s.per) + '</span></div>';
+        /* tre righe, in ordine di quello che serve: chi guida (o con che mezzo), CHI è il
+           cliente e quanti sono, e la tratta vera da dove a dove. La terza riga la tiene
+           solo il blocco largo abbastanza: sotto, il CSS la nasconde. */
+        + '<span>' + esc(s.nome || s.da) + (s.pax ? ' · ' + s.pax + ' pax' : '') + '</span>'
+        + '<u>' + esc(s.da) + ' → ' + esc(s.per) + '</u></div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
       b += '<div class="plnow" data-m0="' + DATA.nowMin + '" style="left:' + Math.round((DATA.nowMin - sc.m0) * px) + 'px"></div>';

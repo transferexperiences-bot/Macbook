@@ -999,7 +999,23 @@ const SEED=`(function(){
       var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
       return s&&fascia.indexOf(s.nome||s.da)>=0;});
     return {h:h, stretti:stretti.length, conNome:nomiFuori.length, fascia:fascia.slice(0,80)};});
-  t('i blocchi sono più alti sullo schermo grande', grande.h>=44, grande);
+  t('i blocchi sono più alti sullo schermo grande', grande.h>=54, grande);
+  // dentro il blocco: chi guida · cliente e pax · da → per
+  const tre=await p.evaluate(()=>{
+    var n=[].slice.call(document.querySelectorAll('.plblk')).filter(function(x){
+      return x.getBoundingClientRect().width>=130&&x.className.indexOf('plsm')<0;})[0];
+    if(!n)return null;
+    var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
+    return {b:(n.querySelector('b')||{textContent:''}).textContent,
+            sp:(n.querySelector('span')||{textContent:''}).textContent,
+            u:(n.querySelector('u')||{textContent:''}).textContent,
+            uVisibile:!!n.querySelector('u')&&getComputedStyle(n.querySelector('u')).display!=='none',
+            aut:s.autista,nome:s.nome,pax:s.pax,da:s.da,per:s.per};});
+  t('prima riga: ora e chi guida',   !!tre&&tre.b.indexOf(tre.aut)>=0, tre);
+  t('seconda riga: cliente e pax',
+    !!tre&&tre.sp.indexOf(tre.nome)>=0&&tre.sp.indexOf(tre.pax+' pax')>=0, tre);
+  t('terza riga: da → per',
+    !!tre&&tre.uVisibile&&tre.u.indexOf(tre.da)>=0&&tre.u.indexOf(tre.per)>=0, tre);
   t('e il nome esce nella fascia quando il blocco è stretto',
     grande.stretti===0||grande.conNome>0, grande);
   // viaggio e attesa devono sembrare due cose diverse

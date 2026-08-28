@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (115 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (198 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (201 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -442,7 +442,10 @@ Ogni corsia ha in cima una **fascia riservata alle ore**: sopra ogni blocco si l
 **`07:00 → 08:10 · 42 km · 1h 10m`** — partenza, arrivo, distanza, tempo. Se il blocco è
 troppo stretto per contenere il nome del cliente, **il nome lo scrive la fascia**
 (`07:00 → 08:10 · Famiglia Bianchi · 38 km`): si legge di chi è il servizio senza passarci
-sopra col mouse. Sullo schermo grande i blocchi sono anche più alti (46px invece di 38). Dentro il blocco il
+sopra col mouse. Sullo schermo grande i blocchi sono anche più alti (56px invece di 38) e dicono tre cose in
+tre righe: **ora e chi guida** · **cliente e quanti pax** · **da → per**. La terza riga
+sparisce quando il blocco è stretto (`plmd`, sotto i 130px) e sul telefono, dove il blocco è
+alto la metà; sotto i 74px resta solo l'ora (`plsm`), sotto i 30 solo il colore (`plxs`). Dentro il blocco il
 testo è quasi sempre tagliato (`06:…`), e sopra il blocco senza fascia l'etichetta finiva
 coperta dal blocco stesso: la fascia è l'unico modo perché quelle ore si vedano **sempre**.
 C'è solo quando la corsia ha una riga sola — con i servizi impilati non si capirebbe di chi
@@ -486,7 +489,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **369 controlli automatici, tutti verdi.**
+libera. **372 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

@@ -515,9 +515,10 @@ main{padding:12px;}
   .plora{font-size:11.5px;height:15px;line-height:15px;padding:0 4px}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
-  .plblk{font-size:12.5px;line-height:14.5px;padding:4px 8px}
-  .plblk u{display:block;font-size:11.5px}   /* la tratta: solo dove il blocco è alto */
-  .plblk b{font-size:13px}
+  .plblk{font-size:13.5px;line-height:16.5px;padding:5px 9px}
+  .plblk u{display:block;font-size:12.5px;line-height:1.3}  /* la tratta: solo dove il blocco è alto */
+  .plblk b{font-size:14.5px}
+  .plblk.plduo u{display:none}   /* servizi impilati: il blocco è basso, la tratta non ci sta */
   .plora{font-weight:700}
   .plov i{font-size:11.5px}
   .plslot i{font-size:13px}
@@ -2404,11 +2405,30 @@ function plLarghezzaUtile() {
 }
 function plPx(sc) {
   if (PL_PX) return PL_PX;
-  return Math.max(0.12, plLarghezzaUtile() / (sc.m1 - sc.m0));
+  var adatta = plLarghezzaUtile() / (sc.m1 - sc.m0);
+  /* Sul Mac far entrare tutta la giornata nella finestra dava blocchi da settanta pixel:
+     dentro non ci sta niente e il servizio si legge solo passandoci sopra col mouse. Qui
+     sotto una scala minima non si scende: un'ora sono 180 px, e la plancia scorre di lato
+     (c'è la miniatura sotto, e lo zoom con + − 0 resta a portata). Sul telefono no: lì
+     lo schermo è corto davvero e la giornata intera serve, si ingrandisce con le dita. */
+  return Math.max(0.12, PL_GRANDE ? Math.max(adatta, 3) : adatta);
 }
 function plSetPx(v) {
   PL_PX = v ? Math.max(0.12, Math.min(9, v)) : 0;
   try { localStorage.setItem('te_plz', String(PL_PX)); } catch (e) { }
+}
+/* Quanto è largo un blocco. La durata, ma mai meno di quel che serve per leggerlo: se il
+   servizio è corto e dopo di lui la sotto-riga è libera, il blocco si allarga fino a una
+   misura comoda (quella in cui ci stanno ora, autista, cliente e tratta). Mai oltre
+   l'inizio del servizio dopo — i blocchi stanno sul tempo e si accavallerebbero. */
+function plLargoBlocco(m0, m1, px, mLimite) {
+  var W = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round((m1 - m0) * px));
+  var comodo = PL_GRANDE ? 190 : 104;
+  if (W < comodo && mLimite != null) {
+    var spazio = Math.floor((mLimite - m0) * px) - 3;
+    if (spazio > W) W = Math.min(comodo, spazio);
+  }
+  return W;
 }
 /* Zoom ancorato a un punto dello schermo: il minuto che hai sotto il dito (o sotto il
    puntatore, o al centro se non c'è nessuno dei due) resta esattamente lì. Senza questo
@@ -3098,8 +3118,15 @@ function plRidisegnaScala() {
     var n = b[j], a = +n.getAttribute('data-m0'), e = +n.getAttribute('data-m1');
     n.style.left = Math.round((a - sc.m0) * px) + 'px';
     if (e) {
-      var minimo = n.className.indexOf('plslot') >= 0 ? 46 : (n.className.indexOf('plblk') >= 0 ? 34 : 3);
-      n.style.width = Math.max(minimo, Math.round((e - a) * px)) + 'px';
+      if (n.className.indexOf('plblk') >= 0) {
+        // stessa regola del disegno completo, se no durante il pinch i blocchi corti
+        // si stringono e poi risaltano larghi appena si stacca il dito
+        var mx = n.getAttribute('data-mx');
+        n.style.width = plLargoBlocco(a, e, px, mx == null ? null : +mx) + 'px';
+      } else {
+        var minimo = n.className.indexOf('plslot') >= 0 ? 46 : 3;
+        n.style.width = Math.max(minimo, Math.round((e - a) * px)) + 'px';
+      }
     }
   }
 }
@@ -3362,8 +3389,10 @@ function renderPlancia_() {
        blocco stesso. Qui invece «07:00 → 08:10 · 42 km · 1h 10m» si legge sempre.
        La fascia c'è solo quando la corsia ha una riga sola: con i servizi impilati le
        etichette non saprebbero a quale blocco appartengono. */
-    var banda = nr > 1 ? 0 : (PL_GRANDE ? 17 : 14);
-    var H = PL_GRANDE ? (nr > 1 ? 40 : 56) : (nr > 1 ? 32 : 38);
+    var banda = nr > 1 ? 0 : (PL_GRANDE ? 18 : 14);
+    /* Alto abbastanza da contenere le tre righe senza tagliarle: sul Mac 68 px per la
+       corsia normale, 48 per i servizi impilati (lì la tratta la nasconde il CSS). */
+    var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 46);
     var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3477,6 +3506,24 @@ function renderPlancia_() {
         }
       }
     }
+    /* Per ogni servizio, dove comincia quello dopo sulla SUA sotto-riga: è il muro oltre
+       il quale un blocco corto non può allargarsi. */
+    var muro = {};
+    for (var wi = 0; wi < srt.length; wi++) {
+      var dopo = null;
+      for (var wj = wi + 1; wj < srt.length; wj++)
+        if (riga[srt[wj].id] === riga[srt[wi].id]) { dopo = srt[wj].startMin; break; }
+      var finW = plFine(srt[wi]);
+      if (dopo == null) { muro[srt[wi].id] = sc.m1; continue; }
+      var bucoW = dopo - finW;
+      /* Nel buco fra due servizi ci stanno il tragitto e l'attesa, e il tragitto comincia
+         esattamente dove finisce il blocco: qualunque pixel che il blocco si prende è un
+         pixel di strada coperto. Quindi dove le barre ci sono il blocco non sconfina — si
+         allarga solo dove non c'è niente da coprire (ultimo servizio della corsia, buchi
+         da niente, servizi impilati). Per farli grandi c'è la scala, non lo sconfinamento. */
+      muro[srt[wi].id] = (PL_GAP && nr === 1 && bucoW >= 10) ? finW : dopo;
+    }
+
     /* L'ora in cui il servizio finisce, scritta subito dopo il blocco: sulla plancia
        si legge l'inizio e si indovina la fine. Si scrive solo se c'è spazio prima del
        blocco successivo, altrimenti si accavallerebbe con la sua ora di partenza. */
@@ -3494,7 +3541,7 @@ function renderPlancia_() {
            solo l'ora, sotto i 30 solo il colore), il nome lo scrive la fascia: così si legge
            di chi è il servizio senza passarci sopra col mouse. */
         var ore = fmtMin(S1.startMin) + ' → ' + fmtMin(fin1);
-        var largo = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(S1) * px));
+        var largo = plLargoBlocco(S1.startMin, fin1, px, muro[S1.id]);
         var chi = largo < 74 ? ' · ' + (S1.nome || S1.da) : '';
         var tFin = plEtich([
           ore + chi + kmS + ' · ' + fmtDur(plDurata(S1)),
@@ -3521,11 +3568,13 @@ function renderPlancia_() {
                     : (s.autista ? colorOf(s.autista) : '#8f9aa4');
       var male = veic && !plVerifica(s, veic).ok;
       var c = 'plblk' + (PEND[s.id] ? ' plpend' : '') + (male ? ' plbad' : '') + (!s[AUT ? 'veicolo' : 'autista'] ? ' plnoaut' : '')
-        + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '');
-      var W2 = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round(plDurata(s) * px));
+        + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '')
+        + (nr > 1 ? ' plduo' : '');
+      var W2 = plLargoBlocco(s.startMin, plFine(s), px, muro[s.id]);
       // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
       c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : (W2 < 130 ? ' plmd' : ''));
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
+        + ' data-mx="' + muro[s.id] + '"'
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
         + (banda + 5 + riga[s.id] * (H + 5)) + 'px;height:' + H + 'px;background:' + col + '"'
         + ' title="' + esc((s.domani ? 'DOMANI ' : '') + fmtMin(s.startMin) + '–' + fmtMin(plFine(s)) + ' · ' + (s.nome || '') + ' · ' + s.da + ' → ' + s.per + ' · ' + (s.pax || '?') + ' pax · ' + (s.autista || 'senza autista')) + '">'

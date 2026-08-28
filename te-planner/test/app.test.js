@@ -418,8 +418,14 @@ const SEED=`(function(){
   t('il vassoio è una colonna a destra', pl_g3.aDestra&&pl_g3.colonna==='column', pl_g3);
   t('e scorre da solo',                  pl_g3.scorre==='auto'||pl_g3.scorre==='scroll', pl_g3);
 
+  // ora la plancia parte gia' ingrandita e scorre di lato: il blocco va portato a schermo
+  // prima di andarci col mouse, se no il puntatore finisce fuori dalla finestra
   const pl_pos=await p.evaluate(()=>{var n=document.querySelectorAll('.plblk')[1];
+    var box=document.getElementById('plscroll');
+    if(box){var r0=n.getBoundingClientRect(),rb=box.getBoundingClientRect();
+      box.scrollLeft+= (r0.left-rb.left) - box.clientWidth/2;}
     var r=n.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+  await p.waitForTimeout(120);
   await p.mouse.move(pl_pos.x,pl_pos.y);await p.waitForTimeout(250);
   const pl_g4=await p.evaluate(()=>{
     var c=document.getElementById('plcard'),s=DATA.services[1];
@@ -665,8 +671,11 @@ const SEED=`(function(){
   await p.evaluate(()=>{plPosa();PEND={};load();});await p.waitForTimeout(300);
 
   console.log('\n=== 9septies ter. PLANCIA: l\'autista si prende dal blocco stesso ===');
-  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_PENNA=null;setPlVista('mezzi');plZoom(1);});
+  // scala scelta a mano: abbastanza larga da avere le prese (servono 56px di blocco) e
+  // abbastanza stretta da tenere due servizi diversi dentro la finestra
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_PENNA=null;setPlVista('mezzi');plSetPx(1.6);render();});
   await p.waitForTimeout(400);
+  await p.evaluate(()=>{var b=document.getElementById('plscroll');if(b)b.scrollLeft=0;});
   const pr=await p.evaluate(()=>{
     // una presa che non finisca sotto la colonna dei mezzi, che è appiccicata a sinistra
     var rail=document.querySelector('.plrail').getBoundingClientRect();
@@ -678,7 +687,11 @@ const SEED=`(function(){
     var t=DATA.services.filter(function(x){
       if(x.startMin<0||!x.veicolo||!x.autista||x.autista===chi)return false;
       var n=document.querySelector('.plblk[data-id="'+x.id+'"]');
-      return n&&n.getBoundingClientRect().left>rail.right+6;})[0];
+      if(!n)return false;
+      // dev'essere a schermo per davvero: adesso la plancia parte piu' larga e scorre
+      var r=n.getBoundingClientRect();
+      return r.left>rail.right+6&&r.right<window.innerWidth-6;})[0];
+    if(!t)return null;
     var blk=document.querySelector('.plblk[data-id="'+t.id+'"]');
     var a=g.getBoundingClientRect(), b=blk.getBoundingClientRect();
     return {ax:Math.round(a.left+a.width/2),ay:Math.round(a.top+a.height/2),
@@ -999,7 +1012,26 @@ const SEED=`(function(){
       var s=DATA.services.filter(function(x){return x.id===n.getAttribute('data-id');})[0];
       return s&&fascia.indexOf(s.nome||s.da)>=0;});
     return {h:h, stretti:stretti.length, conNome:nomiFuori.length, fascia:fascia.slice(0,80)};});
-  t('i blocchi sono più alti sullo schermo grande', grande.h>=54, grande);
+  t('i blocchi sono più alti sullo schermo grande', grande.h>=64, grande);
+  // la scala di partenza: sul Mac un'ora non sta piu' in settanta pixel
+  const scala=await p.evaluate(()=>{
+    var sc=plScala();
+    return {px:plPx(sc), zoom:PL_PX, larghi:[].slice.call(document.querySelectorAll('.plblk'))
+      .filter(function(n){return n.getBoundingClientRect().width>=130;}).length,
+      tutti:document.querySelectorAll('.plblk').length};});
+  t('la plancia parte già ingrandita: un\'ora almeno 180px', scala.px>=3, scala);
+  t('e quasi tutti i blocchi ci stanno per intero', scala.larghi>=scala.tutti-2, scala);
+  // il blocco non si mangia la barra del tragitto: quella comincia dove lui finisce
+  const copre=await p.evaluate(()=>{
+    var bad=[];
+    [].slice.call(document.querySelectorAll('.plgvia,.plgatt')).forEach(function(g){
+      var rg=g.getBoundingClientRect(), lane=g.parentNode;
+      [].slice.call(lane.querySelectorAll('.plblk')).forEach(function(n){
+        var rb=n.getBoundingClientRect();
+        if(rb.right>rg.left+1&&rb.left<rg.right-1&&rb.bottom>rg.top&&rb.top<rg.bottom)
+          bad.push([n.getAttribute('data-id'),Math.round(rb.right-rg.left)]);});});
+    return bad;});
+  t('e nessun blocco copre tragitto o attesa', copre.length===0, copre);
   // dentro il blocco: chi guida · cliente e pax · da → per
   const tre=await p.evaluate(()=>{
     var n=[].slice.call(document.querySelectorAll('.plblk')).filter(function(x){

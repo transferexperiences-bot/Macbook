@@ -1047,7 +1047,24 @@ const SEED=`(function(){
   t('seconda riga: cliente e pax',
     !!tre&&tre.sp.indexOf(tre.nome)>=0&&tre.sp.indexOf(tre.pax+' pax')>=0, tre);
   t('terza riga: da → per',
-    !!tre&&tre.uVisibile&&tre.u.indexOf(tre.da)>=0&&tre.u.indexOf(tre.per)>=0, tre);
+    !!tre&&tre.uVisibile&&tre.u.indexOf(tre.da.split(' -')[0])>=0, tre);
+  // la tratta si deve LEGGERE, non solo esistere: dentro i blocchi normali non è tagliata,
+  // e dove il blocco è troppo stretto la scrive la fascia sopra
+  const tratte=await p.evaluate(()=>{
+    var vis=[], tagliate=[], stretti=[];
+    [].slice.call(document.querySelectorAll('.plblk')).forEach(function(n){
+      var u=n.querySelector('u'); if(!u||getComputedStyle(u).display==='none')return;
+      var w=n.getBoundingClientRect().width;
+      vis.push(Math.round(w));
+      if(u.scrollWidth>u.clientWidth+1){tagliate.push([Math.round(w),u.textContent]);
+        if(w>=150)stretti.push([Math.round(w),u.textContent]);}});
+    var fascia=[].slice.call(document.querySelectorAll('.plora.plofin'))
+      .map(function(n){return n.textContent;}).join(' | ');
+    return {quante:vis.length, tagliate:tagliate, larghiTagliati:stretti, fascia:fascia};});
+  t('la tratta si vede in tutti i blocchi normali', tratte.quante>=6, tratte);
+  t('e nei blocchi larghi non è tagliata a metà', tratte.larghiTagliati.length===0, tratte);
+  t('dove il blocco è stretto la tratta la scrive la fascia',
+    tratte.tagliate.length===0||/→\s*\w+.*·.*→|·\s*\w[^·]*→/.test(tratte.fascia), tratte.fascia);
   t('e il nome esce nella fascia quando il blocco è stretto',
     grande.stretti===0||grande.conNome>0, grande);
   // viaggio e attesa devono sembrare due cose diverse

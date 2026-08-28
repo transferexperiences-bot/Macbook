@@ -42,7 +42,7 @@ function caricaFrontend(){
    'servizioVisibile','colorOf','colorOfVeicolo',
    'giroDi','valutaAutista','autistiInServizio','punteggioAutista',
    'finestraInizio','giudizioMargine','catenaDi','trattaFra','catenaIpotesi',
-   'plCatena','plCatenaAutista','oreAutista','plUltimoAutista','srvDi']
+   'plCatena','plCatenaAutista','oreAutista','plUltimoAutista','srvDi','luogoBreve']
     .forEach(n=>{try{out[n]=eval(n);}catch(e){}});
   out.setDATA=(d)=>{eval('DATA=d;_BYID_SRC=null;');};
   return out;

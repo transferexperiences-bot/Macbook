@@ -48,8 +48,8 @@ src/Code.gs           backend: legge il foglio, calcola durate e incastri, scriv
 src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (niente build)
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
-test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (115 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (204 controlli)
+test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (122 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (207 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -451,9 +451,17 @@ troppo stretto per contenere il nome del cliente, **il nome lo scrive la fascia*
 sopra col mouse. Sullo schermo grande i blocchi sono anche più alti (**68px** invece di 38, 48 quando due
 servizi si impilano) e dicono tre cose in
 tre righe: **ora e chi guida** · **cliente e quanti pax** · **da → per**. La terza riga
-sparisce quando il blocco è stretto (`plmd`, sotto i 130px), quando i servizi sono impilati
-(`plduo`: il blocco è basso) e sul telefono, dove il blocco è
-alto la metà; sotto i 74px resta solo l'ora (`plsm`), sotto i 30 solo il colore (`plxs`).
+c'è **anche sul telefono** appena il blocco è largo abbastanza (prima era spenta sotto gli
+820px e chi ingrandiva con le dita non la vedeva comunque); sparisce solo sotto i **96px**
+(`plmd`) e coi servizi impilati (`plduo`: il blocco è basso). Sotto i 74px resta solo l'ora
+(`plsm`), sotto i 30 solo il colore (`plxs`).
+Nella tratta i posti si scrivono **corti** (`luogoBreve()`): «Aeroporto di Bari - Arrivi»
+diventa «Apt Bari», la stazione «Staz. Monopoli». Si toccano solo i prefissi lunghi e la
+coda dopo il trattino — le città no, o *Torre a Mare* diventerebbe *Torre*. Il nome intero
+resta nel titolo e nella scheda. Sotto i **150px** una coppia di nomi normale dentro il
+blocco finirebbe tagliata: lì la tratta la scrive la **fascia** sopra, che ha tutto il buco
+per sé. La presa 👤 sta in alto solo dove la tratta è scritta (in basso le finiva sopra),
+altrimenti resta in fondo a destra dov'era.
 Un blocco corto si allarga fino a **190px** se dopo di lui non c'è niente da coprire (ultimo
 servizio della corsia, buchi da niente): dove invece ci sono tragitto e attesa **non
 sconfina mai** — quelle barre cominciano esattamente dove finisce lui, e ogni pixel che si
@@ -501,7 +509,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **375 controlli automatici, tutti verdi.**
+libera. **385 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·

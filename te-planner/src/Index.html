@@ -370,12 +370,16 @@ main{padding:12px;}
 /* 11. quando la giornata è tutta a schermo i blocchi sono strettissimi:
    invece di scrivere dentro 12 px, tolgo il testo e lascio il colore.
    Il nome torna appena ingrandisci, e intanto il tocco lo mostra in alto. */
-.plblk u{display:none;text-decoration:none;font-size:10.5px;line-height:1.25;opacity:.88;
+/* La tratta. Si scrive anche sul telefono, appena il blocco è largo abbastanza (sotto i
+   96px la nascondono `plmd`/`plsm`/`plxs`): prima era spenta sempre sotto gli 820px, e
+   chi ingrandiva con le dita non la vedeva comunque. */
+.plblk u{display:block;text-decoration:none;font-size:10.5px;line-height:1.2;opacity:.9;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plblk.plsm{padding:3px 3px}
 .plblk.plsm span,.plblk.plsm u{display:none}
 .plblk.plsm b{font-size:10px;letter-spacing:-.2px;line-height:1.9}
 .plblk.plmd u{display:none}   /* stretto: cliente sì, tratta no */
+.plblk.plduo u{display:none}  /* impilati: il blocco è basso, la tratta non ci sta */
 .plblk.plxs{padding:0}
 .plblk.plxs b,.plblk.plxs span,.plblk.plxs u{display:none}
 .plblk.plxs{box-shadow:inset 0 0 0 1px rgba(255,255,255,.62),0 1px 2px rgba(0,0,0,.18)}
@@ -455,10 +459,14 @@ main{padding:12px;}
 .plblk.plmio{outline:2px solid #1668c1;outline-offset:-2px}
 /* il blocco sotto l'autista che stai trascinando */
 .plblk.plsu,.pltile.plsu{outline:3px solid #0b3d66;outline-offset:1px;filter:brightness(1.08)}
-/* la presa dell'autista dentro il blocco: piccola, in un angolo, non copre il testo */
+/* la presa dell'autista dentro il blocco: piccola, in un angolo, non copre il testo.
+   Va in ALTO solo dove c'è la tratta: in basso finiva sopra di lei («… → Aeropo👤») ed è
+   la riga che si va a cercare. Dove la tratta non si scrive (blocchi stretti o impilati)
+   resta in basso, se no coprirebbe l'ora. */
 .plgrip{position:absolute;right:3px;bottom:2px;font-style:normal;font-size:11px;line-height:1;
   background:rgba(255,255,255,.9);border-radius:5px;padding:2px 3px;cursor:grab;
   touch-action:none;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.25);z-index:3}
+.plblk:not(.plsm):not(.plxs):not(.plmd):not(.plduo) .plgrip{top:3px;bottom:auto}
 .plgrip:hover{background:#fff;transform:scale(1.15)}
 .pltile.plmio{border-left-color:#1668c1}
 /* 19. il salvataggio non deve restare in cima alla pagina mentre si lavora a metà giornata */
@@ -515,9 +523,9 @@ main{padding:12px;}
   .plora{font-size:11.5px;height:15px;line-height:15px;padding:0 4px}
   .plgap{height:18px}
   .plgap i{font-size:11.5px;line-height:18px}
-  .plblk{font-size:13.5px;line-height:16.5px;padding:5px 9px}
-  .plblk u{display:block;font-size:12.5px;line-height:1.3}  /* la tratta: solo dove il blocco è alto */
-  .plblk b{font-size:14.5px}
+  .plblk{font-size:13.5px;line-height:16.5px;padding:5px 6px}   /* stretto ai lati: quei 6 px sono mezza parola di tratta */
+  .plblk u{display:block;font-size:12px;line-height:1.3;letter-spacing:-.1px}  /* la tratta */
+  .plblk b{font-size:14.5px;padding-right:20px}   /* il posto della presa 👤 */
   .plblk.plduo u{display:none}   /* servizi impilati: il blocco è basso, la tratta non ci sta */
   .plora{font-weight:700}
   .plov i{font-size:11.5px}
@@ -2421,6 +2429,24 @@ function plSetPx(v) {
    servizio è corto e dopo di lui la sotto-riga è libera, il blocco si allarga fino a una
    misura comoda (quella in cui ci stanno ora, autista, cliente e tratta). Mai oltre
    l'inizio del servizio dopo — i blocchi stanno sul tempo e si accavallerebbero. */
+/* Nome del posto in versione corta, per le scritte strette (la terza riga del blocco).
+   «Aeroporto di Bari - Arrivi» dentro 150 px si legge a metà e non dice niente: qui
+   diventa «Apt Bari». Il nome intero resta nel titolo e nella scheda del servizio.
+   Si toccano solo i prefissi lunghi e la coda dopo il trattino: le città non si accorciano
+   (Torre a Mare non deve diventare Torre). */
+var _BREVE = {};
+function luogoBreve(x) {
+  if (!x) return '';
+  var k = String(x);
+  if (_BREVE[k] != null) return _BREVE[k];
+  var t = k.split(/\s[-–—]\s/)[0].trim();
+  t = t.replace(/^aeroporto(\s+internazionale)?(\s+(di|d'))?\s*/i, 'Apt ');
+  t = t.replace(/^stazione(\s+(ferroviaria|centrale))?(\s+di)?\s*/i, 'Staz. ');
+  t = t.replace(/^porto(\s+di)?\s+/i, 'Porto ');
+  t = t.replace(/\s{2,}/g, ' ').trim();
+  _BREVE[k] = t || k;
+  return _BREVE[k];
+}
 function plLargoBlocco(m0, m1, px, mLimite) {
   var W = Math.max(px < 0.5 ? 12 : (PL_GRANDE ? 46 : 34), Math.round((m1 - m0) * px));
   var comodo = PL_GRANDE ? 190 : 104;
@@ -3392,7 +3418,7 @@ function renderPlancia_() {
     var banda = nr > 1 ? 0 : (PL_GRANDE ? 18 : 14);
     /* Alto abbastanza da contenere le tre righe senza tagliarle: sul Mac 68 px per la
        corsia normale, 48 per i servizi impilati (lì la tratta la nasconde il CSS). */
-    var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 46);
+    var H = PL_GRANDE ? (nr > 1 ? 48 : 68) : (nr > 1 ? 38 : 50);
     var alt = nr * H + (nr + 1) * 5 + banda;
     var cls = 'pllane';
     var b = '<div class="' + cls + '" data-v="' + esc(veic) + '" style="width:' + Math.round(tot) + 'px;height:' + alt + 'px">';
@@ -3543,7 +3569,16 @@ function renderPlancia_() {
         var ore = fmtMin(S1.startMin) + ' → ' + fmtMin(fin1);
         var largo = plLargoBlocco(S1.startMin, fin1, px, muro[S1.id]);
         var chi = largo < 74 ? ' · ' + (S1.nome || S1.da) : '';
+        /* Anche la tratta: se il blocco è troppo stretto per scriversela dentro, la porta
+           la fascia — è la domanda che si fa per prima guardando la plancia, «da dove a
+           dove va». Sotto i 150 px una coppia di nomi normale («Monopoli → Polignano a
+           Mare») dentro il blocco finisce tagliata; sopra, nel blocco ci sta e qui non si
+           ripete. */
+        var via1 = largo < 150 ? ' · ' + luogoBreve(S1.da) + ' → ' + luogoBreve(S1.per) : '';
         var tFin = plEtich([
+          ore + chi + via1 + kmS + ' · ' + fmtDur(plDurata(S1)),
+          ore + chi + via1 + kmS,
+          ore + chi + via1,
           ore + chi + kmS + ' · ' + fmtDur(plDurata(S1)),
           ore + chi + kmS,
           ore + chi,
@@ -3571,8 +3606,10 @@ function renderPlancia_() {
         + (PL_ARM === s.id ? ' plsel' : '') + (PL_PENNA && s.autista === PL_PENNA ? ' plmio' : '')
         + (nr > 1 ? ' plduo' : '');
       var W2 = plLargoBlocco(s.startMin, plFine(s), px, muro[s.id]);
-      // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore
-      c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : (W2 < 130 ? ' plmd' : ''));
+      // sotto i 74 px il nome non ci sta: resta l'ora; sotto i 30 resta il colore.
+      // La tratta invece si scrive quasi sempre (da 96 px in su): tagliata a metà dice
+      // comunque da dove si parte, ed è la cosa che si cercava di più
+      c += W2 < 30 ? ' plxs' : (W2 < 74 ? ' plsm' : (W2 < 96 ? ' plmd' : ''));
       b += '<div class="' + c + '" data-id="' + esc(s.id) + '" data-m0="' + s.startMin + '" data-m1="' + plFine(s) + '"'
         + ' data-mx="' + muro[s.id] + '"'
         + ' style="left:' + Math.round((s.startMin - sc.m0) * px) + 'px;width:' + W2 + 'px;top:'
@@ -3587,7 +3624,7 @@ function renderPlancia_() {
            cliente e quanti sono, e la tratta vera da dove a dove. La terza riga la tiene
            solo il blocco largo abbastanza: sotto, il CSS la nasconde. */
         + '<span>' + esc(s.nome || s.da) + (s.pax ? ' · ' + s.pax + ' pax' : '') + '</span>'
-        + '<u>' + esc(s.da) + ' → ' + esc(s.per) + '</u></div>';
+        + '<u>' + esc(luogoBreve(s.da)) + ' → ' + esc(luogoBreve(s.per)) + '</u></div>';
     });
     if (DATA.nowMin >= sc.m0 && DATA.nowMin <= sc.m1)
       b += '<div class="plnow" data-m0="' + DATA.nowMin + '" style="left:' + Math.round((DATA.nowMin - sc.m0) * px) + 'px"></div>';

@@ -399,4 +399,16 @@ eq('Ambrogio finisce alle 12:06 ma non ci arriva', F.valutaAutista(NUOVO2,'Tauro
 eq('Claudio invece sì',                            F.valutaAutista(NUOVO2,'Claudio Moccia').k !== 'no', true);
 eq('il mezzo porta dietro Claudio, non Ambrogio',  F.plUltimoAutista('Vito X',NUOVO2), 'Claudio Moccia');
 
+sezione('Nomi dei posti in versione corta, per le scritte strette');
+/* Dentro un blocco di 150 px «Aeroporto di Bari - Arrivi → Polignano a Mare» si legge a
+   metà. Si accorciano solo i prefissi lunghi e la coda dopo il trattino: le città no,
+   o Torre a Mare diventerebbe Torre. */
+eq('l\'aeroporto diventa Apt',        F.luogoBreve('Aeroporto di Bari'), 'Apt Bari');
+eq('anche con la coda dopo il trattino', F.luogoBreve('Aeroporto di Bari - Arrivi'), 'Apt Bari');
+eq('e con «internazionale» in mezzo',  F.luogoBreve('Aeroporto internazionale di Brindisi'), 'Apt Brindisi');
+eq('la stazione diventa Staz.',        F.luogoBreve('Stazione di Monopoli'), 'Staz. Monopoli');
+eq('le città non si toccano',          F.luogoBreve('Polignano a Mare'), 'Polignano a Mare');
+eq('Torre a Mare resta Torre a Mare',  F.luogoBreve('Torre a Mare'), 'Torre a Mare');
+eq('il vuoto resta vuoto',             F.luogoBreve(''), '');
+
 bilancio();

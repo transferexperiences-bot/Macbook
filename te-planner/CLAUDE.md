@@ -268,15 +268,6 @@ zone, leggi `docs/REVISIONE_v5.md`.
     errore). Se aggiungi una funzione che tocca `DATA.services` dalla Plancia, falla passare
     di lì o vedrà solo oggi.
 
-19. **L'ora d'arrivo tagliata alla lunghezza del buco.** Nella Plancia il tragitto veniva
-    limitato con `Math.min(tt.min, buco)` — giusto per **disegnare la barra**, che non può
-    sforare — ma l'ora d'arrivo si calcolava da lì: `f + via`. Risultato: quando il tragitto
-    era più lungo del buco, l'arrivo coincideva esattamente con l'inizio del servizio dopo.
-    Una bugia, e proprio nel caso peggiore, quello in cui il mezzo **non** ci arriva. Ora
-    `arrivo = f + tt.min` sempre, il taglio resta solo per la barra (`arrivoBarra`), e il
-    ritardo si scrive in rosso. Regola generale: **i numeri che si leggono non si calcolano
-    mai da una variabile nata per disegnare.**
-
 15. **La app appesa alla rotella.** `render()` esce subito se `PL_DRAG` è acceso — giusto,
     non si ridisegna sotto il dito. Ma se il trascinamento non finiva mai (dito alzato fuori
     dalla finestra, oppure blocco sparito perché nel frattempo i dati si sono ricaricati e
@@ -319,6 +310,15 @@ zone, leggi `docs/REVISIONE_v5.md`.
     390px: `.plmain` lì è `display:block`, non una griglia. Il testo di contorno va dentro
     `<span class="plpiu">`, che sotto i 900px sparisce — ogni riga di parole è una riga di
     corsie in meno.
+
+19. **L'ora d'arrivo tagliata alla lunghezza del buco.** Nella Plancia il tragitto veniva
+    limitato con `Math.min(tt.min, buco)` — giusto per **disegnare la barra**, che non può
+    sforare — ma l'ora d'arrivo si calcolava da lì: `f + via`. Risultato: quando il tragitto
+    era più lungo del buco, l'arrivo coincideva esattamente con l'inizio del servizio dopo.
+    Una bugia, e proprio nel caso peggiore, quello in cui il mezzo **non** ci arriva. Ora
+    `arrivo = f + tt.min` sempre, il taglio resta solo per la barra (`arrivoBarra`), e il
+    ritardo si scrive in rosso. Regola generale: **i numeri che si leggono non si calcolano
+    mai da una variabile nata per disegnare.**
 
 ---
 

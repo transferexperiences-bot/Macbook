@@ -450,6 +450,8 @@ main{padding:12px;}
 .plautc.off{opacity:.55}
 .plarmp{background:#f2ecfd;border-color:#c2a5ef}
 .plblk.plmio{outline:2px solid #1668c1;outline-offset:-2px}
+/* il blocco sotto l'autista che stai trascinando */
+.plblk.plsu,.pltile.plsu{outline:3px solid #0b3d66;outline-offset:1px;filter:brightness(1.08)}
 .pltile.plmio{border-left-color:#1668c1}
 /* 19. il salvataggio non deve restare in cima alla pagina mentre si lavora a metà giornata */
 /* sopra il messaggino, che sta a 80px: se si coprono a vicenda non si salva più niente */
@@ -2756,6 +2758,89 @@ function plPennella(s) {
 /* La fila degli autisti: prima chi è in servizio oggi, poi gli altri, in fondo chi non
    può lavorare. Il nome non entra mai nell'onclick (gli apostrofi romperebbero l'HTML):
    si passa l'indice e il nome si rilegge da PL_AUTLISTA. */
+/* Trascinare un autista dalla fila in alto e lasciarlo cadere su un servizio. È il gesto
+   che viene naturale col mouse: prendo il colore di Katiuscia e lo poso sul blocco. Il
+   pennello resta per il telefono e per assegnare molti servizi di fila; questo è per il
+   colpo singolo, e non tocca il mezzo — come il pennello.
+   Tocco secco senza movimento = il vecchio comportamento, cioè prendere/posare il pennello. */
+function plPrendiAutista(ev, nome, nodo, k) {
+  if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+  if (PL_PINCH || ev.isPrimary === false || PL_DRAG) return;
+  var x0 = ev.clientX, y0 = ev.clientY, mosso = false, ghost = null, sopra = null;
+  var col = colorOf(nome);
+  function muovi(e) {
+    if (!mosso) {
+      if (Math.abs(e.clientX - x0) < 8 && Math.abs(e.clientY - y0) < 8) return;
+      mosso = true;
+      PL_ARM = null;
+      ghost = document.createElement('div');
+      ghost.className = 'plghost';
+      ghost.style.background = col;
+      ghost.textContent = '🖌 ' + nome;
+      document.body.appendChild(ghost);
+      PL_DRAG = 'aut:' + nome;   // basta che sia acceso: render() non deve ridisegnare sotto
+    }
+    e.preventDefault();
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top = e.clientY + 'px';
+    ghost.style.display = 'none';
+    var sotto = document.elementFromPoint(e.clientX, e.clientY);
+    ghost.style.display = '';
+    var blk = sotto ? (plRisali(sotto, 'plblk') || plRisali(sotto, 'pltile')) : null;
+    if (sopra && sopra !== blk) sopra.className = sopra.className.replace(/ ?plsu/g, '');
+    sopra = blk;
+    if (!blk) { plMsgOff(); return; }
+    if (blk.className.indexOf('plsu') < 0) blk.className += ' plsu';
+    var s = srvPl(blk.getAttribute('data-id'));
+    if (!s) return;
+    var v = plCon(function () { return valutaAutista(s, nome); });
+    plMsg(e.clientX, e.clientY, nome + ' · ' + (v.k === 'no' ? 'occupato, si libera alle ' + fmtMin(v.freeAt)
+      : (v.k === 'off' ? 'oggi non disponibile' : (v.txt || 'ci sta'))), v.k === 'no' || v.k === 'off');
+  }
+  var finito = false;
+  function molla(e) {
+    if (finito) return;
+    finito = true;
+    nodo.removeEventListener('pointermove', muovi);
+    nodo.removeEventListener('pointerup', molla);
+    nodo.removeEventListener('pointercancel', molla);
+    window.removeEventListener('pointerup', molla, true);
+    window.removeEventListener('pointercancel', molla, true);
+    window.removeEventListener('blur', molla, true);
+    if (sopra) sopra.className = sopra.className.replace(/ ?plsu/g, '');
+    plPulisci();
+    if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+    PL_DRAG = null;
+    if (!mosso) { plPenna(k); return; }              // tocco secco: pennello, come prima
+    var s = sopra ? srvPl(sopra.getAttribute('data-id')) : null;
+    if (!s) { render(); return; }
+    plCon(function () { plDaiAutista(s, nome); });
+  }
+  if (nodo.setPointerCapture) { try { nodo.setPointerCapture(ev.pointerId); } catch (e) { } }
+  nodo.addEventListener('pointermove', muovi);
+  nodo.addEventListener('pointerup', molla);
+  nodo.addEventListener('pointercancel', molla);
+  window.addEventListener('pointerup', molla, true);
+  window.addEventListener('pointercancel', molla, true);
+  window.addEventListener('blur', molla, true);
+}
+/* Mettere un autista su un servizio: il mezzo non si tocca, come col pennello. Finisce in
+   sospeso, e il messaggio dice se ci sta o se lo stai forzando. */
+function plDaiAutista(s, nome) {
+  var v = valutaAutista(s, nome);
+  PEND[s.id] = { autista: nome, veicolo: s.veicolo || '' };
+  s.autista = nome;
+  if (s.orig) s.orig.autista = nome;
+  render();
+  toast((v.k === 'no' || v.k === 'off' ? '⚠️ forzato · ' : '🕐 ') + nome + ' → ' + (s.nome || s.da)
+    + (v.k === 'no' ? ' · occupato fino alle ' + fmtMin(v.freeAt) : (v.k === 'off' ? ' · oggi non disponibile' : '')));
+}
+function srvPl(id) {
+  if (!id) return null;
+  var s = null;
+  plPiano().services.forEach(function (x) { if (x.id === id) s = x; });
+  return s;
+}
 function plBarraAutisti() {
   if (plChiave() === 'autista') return '';   // qui l'autista è già la riga
   var righe = [];
@@ -2771,7 +2856,7 @@ function plBarraAutisti() {
     h += '<button class="plautc' + (sel ? ' sel' : '') + (r.a.esclusoMotivo ? ' off' : '') + '"'
       + ' style="border-color:' + c + ';' + (sel ? 'background:' + c : 'color:' + c) + '"'
       + ' title="' + esc(r.a.esclusoMotivo || (r.n ? r.n + ' servizi oggi' : 'oggi non ha servizi')) + '"'
-      + ' onclick="plPenna(' + k + ')">' + esc(r.a.nome)
+      + ' data-aut="' + k + '">' + esc(r.a.nome)
       + (r.n ? ' <small>' + r.n + '</small>' : '') + (r.a.esclusoMotivo ? ' 🚫' : '') + '</button>';
   });
   if (PL_PENNA) h += '<button class="chip" style="border:none" onclick="plPosa()">✕ posa</button>';
@@ -3506,6 +3591,14 @@ function renderPlancia_() {
   }
   aggancia('.plblk');
   aggancia('.pltile');
+  /* le caselle degli autisti: tocco secco = pennello, trascinamento = poso quel nome
+     sul servizio su cui lascio il mouse */
+  var caselle = document.querySelectorAll('.plautc');
+  for (var ic = 0; ic < caselle.length; ic++) (function (nodo) {
+    var k = +nodo.getAttribute('data-aut'), nome = PL_AUTLISTA[k];
+    if (!nome) return;
+    nodo.addEventListener('pointerdown', function (e) { plPrendiAutista(e, nome, nodo, k); });
+  })(caselle[ic]);
   var box = document.getElementById('plscroll');
   if (box && !PL_PX && !PL_MISURATO && !PL_RIFATTO && box.scrollWidth > box.clientWidth + 2) {
     // al primo disegno la colonna dei mezzi non esisteva ancora e la misura era teorica:

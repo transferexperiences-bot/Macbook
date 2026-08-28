@@ -623,6 +623,47 @@ const SEED=`(function(){
     await p.evaluate(()=>PL_PENNA===null&&!document.querySelector('.plarmp')), null);
   await p.evaluate(()=>{PEND={};load();});await p.waitForTimeout(200);
 
+  console.log('\n=== 9septies bis. PLANCIA: l\'autista si trascina sul servizio (Mac) ===');
+  await p.evaluate(()=>{PEND={};PL_ARM=null;PL_PENNA=null;setPlVista('mezzi');render();});
+  await p.waitForTimeout(300);
+  const dd=await p.evaluate(()=>{
+    var chip=[].slice.call(document.querySelectorAll('.plautc')).filter(function(n){
+      return n.textContent.indexOf('Pietro Salvi')===0;})[0];
+    var s=DATA.services.filter(function(x){return x.veicolo&&x.autista&&x.autista!=='Pietro Salvi'&&x.startMin>=0;})[0];
+    var blk=document.querySelector('.plblk[data-id="'+s.id+'"]');
+    var a=chip.getBoundingClientRect(), b=blk.getBoundingClientRect();
+    return {ax:Math.round(a.left+a.width/2),ay:Math.round(a.top+a.height/2),
+            bx:Math.round(b.left+b.width/2),by:Math.round(b.top+b.height/2),
+            id:s.id,prima:s.autista,vei:s.veicolo};});
+  await p.mouse.move(dd.ax,dd.ay);await p.mouse.down();
+  await p.mouse.move(dd.ax+30,dd.ay+20,{steps:4});
+  await p.mouse.move(dd.bx,dd.by,{steps:8});await p.waitForTimeout(150);
+  const durante=await p.evaluate(()=>({fantasma:document.querySelectorAll('.plghost').length,
+    bersaglio:document.querySelectorAll('.plblk.plsu,.pltile.plsu').length,
+    msg:(document.getElementById('plmsg')||{textContent:''}).textContent}));
+  t('trascinando l\'autista compare il suo colore in mano', durante.fantasma===1, durante);
+  t('e il servizio sotto si illumina, dicendo se ci sta',
+    durante.bersaglio===1&&durante.msg.indexOf('Pietro Salvi')>=0, durante);
+  await p.mouse.up();await p.waitForTimeout(300);
+  const ddDopo=await p.evaluate(i=>{var s=DATA.services.filter(function(x){return x.id===i;})[0];
+    return {aut:s.autista,vei:s.veicolo,pend:PEND[i],penna:PL_PENNA,drag:PL_DRAG};},dd.id);
+  t('lasciandolo lì, il servizio prende quell\'autista',
+    ddDopo.aut==='Pietro Salvi'&&dd.prima!=='Pietro Salvi'&&!!ddDopo.pend, {prima:dd.prima,dopo:ddDopo});
+  t('il mezzo non si tocca',            ddDopo.vei===dd.vei, {atteso:dd.vei,avuto:ddDopo.vei});
+  t('non resta niente appeso',          ddDopo.drag===null&&ddDopo.penna===null, ddDopo);
+  // il tocco secco fa ancora quello di prima: prende il pennello. (La casella si è
+  //  spostata: dopo l'assegnazione la fila si riordina per carico, quindi la ricerco.)
+  const chip2=await p.evaluate(()=>{
+    var n=[].slice.call(document.querySelectorAll('.plautc')).filter(function(x){
+      return x.textContent.indexOf('Pietro Salvi')===0;})[0];
+    var r=n.getBoundingClientRect();
+    return {x:Math.round(r.left+r.width/2),y:Math.round(r.top+r.height/2)};});
+  await p.mouse.move(chip2.x,chip2.y);await p.mouse.down();await p.mouse.up();
+  await p.waitForTimeout(250);
+  t('un tocco secco invece prende il pennello, come prima',
+    await p.evaluate(()=>PL_PENNA==='Pietro Salvi'), null);
+  await p.evaluate(()=>{plPosa();PEND={};load();});await p.waitForTimeout(300);
+
   console.log('\n=== 9octies. PLANCIA: i servizi cancellati non occupano niente ===');
   await p.evaluate(()=>{setTab('plancia');PEND={};PL_ARM=null;PL_PENNA=null;setDue(false);render();});
   await p.waitForTimeout(250);

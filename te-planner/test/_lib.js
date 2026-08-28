@@ -31,7 +31,8 @@ function caricaFrontend(){
   let js=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace('<?!= boot ?>','null');
   js=js.slice(0,js.indexOf('/* avvio veloce'));
   const stub={value:'',style:{},focus(){},innerHTML:'',className:'',textContent:'',setAttribute(){}};
-  global.document={getElementById:()=>stub,body:{setAttribute(){}},querySelectorAll:()=>[]};
+  global.document={getElementById:()=>stub,body:{setAttribute(){}},querySelectorAll:()=>[],
+    querySelector:()=>null,addEventListener(){},createElement:()=>stub};
   global.localStorage={getItem:()=>null,setItem(){}};
   global.window={innerWidth:1440,addEventListener(){}};
   eval(js);

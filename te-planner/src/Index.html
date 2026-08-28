@@ -403,10 +403,14 @@ main{padding:12px;}
 #plcard.plcbasso .plcn{font-size:13.5px}
 #plcard.plcbasso .plcaz{padding:0 11px 9px}
 #plcard.plcbasso .plcsug{padding:0 11px 8px}
-/* 6. sul telefono la barra scorre invece di andare a capo */
+/* 6. Sul telefono la barra andava a scorrimento laterale: «🗓 2 giorni» restava fuori
+   schermo e nessuno sapeva che ci fosse — una barra che scorre senza dirlo è una barra
+   con dentro roba invisibile. Meglio due righe, si vedono tutti i bottoni. */
 @media (max-width:520px){
-  .plbar{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .plbar{flex-wrap:wrap;overflow:visible}
   .plbar>*{flex:0 0 auto}
+  .plzoom{flex:1 1 auto}
+  .plzoom button{flex:1 1 auto}
 }
 /* 16. la catena: la piazzola non dice più solo "ci sta", dice a che ora il mezzo è
    sul pick-up e con quanto margine. Ambra = ci arriva, ma per un soffio. */
@@ -2363,14 +2367,29 @@ function plSetPx(v) {
   PL_PX = v ? Math.max(0.12, Math.min(9, v)) : 0;
   try { localStorage.setItem('te_plz', String(PL_PX)); } catch (e) { }
 }
-function plZoom(d) {
-  // lo zoom resta ancorato al centro di quello che stai guardando, non torna all'alba
-  var sc = plScala(), box = document.getElementById('plscroll'), p0 = plPx(sc);
-  var centro = box ? (box.scrollLeft + box.clientWidth / 2) / p0 : 0;
-  if (d === 0) plSetPx(0); else plSetPx(p0 * (d > 0 ? 1.5 : 1 / 1.5));
-  render();
+/* Zoom ancorato a un punto dello schermo: il minuto che hai sotto il dito (o sotto il
+   puntatore, o al centro se non c'è nessuno dei due) resta esattamente lì. Senza questo
+   ogni zoom ti sposta la giornata sotto gli occhi e devi ritrovare il punto a mano.
+   `leggero` ridisegna solo le larghezze, per i gesti continui che sparano cento eventi:
+   il ridisegno completo si fa alla fine. */
+function plZoomVerso(nuovoPx, clientX, leggero) {
+  var box = document.getElementById('plscroll'), sc = plScala(), p0 = plPx(sc);
+  var xIn = 0, minuto = 0;
+  if (box) {
+    var r = box.getBoundingClientRect();
+    xIn = (clientX == null ? box.clientWidth / 2 : clientX - r.left);
+    // la colonna dei mezzi sta dentro lo scorrimento: va tolta per trovare il minuto vero
+    minuto = (box.scrollLeft + xIn - PL_RAIL_W) / p0;
+  }
+  plSetPx(nuovoPx);
+  if (leggero) plRidisegnaScala(); else render();
   var n = document.getElementById('plscroll');
-  if (n && d !== 0) n.scrollLeft = Math.max(0, centro * plPx(plScala()) - n.clientWidth / 2);
+  if (n && nuovoPx) n.scrollLeft = Math.max(0, minuto * plPx(plScala()) + PL_RAIL_W - xIn);
+}
+function plZoom(d, clientX) {
+  var p0 = plPx(plScala());
+  if (d === 0) { plSetPx(0); render(); return; }
+  plZoomVerso(p0 * (d > 0 ? 1.5 : 1 / 1.5), clientX, false);
 }
 function plToggleGap() { PL_GAP = !PL_GAP; render(); }
 function plToggleSolo() { PL_SOLO = !PL_SOLO; render(); }
@@ -2787,27 +2806,41 @@ function plDist(t) {
   var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
   return Math.sqrt(dx * dx + dy * dy) || 1;
 }
+function plMezzo(t) { return (t[0].clientX + t[1].clientX) / 2; }
+var PL_ZTIMER = null;
 function plAggiungiZoomGesti(box, sc) {
+  /* Sul Mac il pinch del trackpad arriva come rotella con ctrl premuto: se non lo
+     prendiamo noi, zooma tutta la pagina. Ridisegno leggero durante il gesto e uno
+     completo quando le dita si fermano, se no a ogni scatto si rifà tutto l'HTML. */
   box.addEventListener('wheel', function (e) {
     if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
-    plSetPx(plPx(sc) * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
-    render();
+    plZoomVerso(plPx(plScala()) * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, true);
+    clearTimeout(PL_ZTIMER);
+    PL_ZTIMER = setTimeout(function () { render(); }, 180);
   }, { passive: false });
   box.addEventListener('touchstart', function (e) {
     if (e.touches.length !== 2) return;
-    var PL_PINCH_D = plDist(e.touches);
-    PL_PINCH = { d: PL_PINCH_D, px: plPx(sc) };
+    PL_PINCH = { d: plDist(e.touches), px: plPx(plScala()), x: plMezzo(e.touches) };
   }, { passive: true });
   box.addEventListener('touchmove', function (e) {
     if (!PL_PINCH || e.touches.length !== 2) return;
     e.preventDefault();
-    var d = plDist(e.touches);
-    plSetPx(PL_PINCH.px * (d / PL_PINCH.d));
-    plRidisegnaScala();
+    // ancorato al punto in mezzo alle due dita: quello che stringi resta dov'è
+    plZoomVerso(PL_PINCH.px * (plDist(e.touches) / PL_PINCH.d), PL_PINCH.x, true);
   }, { passive: false });
   box.addEventListener('touchend', function () { if (PL_PINCH) { PL_PINCH = null; render(); } }, { passive: true });
 }
+/* Da tastiera, quando la Plancia è aperta: + ingrandisce, − riduce, 0 riadatta.
+   Non ruba i tasti mentre si scrive in un campo o si compila la scheda. */
+document.addEventListener('keydown', function (e) {
+  if (TAB !== 'plancia' || e.ctrlKey || e.metaKey || e.altKey) return;
+  var t = e.target, n = t && t.nodeName;
+  if (n === 'INPUT' || n === 'TEXTAREA' || n === 'SELECT' || (t && t.isContentEditable)) return;
+  if (e.key === '+' || e.key === '=') { e.preventDefault(); plZoom(1); }
+  else if (e.key === '-' || e.key === '_') { e.preventDefault(); plZoom(-1); }
+  else if (e.key === '0') { e.preventDefault(); plZoom(0); }
+});
 function plRidisegnaScala() {
   // durante il pinch ridisegno solo le larghezze, senza rifare tutto l'HTML
   var sc = plScala(), px = plPx(sc), tot = (sc.m1 - sc.m0) * px;
@@ -2999,8 +3032,11 @@ function renderPlancia_() {
   } else if (!PL_PENNA) {
     /* sul telefono ogni riga di testo è una riga di corsie in meno: il di più sta
        dentro .plpiu, che sotto i 900px sparisce */
-    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga del mezzo. Due dita per lo zoom.'
-      + (px < 0.9 ? ' <b>+</b> per leggere i nomi dentro i blocchi.' : '') + '</span></p>';
+    /* il suggerimento sullo zoom non va nascosto sul telefono: è lì che serve, perché
+       le due dita non le scopre nessuno da solo */
+    h += '<p class="plhint">Tocca un servizio per vedere <b>dove può andare</b><span class="plpiu">, oppure trascinalo direttamente sulla riga del mezzo'
+      + '</span> · <b>due dita</b> per lo zoom<span class="plpiu">'
+      + (px < 0.9 ? ', <b>+</b> per leggere i nomi dentro i blocchi' : '') + '</span>.</p>';
   }
 
   /* Il vassoio dei da assegnare sta PRIMA della griglia nell'HTML: sul telefono deve

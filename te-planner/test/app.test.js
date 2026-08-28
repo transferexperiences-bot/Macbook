@@ -817,6 +817,70 @@ const SEED=`(function(){
   await p.close();p=await nuova(390,844);
   await p.evaluate(PLSEED);await p.waitForTimeout(300);
 
+  console.log('\n=== 9undecies. PLANCIA: lo zoom da Mac, da telefono e da tastiera ===');
+  await p.close();p=await nuova(1400,800);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  await p.evaluate(()=>{plSetPx(0);render();});await p.waitForTimeout(250);
+  // 1. lo zoom resta ancorato al punto che guardi
+  const anc=await p.evaluate(()=>{
+    var box=document.getElementById('plscroll');
+    var x=box.getBoundingClientRect().left+400;
+    var prima=(box.scrollLeft+400-PL_RAIL_W)/plPx(plScala());
+    plZoom(1,x);
+    var dopo=(document.getElementById('plscroll').scrollLeft+400-PL_RAIL_W)/plPx(plScala());
+    return {prima:Math.round(prima),dopo:Math.round(dopo),px:plPx(plScala())};});
+  t('ingrandendo, il minuto sotto il puntatore resta lì', Math.abs(anc.prima-anc.dopo)<=1, anc);
+  // 2. tastiera: + − 0
+  const t0=await p.evaluate(()=>{plSetPx(0);render();return plPx(plScala());});
+  await p.keyboard.press('+');await p.waitForTimeout(200);
+  const t1=await p.evaluate(()=>plPx(plScala()));
+  await p.keyboard.press('-');await p.waitForTimeout(200);
+  const t2=await p.evaluate(()=>plPx(plScala()));
+  await p.keyboard.press('+');await p.keyboard.press('+');await p.waitForTimeout(250);
+  await p.keyboard.press('0');await p.waitForTimeout(250);
+  const t3=await p.evaluate(()=>({px:plPx(plScala()),libero:PL_PX}));
+  t('+ ingrandisce, − riduce',        t1>t0*1.4&&Math.abs(t2-t0)<0.01, {t0:t0,t1:t1,t2:t2});
+  t('0 rimette «adatta»',             t3.libero===0&&Math.abs(t3.px-t0)<0.01, t3);
+  // i tasti non devono rubare la scrittura nei campi
+  const campo=await p.evaluate(()=>{
+    var i=document.createElement('input');i.id='provaZoom';document.body.appendChild(i);i.focus();
+    return plPx(plScala());});
+  await p.keyboard.press('+');await p.waitForTimeout(200);
+  t('mentre scrivi in un campo lo zoom non si muove',
+    Math.abs(await p.evaluate(()=>plPx(plScala()))-campo)<0.01, null);
+  await p.evaluate(()=>{var i=document.getElementById('provaZoom');i.blur();i.remove();});
+  // 3. Mac: il pinch del trackpad arriva come rotella con ctrl
+  const w0=await p.evaluate(()=>{plSetPx(0);render();return plPx(plScala());});
+  const wev=await p.evaluate(()=>{
+    var b=document.getElementById('plscroll');
+    var e=new WheelEvent('wheel',{deltaY:-120,ctrlKey:true,bubbles:true,cancelable:true,
+      clientX:b.getBoundingClientRect().left+300,clientY:b.getBoundingClientRect().top+60});
+    b.dispatchEvent(e);
+    return {bloccato:e.defaultPrevented};});
+  await p.waitForTimeout(300);
+  const w1=await p.evaluate(()=>plPx(plScala()));
+  t('il pinch del trackpad ingrandisce la plancia', w1>w0, {prima:w0,dopo:w1});
+  t('e non lascia zoomare tutta la pagina',         wev.bloccato, wev);
+  const w2=await p.evaluate(()=>{
+    var b=document.getElementById('plscroll');
+    b.dispatchEvent(new WheelEvent('wheel',{deltaY:-120,bubbles:true,cancelable:true}));
+    return plPx(plScala());});
+  t('la rotella liscia invece scorre e basta',      Math.abs(w2-w1)<0.001, {w1:w1,w2:w2});
+  // 4. sul telefono tutti i bottoni della barra si vedono, senza scorrimenti nascosti
+  await p.close();p=await nuova(390,844);
+  await p.evaluate(PLSEED);await p.waitForTimeout(300);
+  const bar390=await p.evaluate(()=>{
+    var bar=document.querySelector('.plbar'), figli=[].slice.call(bar.children);
+    return {n:figli.length,
+      dentro:figli.every(function(n){var r=n.getBoundingClientRect();
+        return r.right<=window.innerWidth+1&&r.left>=-1;}),
+      righe:figli.map(function(n){return Math.round(n.getBoundingClientRect().top);})
+        .filter(function(v,i,a){return a.indexOf(v)===i;}).length,
+      hint:(document.querySelector('.plhint')||{textContent:''}).textContent};});
+  t('a 390px si vedono tutti i bottoni della barra', bar390.dentro&&bar390.n===4, bar390);
+  t('vanno a capo invece di nascondersi di lato',    bar390.righe>1, bar390);
+  t('e il telefono sa che si zooma con due dita',    /due dita/.test(bar390.hint), bar390.hint);
+
   console.log('\n=== 7. Tutte le larghezze, tutte le schede ===');
   await p.close();
   for(const [w,h] of [[1920,1080],[1440,900],[1024,768],[768,900],[390,844]]){

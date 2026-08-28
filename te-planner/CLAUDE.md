@@ -49,7 +49,7 @@ src/Index.html        tutta l'interfaccia: HTML + CSS + JS in un file solo (nien
 test/_lib.js          carica backend e frontend in Node con gli oggetti Google finti
 test/backend.test.js  parser importi/date, "stesso luogo", stima tempi        (56 controlli)
 test/motore.test.js   trasferimenti, conflitti, candidati, catene e voli      (108 controlli)
-test/app.test.js      apre la app in Chromium e la usa davvero                (153 controlli)
+test/app.test.js      apre la app in Chromium e la usa davvero                (163 controlli)
 tools/build-preview.py  genera preview.html: la app con dati finti, apribile in locale
 tools/screenshot.js     screenshot delle schede a varie larghezze → shots/
 run-tests.sh          sintassi + preview + le tre batterie
@@ -382,6 +382,14 @@ ridotta del tocco — ora, tratta, pax, mezzo, autista, volo, tariffa — ma in 
 senza armare niente. Dalla scheda si può **togliere il mezzo tenendo l'autista**, togliere
 **l'autista tenendo il mezzo**, o tutti e due: sono gesti diversi, e capitano tutti.
 
+**Lo zoom** si comanda in quattro modi e resta sempre **ancorato al punto che stai
+guardando** — il minuto sotto il dito (o sotto il puntatore, o al centro) non si sposta:
+i tre bottoni `−` `adatta` `+`, le **due dita** sul telefono, il **pinch del trackpad** sul
+Mac (che arriva come rotella con `ctrl`: se non lo prendessimo noi zoomerebbe tutta la
+pagina) e i tasti `+` `−` `0`, che non rubano niente mentre scrivi in un campo. Durante il
+gesto si ridisegnano solo le larghezze (`plRidisegnaScala`), il disegno completo si fa
+quando ti fermi. Il livello di zoom è ricordato in `localStorage` (`te_plz`).
+
 Si assegna in tre modi: trascinando il blocco, toccandolo (si «arma» e su ogni mezzo compare
 una piazzola) o dalla scheda. Per l'**autista** c'è in più il **pennello**: nella fila in alto
 si tocca un nome e resta «in mano», poi ogni servizio che si tocca prende quel nome — uno
@@ -439,7 +447,7 @@ ora a destra) e **riscrittura del consiglio autista**, che proponeva chi non sta
 Poi il **motore delle catene** (`plCatena`, finestra dei voli, ore autista) e la sua resa
 **dentro la Plancia**: le piazzole dicono a che ora il mezzo è sul pick-up e con che margine,
 l'avviso a valle compare prima di assegnare, e sulla riga di provenienza si vede cosa si
-libera. **317 controlli automatici, tutti verdi.**
+libera. **327 controlli automatici, tutti verdi.**
 
 Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) sono state
 **riunite in un file solo** il 18/08. Sezioni dei test end-to-end: **8** Assegna desktop ·
@@ -447,7 +455,8 @@ Le due copie che erano nate in parallelo (una con la Plancia, una con Assegna) s
 **9ter** Plancia a due giorni, vassoio e anteprima · **9quater** togliere mezzo e autista ·
 **9quinquies** il trascinamento non resta appeso · **9sexies** autista dal mezzo e barra
 del salvataggio · **9septies** il pennello autista · **9octies** i cancellati non occupano niente ·
-**9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo.
+**9nonies** il vassoio sul telefono · **9decies** fine · viaggio · arrivo ·
+**9undecies** lo zoom da Mac, telefono e tastiera.
 
 Da fare fuori dal codice:
 

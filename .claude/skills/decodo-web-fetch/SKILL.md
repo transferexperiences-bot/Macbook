@@ -29,6 +29,12 @@ node .claude/skills/decodo-web-fetch/scripts/decodo_fetch.mjs "https://www.npmjs
 
 Reads `DECODO_AUTH_TOKEN` from the process environment, `DECODO_ENV_FILE`, or a `.env` file in the current or parent directories. Never print, paste, or commit the token.
 
+Where the token lives (Transfer Experience): Google Drive, cartella `_Credenziali`,
+file `decodo-api-key.txt` (fileId `1ZVLLGFt9qcL6QPa_YM_42OLatArmp21P`). Scaricalo da li'
+e mettilo in un file fuori dal repo, poi lancia lo script con
+`DECODO_ENV_FILE=/percorso/decodo.env`. In alternativa impostalo come variabile
+d'ambiente dell'environment cloud. Il token non va mai scritto dentro il repo.
+
 ## Output
 
 Each run writes a timestamped folder containing:

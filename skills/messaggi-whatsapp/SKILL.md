@@ -20,10 +20,12 @@ Il check gira **a cinque agenti in parallelo** (`giro-a-due-agenti`): lo **Scrit
 
 WhatsApp si legge dai **ponti n8n sul VPS**, non dal browser: da qualunque sessione - chat, Cowork, task orario. I vocali si trascrivono da soli, i PDF e le immagini si scaricano e si leggono da soli, e le risposte partono dal ponte.
 
-> I casi veri da cui nascono queste regole - Curry, Tivis/Serena, Giuseppe Mancini, Gianfranco
-> Mancini, Meeks, Terramossa, Ambrogio - stanno in **`storia.md`**, accanto a questa skill.
-> Si aprono quando serve capire *perche'* una regola esiste o quando una regola sembra sbagliata.
-> Per lavorare basta questa pagina.
+> **Per lavorare basta questa pagina.** Ogni regola porta il nome del caso che l'ha generata
+> (Curry, Tivis/Serena, Giuseppe Mancini, Gianfranco Mancini, Meeks, Terramossa, Ambrogio):
+> tanto basta per riconoscerla e non discuterla. Il racconto per esteso di ciascuno **non sta
+> qui apposta** - sta in `skills/messaggi-whatsapp/storia.md` del repo
+> `transferexperiences-bot/Macbook`, e si apre solo quando serve capire *perche'* una regola
+> esiste o quando una regola sembra sbagliata.
 
 ---
 
@@ -188,7 +190,7 @@ Quando un servizio viene **girato a un sub-appaltatore** (World Transfer, Rent A
 
 ## 5. ALLEGATI: zero allegati muti
 
-**Nessun allegato resta chiuso. Mai.** Nemmeno quando sembra il doppione di cose gia' note, nemmeno quando il messaggio che lo accompagna dice "te l'avevo mandato", nemmeno se il mittente manda foto in continuazione. **Un allegato non aperto non e' uno scarto motivato: e' un buco.** (Caso Curry, `storia.md`: un cambio di orario dentro un PDT mai aperto, clienti atterrati due ore prima senza nessuno ad aspettarli.)
+**Nessun allegato resta chiuso. Mai.** Nemmeno quando sembra il doppione di cose gia' note, nemmeno quando il messaggio che lo accompagna dice "te l'avevo mandato", nemmeno se il mittente manda foto in continuazione. **Un allegato non aperto non e' uno scarto motivato: e' un buco.** (Caso Curry, `storia.md`: un cambio di orario dentro un PDF mai aperto, clienti atterrati due ore prima senza nessuno ad aspettarli.)
 
 ### Il protocollo, in quest'ordine
 1. **Inventario.** Di ogni chat della finestra si elencano TUTTI gli allegati: `documentMessage`, `imageMessage`, `audioMessage` da `wa-msg`, piu' le righe della data table che iniziano con `[documento ricevuto` / `[immagine ricevuta` / `[vocale ricevuto`. **Trovati e letti devono coincidere**, e si scrivono nel verbale: *"allegati: 4 trovati, 4 letti"*.
@@ -409,7 +411,7 @@ Giro orario automatico e ogni sessione senza Agostino. Gira **a cinque agenti** 
 
 ## 10. La skill si aggiorna da sola, sempre
 
-Quando un giro insegna qualcosa, la skill si aggiorna nello stesso turno, con la data. **Si sostituisce, non si accumula.** La regola nuova va qui; il caso che l'ha generata va in `storia.md`. Ogni buco che il Supervisore trova **piu' di una volta** e' una regola che manca.
+Quando un giro insegna qualcosa, la skill si aggiorna nello stesso turno, con la data. **Si sostituisce, non si accumula.** La regola nuova va qui, col nome del caso; il racconto del caso va in `storia.md` nel repo. Ogni buco che il Supervisore trova **piu' di una volta** e' una regola che manca.
 
 ---
 

@@ -113,6 +113,15 @@ dell'altro.
 → Regola: **la riga si rilegge un attimo prima di scriverla**, si cambia **solo il campo che
 serve**, la `Note` si integra in coda a quella appena riletta (`SKILL.md` 6).
 
+## 15/09/2026, sera — il Contesto come agente a se' bloccava il giro
+L'agente Contesto, nato la mattina, girava **prima di tutti gli altri** e teneva fermo il giro
+per 10-15 minuti: nessuno poteva partire finche' non aveva riscritto ogni scheda.
+→ Regola: il contesto non e' piu' un agente, e' il **passo 0 di ogni Scrittore** - per ogni
+contatto prima si aggiorna la scheda, poi si agisce. Gli agenti passano da sei a **cinque** e
+partono **tutti in parallelo**: il giro va da ~45 minuti a ~20 (`giro-a-due-agenti` v3).
+La regola di merito non cambia: **nessuna azione su un contatto senza aver letto e aggiornato
+la sua scheda**. Cambia solo chi la esegue e quando.
+
 ## 15/09/2026 — prima n8n, Make solo come fallback
 I webhook n8n chiamati in diretta con `curl` sono molto piu' veloci e leggeri del tool Make.
 → Regola: Make **solo** quando n8n non e' disponibile, e sempre dichiarato nel verbale. Un ponte

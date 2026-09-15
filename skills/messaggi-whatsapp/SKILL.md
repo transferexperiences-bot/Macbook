@@ -16,7 +16,7 @@ Le quattro regole che governano tutte le altre:
 3. **Prima di ogni risposta e di ogni scrittura si legge la scheda del contatto** (`ctx-read`, `contesto-contatti`): **non si chiede mai un dato gia' dato** (sezione 8).
 4. **Ogni informazione estratta deve avere un fine** - una scrittura, un messaggio, una voce del registro o uno scarto motivato: mai solo un riassunto (sezione 4).
 
-Il check gira **a piu' agenti** (`giro-a-due-agenti`): il **Contesto** riscrive per primo le schede, gli Scrittori fanno quello che c'e' scritto qui **partendo dalle schede**, l'agente **Allegati** apre tutto, l'agente **Orari** riverifica i servizi imminenti, il **Supervisore** verifica sui dati veri. Il recap si scrive solo dopo il verde.
+Il check gira **a cinque agenti in parallelo** (`giro-a-due-agenti`): lo **Scrittore WA** e lo **Scrittore Mail** - che per ogni contatto aggiornano la scheda come **passo 0** e poi agiscono - l'agente **Allegati** che apre tutto, l'agente **Orari** che riverifica i servizi imminenti, e il **Supervisore** che verifica sui dati veri. Il recap si scrive solo dopo il verde.
 
 WhatsApp si legge dai **ponti n8n sul VPS**, non dal browser: da qualunque sessione - chat, Cowork, task orario. I vocali si trascrivono da soli, i PDF e le immagini si scaricano e si leggono da soli, e le risposte partono dal ponte.
 
@@ -34,7 +34,7 @@ WhatsApp si legge dai **ponti n8n sul VPS**, non dal browser: da qualunque sessi
 Le due cose lavorano **in coppia**: il workflow e' l'orecchio, la skill e' la testa. L'ordine del check:
 
 1. **La tabella** (`Log WhatsApp`, via `api-fogli-google`: `read(SID, "'Log WhatsApp'!A:M")`). Si tengono richieste, conferme, modifiche, pagamenti e operativo autista; si scartano le `IGNORA`. Il `Match gestionale` dice se il servizio e' gia' registrato (evita doppioni); la `Bozza risposta` e' un punto di partenza, **mai spedita al buio**.
-2. **La scheda del contatto** (`ctx-read`, `contesto-contatti`): cosa ha gia' detto, quali righe ha, cosa manca, cosa gli abbiamo gia' chiesto. Nel giro a piu' agenti l'ha appena riscritta il Contesto; fuori dal giro la si legge e la si aggiorna da soli.
+2. **La scheda del contatto** (`ctx-read`, `contesto-contatti`): cosa ha gia' detto, quali righe ha, cosa manca, cosa gli abbiamo gia' chiesto. La scheda si aggiorna **come passo 0, prima di agire su quel contatto** - dentro il giro la fa lo Scrittore del canale, fuori dal giro la si fa da soli.
 3. **I messaggi come double-check** (`wa-chats` + `wa-msg`): il classificatore puo' sbagliare categoria, perdere un vocale o non vedere l'ultimo messaggio. **La chat resta la fonte**: la tabella orienta, non sostituisce. Si legge **tutto lo storico delle ultime 24 ore** di ogni conversazione, non l'ultimo messaggio.
 4. **E anche le mail** (`mail-transfer-experience`).
 
@@ -384,7 +384,7 @@ Se manca un pezzo **che non si puo' ricavare** si chiede, **una domanda sola**, 
 
 ## 9. Quando gira da solo
 
-Giro orario automatico e ogni sessione senza Agostino. Gira **a piu' agenti** (`giro-a-due-agenti`): **prima il Contesto che riscrive le schede**, poi gli Scrittori, Allegati e Orari, poi il Supervisore.
+Giro orario automatico e ogni sessione senza Agostino. Gira **a cinque agenti** (`giro-a-due-agenti`): l'orchestratore legge i feed, poi Scrittore WA, Scrittore Mail, Allegati e Orari partono **tutti in parallelo** (ognuno aggiorna da se' la scheda dei suoi contatti, passo 0), e il Supervisore chiude.
 
 - **Non fare domande ad Agostino**: se una cosa e' ambigua, **scrivila come ambigua nel recap** (agli autisti la domanda per identificare un servizio si fa).
 - **Registra da solo** le conferme che sono nostre **e i programmi completi** (sezione 4); porta a termine ogni informazione autisti (4-bis); **apri e confronta ogni allegato** (5); **riverifica gli orari dei servizi delle prossime 24 ore** (5-bis); **aggiorna la scheda di ogni contatto toccato**.

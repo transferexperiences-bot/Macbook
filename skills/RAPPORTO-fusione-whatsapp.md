@@ -4,10 +4,11 @@ Data: 15/09/2026. Leve 1 e 2 dell'analisi: **una sola skill invece di due gemell
 cronaca dei casi fuori dal corpo**.
 
 > ⚠️ **Queste skill non stanno in questo repo.** Sono plugin sincronizzati dall'account
-> (`manifest.json`, `source: plugin`) dentro una cartella del container, che sparisce con la
-> sessione. I file qui sotto sono **pronti da rimettere nel plugin**: finche' non li carichi,
-> in produzione gira ancora la versione vecchia. E' la stessa trappola del `publish_workflow`
-> su n8n.
+> dentro una cartella del container, che sparisce con la sessione. **Non c'e' modo di
+> scriverle direttamente sull'account da qui**: non esiste un'API. Sono quindi impacchettate
+> in file `.skill` **installabili con un clic** dal tasto *Save skill* sulla card del file.
+> Finche' non li installi, in produzione gira la versione vecchia: stessa trappola del
+> `publish_workflow` su n8n.
 
 ## I file
 
@@ -72,18 +73,37 @@ Citano `whatsapp-recap`, che non esistera' piu':
 
 `niente-in-sospeso` riga 44 cita solo `messaggi-whatsapp`: va bene com'e'.
 
-## ⚠️ Una cosa prima di caricare: l'apikey
+## L'apikey: due copie diverse, apposta
 
-Nella riga della sezione 1 che spiega come interrogare Evolution dal Mac ho **sostituito
-l'apikey con un segnaposto**: la regola di casa dice di non committare mai un token in chiaro,
-e questo file sta su GitHub. Prima di caricare la skill, **rimetti la chiave** (la trovi nella
-versione attuale di `messaggi-whatsapp`, stessa riga).
+Nella riga della sezione 1 che interroga Evolution dal Mac:
+- **la copia in questo repo** ha un **segnaposto** — la regola di casa dice di non committare
+  mai un token in chiaro;
+- **il pacchetto `.skill`** ha la **chiave vera**, cosi' si installa e funziona senza toccare
+  niente.
 
-## L'ordine giusto per rimetterle
+## L'ordine giusto per installarle
 
-1. Rimetti l'apikey, poi carica `SKILL.md` e `storia.md` su `messaggi-whatsapp`.
-2. Correggi le sei righe qui sopra.
-3. **Solo alla fine** elimina `whatsapp-recap` — cosi' non resta mai un rimando nel vuoto.
+Tre `.skill` gia' pronti — le sei righe qui sopra sono **gia' corrette dentro i pacchetti**:
+
+1. `messaggi-whatsapp.skill` — la fusione, con `storia.md` dentro.
+2. `contesto-contatti.skill` — due rimandi corretti.
+3. `giro-a-due-agenti.skill` — quattro rimandi corretti, **partendo dalla v3 pubblicata alle
+   15:30**, non dalla versione letta a inizio sessione.
+4. **Solo alla fine, a mano:** elimina `whatsapp-recap`. E' l'unico passo non impacchettabile —
+   cancellare una skill non si fa con un file. Per ultimo, cosi' non resta mai un rimando nel
+   vuoto.
+
+## Una cosa e' cambiata mentre lavoravo
+
+Alle 15:30 e' stata pubblicata la **v3 del giro**: il Contesto non e' piu' un agente a se'
+(bloccava tutto per 10-15 minuti), e' il **passo 0 di ogni Scrittore**; cinque agenti in
+parallelo; da ~45 minuti a ~20. La fusione, scritta mezz'ora prima, diceva ancora «sei agenti,
+il Contesto per primo».
+
+**Riallineata**: tre punti in `SKILL.md` (intestazione, passo 2 della sezione 0, sezione 9) e
+l'evoluzione aggiunta a `storia.md`. E' esattamente il caso che la fusione doveva prevenire —
+due testi che dicono cose diverse sulla stessa cosa — quindi valeva rileggere prima di
+impacchettare, come vuole la regola «si rilegge la riga un attimo prima di scriverla».
 
 ## Cosa resta sul tavolo (leve 3 e 4)
 

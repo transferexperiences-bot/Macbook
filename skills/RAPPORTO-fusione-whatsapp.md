@@ -111,3 +111,50 @@ impacchettare, come vuole la regola «si rilegge la riga un attimo prima di scri
   fonti e potrebbero essere un agente solo. Cambia come gira il check: va decisa, non fatta.
 - **Leva 4** — `docx`, `pptx`, `xlsx`, `learn`: 3.900 caratteri di description a ogni turno per
   skill che non useresti mai da qui.
+
+---
+
+# Come si installa davvero (verificato il 15/09/2026)
+
+Tre strade provate, una sola funziona.
+
+| strada | esito |
+|---|---|
+| scrivere nella cartella `~/.claude/skills/synced/` | **no** — e' sola lettura, lo dice `aggiorna-skill` sez. 4 |
+| tasto *Save skill* sulla card `.skill` | **no** — salva il file in locale, non installa |
+| `claude plugin` da CLI | **no** — gestisce i plugin locali, non quelli dell'account |
+| **proposta skill da una sessione che ha lo strumento** | **si'** — e' la via di `aggiorna-skill` sez. 4 |
+
+Lo strumento delle proposte **non c'e' in una sessione Claude Code remota** (qui ci sono solo
+tool di lettura: `ListSkills`, `SearchSkills`). C'e' nella app dove si lavora di solito — la
+stessa da cui e' stata pubblicata la v3 del giro.
+
+## Il testo da incollare in quella sessione
+
+> Aggiorna tre skill del mio account con delle proposte. Il contenuto nuovo sta su GitHub,
+> repo `transferexperiences-bot/Macbook`, branch `claude/dazzling-carson-bwt0ug`:
+>
+> 1. **`messaggi-whatsapp`** — sostituisci tutto il SKILL.md con
+>    `skills/messaggi-whatsapp/SKILL.md`, e aggiungi `skills/messaggi-whatsapp/storia.md`
+>    come secondo file della skill.
+>    **Attenzione:** nel file su GitHub, nella sezione 1, l'apikey di Evolution e' sostituita
+>    da un segnaposto `<APIKEY-EVOLUTION ...>`. Prima di propormi la skill rimetti la chiave
+>    vera, che sta nella stessa riga della versione attualmente installata.
+> 2. **`contesto-contatti`** — due rimandi da correggere: `whatsapp-recap` sezione 3 diventa
+>    `messaggi-whatsapp` sezione 6; `whatsapp-recap` sezione 0 diventa `messaggi-whatsapp`
+>    sezione 0-bis. Tutto il resto invariato.
+> 3. **`giro-a-due-agenti`** — quattro rimandi a `whatsapp-recap` da correggere: togline due
+>    dagli elenchi di skill collegate, e cambia «tabella informazione -> azione in
+>    `whatsapp-recap` sezione 0-ter» in «`messaggi-whatsapp` sezione 4» e «forma in
+>    `whatsapp-recap` sezione 4» in «`messaggi-whatsapp` sezione 7».
+>    **Parti dal testo installato adesso (la v3 del 15/09 sera), non da una copia vecchia.**
+>
+> Il motivo: `messaggi-whatsapp` e `whatsapp-recap` erano due skill gemelle che si attivavano
+> sugli stessi trigger. Ora sono una sola. Dopo che ho approvato le tre proposte, ricordami di
+> **eliminare `whatsapp-recap`** — per ultima, cosi' non resta un rimando nel vuoto.
+
+## L'ultimo passo, a mano
+
+Eliminare `whatsapp-recap` non si fa con una proposta: si fa dall'elenco delle skill. **Per
+ultimo.** Poi, per verificare: sessione nuova, `check wa` — deve caricarsi una sola skill
+WhatsApp, e il giro deve partire a cinque agenti.

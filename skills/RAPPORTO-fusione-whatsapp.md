@@ -158,3 +158,34 @@ stessa da cui e' stata pubblicata la v3 del giro.
 Eliminare `whatsapp-recap` non si fa con una proposta: si fa dall'elenco delle skill. **Per
 ultimo.** Poi, per verificare: sessione nuova, `check wa` — deve caricarsi una sola skill
 WhatsApp, e il giro deve partire a cinque agenti.
+
+---
+
+# Esito — 15/09/2026, 17:00 (verificato)
+
+| passo | stato |
+|---|---|
+| `messaggi-whatsapp` sostituita con la fusa | **fatto** (16:55) — sostituita in posto, nessun doppione, apikey vera verificata col diff |
+| `whatsapp-recap` eliminata | **fatto** — confermato da Agostino |
+| `storia.md` accanto alla skill | **non possibile**: la card salva solo `SKILL.md`. La storia resta nel repo, e i rimandi nella skill sono stati corretti per puntare qui |
+
+**Il percorso caldo del check WhatsApp passa da ~17.000 a ~12.800 token per agente (-24%)**, e
+da due skill che potevano contraddirsi a una sola.
+
+## Le due code rimaste (pulizia, non urgenze)
+
+1. **Ri-salvare `SKILL.md`** con i rimandi a `storia.md` corretti (commit `d1ad0bb`). La
+   versione installata alle 16:55 e' quella precedente, che rimanda a un file inesistente.
+2. **`contesto-contatti` e `giro-a-due-agenti`**: sei rimandi a `whatsapp-recap`, ora morti.
+   I testi corretti sono in questo branch.
+
+Nessuna delle due rompe niente: il contenuto e' tutto dentro la skill fusa.
+
+## Cosa si e' imparato sul come si aggiornano le skill
+
+- La cartella `~/.claude/skills/synced/` e' **sola lettura** e la sua copia **resta indietro**:
+  a distanza di minuti da una modifica mostrava ancora lo stato vecchio. Non e' una fonte per
+  dire "e' fatto" - si verifica dall'elenco skill nell'app.
+- La card di salvataggio accetta **un solo file**: una skill con piu' file non si installa da
+  li'. Se la struttura a piu' file serve, va messa a mano nella cartella.
+- Il tasto *Save skill* in una sessione Claude Code remota **scarica in locale**, non installa.

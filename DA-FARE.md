@@ -81,3 +81,21 @@ se un bot non riceve niente da troppo tempo.
 sta nel nodo `Auth Check` del workflow `0DVJEFcjGb8eTUmj`, **non** va committato).
 Operazioni utili: `sheets_read` (`sheet_id` + `sheet_name`), `sheets_upsert` (match sull'**Id**),
 `sheets_append`, `sheets_batch_append`.
+
+---
+
+## Code aperte sulle skill (15/09/2026, sera)
+
+Il grosso e' fatto: `messaggi-whatsapp` e `whatsapp-recap` sono una skill sola, `whatsapp-recap`
+eliminata, percorso caldo -24%. Dettagli e prove in `skills/RAPPORTO-fusione-whatsapp.md`.
+
+Restano due pulizie, nessuna urgente, nessuna che rompe qualcosa:
+
+1. **Ri-salvare `messaggi-whatsapp`** con `skills/messaggi-whatsapp/SKILL.md` (commit `d1ad0bb`):
+   la versione installata rimanda a `storia.md` "accanto alla skill", ma quel file non e'
+   installabile - la card salva un solo file. Nella versione corretta il rimando punta al repo.
+2. **Correggere sei rimandi morti a `whatsapp-recap`** in `contesto-contatti` (2) e
+   `giro-a-due-agenti` (4). Testi gia' pronti in `skills/` di questo branch.
+
+**Leva ancora da valutare:** le description di `docx`, `pptx`, `xlsx` e `learn` costano ~3.900
+caratteri a ogni turno. Se non si usano da qui, toglierle.

@@ -9,8 +9,10 @@ def fascia(h):
     return ROSSO if h > 15 else ARANCIO if h > 10 else VERDE
 def addr(): a = gx("GET", "tables('tblOreGiorno')/range?$select=address")["address"].split("!")[1]; n = re.findall(r"\d+", a); return int(n[0]), int(n[1])
 if "--colori-solo" not in sys.argv:
-    r1, _ = addr(); assert r1 == 3, f"tabella non in riga 3 ({r1}): layout gia' applicato?"
-    gx("POST", f"worksheets('{SH}')/range(address='3:{2+N}')/insert", {"shift": "Down"})
+    r1, _ = addr()
+    if r1 == 3:   # il ponte puo' rispondere errore anche quando l'inserimento e' riuscito: si ricontrolla
+        try: gx("POST", f"worksheets('{SH}')/range(address='3:{2+N}')/insert", {"shift": "Down"})
+        except RuntimeError: pass
     r1, _ = addr(); assert r1 == 3 + N
     C = 'IF($B$4="",">0",$B$4)'; K = f'tblOreGiorno[Autista],A7#,tblOreGiorno[Mese],{C}'
     rows = [["RIEPILOGO PER AUTISTA", "", "", "", "", "", "", "", "", "", "", ""],

@@ -81,3 +81,16 @@ se un bot non riceve niente da troppo tempo.
 sta nel nodo `Auth Check` del workflow `0DVJEFcjGb8eTUmj`, **non** va committato).
 Operazioni utili: `sheets_read` (`sheet_id` + `sheet_name`), `sheets_upsert` (match sull'**Id**),
 `sheets_append`, `sheets_batch_append`.
+
+## 8. File Excel "Transfer 2026 - Gestionale" (OneDrive) — 18/10/2026
+Script pronti in `excel/` (ponte `gx-graph`), **non ancora lanciati**: la scrittura sul file è stata
+fermata dal controllo permessi della sessione, serve il via di Agostino.
+- `partite.py`: le 7 Partite leggono da sole le fatture emesse (tblFatture). Prova: Your Driver
+  saldo 1.315,50 ma fattura n.148 del 14/10 da 1.305,50 non letta dalla partita.
+- `ore_giorno.py`: riepilogo per autista con medie + colori (≤10 verde, 10-15 arancio, >15 rosso).
+- `calessino.py`: incasso totale, media al giorno, % paga autista, quanto resta a noi.
+- `stili.py`: tutte le tabelle in TableStyleMedium2 come tblCorseCalessino.
+**Guasto trovato (soldi, zona rossa):** `ore_confronto.py` riga 259 crea le righe di Ore giorno con
+`Applicata = Paga da`, quindi la scelta non passa mai in Giornate: 265 giorni su ~390 hanno
+«Ore scelte» ≠ «In Giornate» (es. Fanelli 01/09: Fogli 12,85 h, pagato su 7,92 h).
+**Pastoressa:** la partita dice «fattura 1.380 mai emessa», il registro ha la n.18 del 13/02 da 1.380,01 aperta.

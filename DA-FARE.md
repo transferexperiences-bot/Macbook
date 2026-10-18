@@ -93,5 +93,5 @@ Script in `excel/` (ponte `gx-graph`). Backup di tutti i fogli prima di scrivere
 - **Guasto ore (soldi):** 210 giorni set-ott con «Applicata» = «Paga da» ma Giornate diverse → «Paga da» e
   «Applicata» svuotate + nota «⚠ da scegliere». Giornate NON toccata. Elenco con € mandato ad Agostino.
   Task «Ore autisti» (trig_017tvB2XLT1ZZw1EAhsS6jYg) aggiornata con `excel/ore_confronto.py` corretto.
-- **Pastoressa:** la partita dice «fattura 1.380 mai emessa», il registro ha la n.18 del 13/02 da 1.380,01 aperta.
+- Pastoressa n.18 (12/02, 1.380,01): **mai emessa** (Agostino 18/10). Totale 0 + nota in tblFatture, nota in Emesse F334.
 - Corse calessino NON si cancella: è la fonte di Calessino e della paga tuk-tuk in Giornate.

@@ -30,7 +30,13 @@ servizio con ▶️ Inizio / ⏹️ Fine. Regole generali in `CLAUDE.md`.
   "Come hai incassato" (`PM|<Id>|…` in Promemoria Autisti 4, bot Allert) **si toglie**, ma solo
   dopo la prova e con ok esplicito al momento (cambia un salvataggio attivo: zona rossa).
 
+- **Copione**: base = `copione_v1.md` (incollato 21/10). Correzioni decise il 21/10:
+  - canale = **chat privata** autista ↔ bot (non il gruppo dell'autista);
+  - il bot nuovo fa **solo il foglio di viaggio** (+ nuovo servizio); **chiusura giornata, incassi,
+    spese e rifornimenti restano all'agente di Rendicontazione**, che si aggiorna (copione A e B
+    vanno lì, su copia di prova); la parte C (assistente 24h) per ora non si fa;
+  - ore effettive = somma Inizio→Fine dei fogli di viaggio; Moox solo per il confronto.
+
 ## Ancora aperto
-- Copione Assistente Autisti v3 (`bot_autisti/copione_v3.md`) da incollare.
 - Bot nuovo (@BotFather + credenziale n8n) e gruppo di prova: li crea Agostino.
 - Promemoria (default se non detto): Inizio +10', Fine = durata stimata +30', max 2 solleciti poi avviso ad Agostino.

@@ -26,8 +26,11 @@ servizio con ▶️ Inizio / ⏹️ Fine. Regole generali in `CLAUDE.md`.
 - **Calcolo ore** (colonna nuova in `tblAutisti`, Excel `Transfer 2026 - Gestionale.xlsx`):
   tutti **Effettive**, tranne **Claudio Moccia = Continuative**. Vuota per tuk-tuk e sub-appalto.
 
+- **Pagamento** chiesto solo alla Fine del foglio di viaggio (💵 / 💳 / Fattura / Già pagato).
+  "Come hai incassato" (`PM|<Id>|…` in Promemoria Autisti 4, bot Allert) **si toglie**, ma solo
+  dopo la prova e con ok esplicito al momento (cambia un salvataggio attivo: zona rossa).
+
 ## Ancora aperto
-- Pagamento solo alla Fine del foglio di viaggio e via "Come hai incassato" dal bot Allert dopo la prova?
 - Copione Assistente Autisti v3 (`bot_autisti/copione_v3.md`) da incollare.
 - Bot nuovo (@BotFather + credenziale n8n) e gruppo di prova: li crea Agostino.
 - Promemoria (default se non detto): Inizio +10', Fine = durata stimata +30', max 2 solleciti poi avviso ad Agostino.

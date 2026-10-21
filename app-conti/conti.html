@@ -186,6 +186,12 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
 .selbar .btn.ghost { background: none; color: var(--bg); }
 .tgl { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 textarea.recap { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px; font-family: var(--f-num); font-size: 12.5px; line-height: 1.5; resize: vertical; }
+.graf { padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 4px; }
+.ghead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 2px; font-size: 14px; }
+.ghead span { white-space: nowrap; font-size: 12.5px; }
+.graf .legend { padding: 0 2px 6px; }
+.gbar:hover path { filter: brightness(1.12); }
+.gtab summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 6px 2px 8px; }
 table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 table.tab th { text-align: right; font-family: var(--f-ui); font-size: 11.5px; color: var(--muted); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 table.tab td { text-align: right; padding: 7px 10px; border-top: 1px solid var(--line); white-space: nowrap; }
@@ -264,6 +270,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   try { const s = localStorage.getItem("conti.serv"); if (s) st.serv = JSON.parse(s); } catch (e) {}
 
   // ---------- utilità ----------
+  const FRESCO_MS = 2 * 3600 * 1000; // dati più vecchi di 2 ore: si rileggono da soli
+  const eta = (iso) => (iso ? Date.now() - new Date(iso).getTime() : Infinity);
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const n = (x) => (typeof x === "number" && isFinite(x) ? x : Number(x) || 0);
@@ -297,8 +305,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     }, { cache: false });
     const execId = avvio && avvio.payload && avvio.payload.executionId;
     if (!execId) throw new Error("n8n non ha avviato il ponte.");
-    for (let i = 0; i < 45; i++) {
-      await sleep(i < 2 ? 2500 : 3000);
+    for (let i = 0; i < 70; i++) {
+      await sleep(1500);
       const r = await mcp.callTool(PONTE.server, "get_workflow_execution", {
         workflowId: PONTE.workflowId, executionId: String(execId), includeData: true, nodeNames: ["Risultato"],
       }, { cache: false });
@@ -509,7 +517,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
         coda = daInviare().filter((b) => b.stato !== "bloccato");
       }
       const ok = st.bozze.filter((b) => b.stato === "scritto").length;
-      if (ok) leggi();
+      if (ok) { leggi(); if (st.cli) caricaCliente(true); }
     } finally {
       st.salvando = false; render();
     }
@@ -877,13 +885,40 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     st.vista = "cliente"; chiudiSheet(); render(); window.scrollTo(0, 0);
     caricaCliente();
   }
-  async function caricaCliente() {
+  // Le schede cliente restano sul telefono, un mese alla volta: si rilegge solo il mese che manca o che ha più di 2 ore
+  const memCli = {};
+  function cacheGet(k) {
+    if (memCli[k]) return memCli[k];
+    try { const v = localStorage.getItem(k); if (v) return (memCli[k] = JSON.parse(v)); } catch (e) {}
+    return null;
+  }
+  function cacheSet(k, v) {
+    memCli[k] = v;
+    try { localStorage.setItem(k, JSON.stringify(v)); }
+    catch (e) {
+      // memoria del telefono piena: si liberano le altre schede cliente salvate
+      try { Object.keys(localStorage).filter((x) => x.startsWith("conti.cli") && x !== k).forEach((x) => localStorage.removeItem(x)); localStorage.setItem(k, JSON.stringify(v)); } catch (e2) {}
+    }
+  }
+  function componiCliente(c) {
+    const parti = c.mesi.map((m) => cacheGet(`conti.cli.${c.nome}.${m}`));
+    if (parti.some((x) => !x)) return null;
+    const f = cacheGet(`conti.clif.${c.nome}`);
+    return { servizi: [].concat(...parti.map((x) => x.servizi)), fatture: f ? f.fatture : [], letto: parti.map((x) => x.letto).sort()[0] };
+  }
+  async function caricaCliente(forza) {
     const c = st.cli; if (!c || c.caricando) return;
+    const daCache = componiCliente(c);
+    if (daCache) { c.dati = daCache; render(); }
+    const mancanti = forza ? c.mesi.slice() : c.mesi.filter((m) => { const x = cacheGet(`conti.cli.${c.nome}.${m}`); return !x || eta(x.letto) > FRESCO_MS; });
+    if (!mancanti.length) return;
     c.caricando = true; c.errore = null; render();
     try {
-      const j = await chiamaPonte({ azione: "cliente", file: FILE, cliente: c.nome, mesi: c.mesi });
+      const j = await chiamaPonte({ azione: "cliente", file: FILE, cliente: c.nome, mesi: mancanti });
       if (!j.ok) throw new Error(j.errore || "Lettura non riuscita.");
-      if (st.cli === c) { c.dati = j; c.sel = []; }
+      for (const m of mancanti) cacheSet(`conti.cli.${c.nome}.${m}`, { letto: j.letto, servizi: j.servizi.filter((x) => Number(x.mese) === m) });
+      cacheSet(`conti.clif.${c.nome}`, { letto: j.letto, fatture: j.fatture });
+      if (st.cli === c) { c.dati = componiCliente(c); c.sel = []; }
     } catch (e) { c.errore = testoErrore(e); }
     finally { c.caricando = false; render(); }
   }
@@ -894,6 +929,41 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       const v = s.k[g];
       return Array.isArray(v) ? v.some((x) => vals.includes(x)) : vals.includes(v);
     })).sort((a, b) => n(a.data) - n(b.data) || n(a.ora) - n(b.ora));
+  }
+  // Andamento del cliente mese per mese: due grafici con gli stessi mesi (euro e numero di servizi non condividono un asse)
+  function graficiCliente(nome, sel) {
+    const mm = (st.serv && st.serv.mesi && st.serv.mesi[nome]) || null;
+    if (!mm) return st.caricandoServ ? `<div class="skel" style="height:120px"></div>` : "";
+    const dati = MESI.map((x, i) => { const o = mm[i + 1] || {}; return { m: i + 1, lab: x, ven: n(o.lavoro), dsv: n(o.daSvolgere), fat: n(o.fatturato), cor: n(o.corse) }; });
+    const ultimo = dati.reduce((a, d) => (d.ven || d.dsv || d.cor ? d.m : a), 0);
+    if (!ultimo) return "";
+    const D = dati.slice(0, Math.max(ultimo, 1));
+    const W = 340, H = 118, top = 16, base = H - 18, bw = W / D.length, barW = Math.max(6, Math.min(22, bw - 6));
+    const barre = (val, extra, fmtv, titolo) => {
+      const max = Math.max(1, ...D.map((d) => val(d) + (extra ? extra(d) : 0)));
+      const k = (base - top) / max;
+      const iMax = D.reduce((a, d, i) => (val(d) + (extra ? extra(d) : 0) > val(D[a]) + (extra ? extra(D[a]) : 0) ? i : a), 0);
+      return D.map((d, i) => {
+        const x = i * bw + (bw - barW) / 2, h1 = val(d) * k, h2 = extra ? extra(d) * k : 0;
+        const on = sel.includes(d.m);
+        const y1 = base - h1, y2 = y1 - h2 - (h2 > 0 && h1 > 0 ? 2 : 0);
+        const tip = titolo(d);
+        return `<g class="gbar"><title>${esc(tip)}</title><rect x="${i * bw}" y="${top - 6}" width="${bw}" height="${base - top + 22}" fill="transparent"/>`
+          + (h1 > 0 ? `<path d="M${x},${base} V${y1 + Math.min(4, h1)} q0,-4 4,-4 h${barW - 8} q4,0 4,4 V${base} Z" fill="var(--sea)" opacity="${sel.length && !on ? 0.45 : 1}"/>` : "")
+          + (h2 > 0 ? `<path d="M${x},${y1 - (h1 > 0 ? 2 : 0)} V${y2 + Math.min(4, h2)} q0,-4 4,-4 h${barW - 8} q4,0 4,4 V${y1 - (h1 > 0 ? 2 : 0)} Z" fill="var(--sea-soft)" stroke="var(--sea)" stroke-width="1" opacity="${sel.length && !on ? 0.45 : 1}"/>` : "")
+          + (i === iMax && (h1 + h2) > 0 ? `<text x="${x + barW / 2}" y="${Math.min(y1, y2) - 4}" text-anchor="middle" font-size="9.5" fill="var(--muted)" font-weight="600">${fmtv(val(d) + (extra ? extra(d) : 0))}</text>` : "")
+          + `<text x="${i * bw + bw / 2}" y="${H - 4}" text-anchor="middle" font-size="9.5" fill="${on ? "var(--ink)" : "var(--muted)"}" font-weight="${on ? 700 : 500}">${d.lab}</text></g>`;
+      }).join("") + `<line x1="0" x2="${W}" y1="${base + 0.5}" y2="${base + 0.5}" stroke="var(--line)"/>`;
+    };
+    const tot = D.reduce((a, d) => a + d.ven, 0), totC = D.reduce((a, d) => a + d.cor, 0);
+    return `<div class="card graf">
+      <div class="ghead"><b>Venduto per mese</b><span class="mut num">${fmt(tot)} da gennaio</span></div>
+      <svg viewBox="0 0 ${W} ${H}" class="bars" role="img" aria-label="Venduto per mese di ${esc(nome)}">${barre((d) => d.ven, (d) => d.dsv, (v) => eur0.format(v), (d) => `${MESI_LUNGHI[d.m - 1]}: svolti ${fmt(d.ven)}${d.dsv ? " · da svolgere " + fmt(d.dsv) : ""}${d.fat ? " · fatture del mese " + fmt(d.fat) : ""}`)}</svg>
+      <div class="legend"><span><i style="background:var(--sea)"></i>Svolti</span>${D.some((d) => d.dsv) ? `<span><i style="background:var(--sea-soft);outline:1px solid var(--sea)"></i>Da svolgere</span>` : ""}</div>
+      <div class="ghead"><b>Servizi svolti</b><span class="mut num">${eur0.format(totC)} da gennaio</span></div>
+      <svg viewBox="0 0 ${W} ${H}" class="bars" role="img" aria-label="Servizi svolti per mese di ${esc(nome)}">${barre((d) => d.cor, null, (v) => eur0.format(v), (d) => `${MESI_LUNGHI[d.m - 1]}: ${d.cor} servizi svolti`)}</svg>
+      <details class="gtab"><summary>Vedi in tabella</summary><div style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Servizi</th><th>Venduto</th><th>Da svolgere</th><th>Fatture del mese</th></tr></thead><tbody>${D.map((d) => `<tr><td>${d.lab}</td><td>${d.cor}</td><td>${eur0.format(d.ven)}</td><td>${d.dsv ? eur0.format(d.dsv) : "—"}</td><td>${d.fat ? eur0.format(d.fat) : "—"}</td></tr>`).join("")}</tbody></table></div></details>
+    </div>`;
   }
   function vistaCliente() {
     const c = st.cli;
@@ -926,7 +996,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     }
     const sel = c.sel.length;
     return `
-      <div class="cli-head"><button class="btn ghost sm" id="cli-indietro">← Clienti</button><div class="main"><h1 class="cli-nome">${esc(c.nome)}</h1>${sit ? `<span class="mut">Saldo <b class="num ${cls(sit.saldo)}">${fmtS(sit.saldo)}</b>${sit.stato ? " · " + esc(sit.stato) : ""}</span>` : ""}</div><button class="iconbtn" id="cli-ricarica" aria-label="Rileggi i servizi" aria-busy="${c.caricando}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
+      <div class="cli-head"><button class="btn ghost sm" id="cli-indietro">← Clienti</button><div class="main"><h1 class="cli-nome">${esc(c.nome)}</h1>${sit ? `<span class="mut">Saldo <b class="num ${cls(sit.saldo)}">${fmtS(sit.saldo)}</b>${sit.stato ? " · " + esc(sit.stato) : ""}</span>` : ""}<span class="mut" style="font-size:12px">${c.caricando ? "Rileggo dall'Excel…" : c.dati && c.dati.letto ? "Letto alle " + new Date(c.dati.letto).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) + " · ↻ per rileggere" : ""}</span></div><button class="iconbtn" id="cli-ricarica" aria-label="Rileggi i servizi" aria-busy="${c.caricando}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
+      ${graficiCliente(c.nome, c.mesi)}
       <div class="months" role="group" aria-label="Mesi">${mesiBtn}</div>
       ${c.errore && c.dati ? `<div class="banner err"><div>${esc(c.errore)}</div></div>` : ""}
       ${corpo}
@@ -1280,8 +1351,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     // scheda cliente
     const c = st.cli;
     if (t.id === "cli-indietro") { st.vista = null; render(); window.scrollTo(0, 0); return; }
-    if (t.id === "cli-ricarica" || t.id === "cli-leggi") { caricaCliente(); return; }
-    if (t.dataset.cm) { const m = Number(t.dataset.cm); const i = c.mesi.indexOf(m); if (i >= 0) { if (c.mesi.length > 1) c.mesi.splice(i, 1); } else c.mesi.push(m); c.mesi.sort((a, b) => a - b); c.dati = null; render(); caricaCliente(); return; }
+    if (t.id === "cli-ricarica" || t.id === "cli-leggi") { caricaCliente(true); return; }
+    if (t.dataset.cm) { const m = Number(t.dataset.cm); const i = c.mesi.indexOf(m); if (i >= 0) { if (c.mesi.length > 1) c.mesi.splice(i, 1); } else c.mesi.push(m); c.mesi.sort((a, b) => a - b); c.dati = componiCliente(c); render(); caricaCliente(); return; }
     if (t.dataset.cf) { const [g, v] = t.dataset.cf.split("|"); const arr = (c.f[g] = c.f[g] || []); const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); c.aperto = "filtri"; render(); return; }
     if (t.id === "cli-azzera") { ev.preventDefault(); c.f = {}; render(); return; }
     if (t.id === "cli-recap") { apriRecap(); return; }
@@ -1304,6 +1375,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
 
   render();
   avviaBozze();
-  leggi();
+  // si apre con gli ultimi dati salvati; si rilegge solo se sono vecchi
+  if (!st.snap || eta(st.letto) > FRESCO_MS) leggi();
+  else if (!st.serv || eta(st.serv.letto) > FRESCO_MS) leggiServizi();
 })();
 </script>

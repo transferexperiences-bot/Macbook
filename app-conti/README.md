@@ -27,6 +27,7 @@ App (telefono) --connettore n8n: execute_workflow + get_workflow_execution--> AP
 | `incasso_fattura` | `Fatture` col. P `Incassato €` (+ importo) e nota in U |
 | `partita` | `Partite` riga di `tblPartite`: Prezzo (T), Stato (X), nota in coda (Z) |
 | `cliente` | `Situazione clienti` colonne gialle J-L |
+| `servizio` | `Servizi` solo colonne gialle `Prezzo ok` (AQ) e `Le tue note` (AR), riga riconosciuta dall'Id (AP) |
 | `subappalto` | foglio nuovo `Sub-appalti` (`tblSubappalti`, solo sulla copia): una riga per servizio o pezzo di tour, chiave Id servizio, aggiornata in posto |
 
 - Ogni bozza ha un id; il ponte lo scrive nella nota (`[app <id>]`) e **non scrive due volte** la stessa bozza.
@@ -38,6 +39,17 @@ App (telefono) --connettore n8n: execute_workflow + get_workflow_execution--> AP
   fatturato con quella competenza (`tblFatture` col. I, × Conta), incassato, residuo; elenco dei servizi «Dato a collega»; righe di `tblSubappalti`.
 
 ## Regole di Agostino (21/10)
+
+- **In fattura vanno solo i servizi svolti.** Da fatturare di un mese = servizi svolti di quel mese senza N. fattura
+  (riga per riga). Auraterrae ottobre: 5.032,04 (93 svolti; fuori 20 da svolgere per 2.512,30, la parte già nella n.116
+  per 673,40 e 2 corse pagate sul posto per 75).
+- **Scheda cliente** (`azione: "cliente"`, mesi scelti, ~12 s): tutti i servizi con filtri (stato, incasso, fattura,
+  tipo, chi l'ha fatto, da controllare), segni come i colori dell'Excel, totali che seguono i filtri, spunta multipla
+  (prezzo ok, nota, richiesta di fattura nel database dell'app, collezione `richieste`), partita del cliente.
+- **Recap al cliente** (skill `recap-mensile-cliente`): «riepilogo dei servizi prenotati di <mese>», righe per giorno,
+  cancellate come prenotate senza diciture (si possono togliere), fuori i da svolgere, i già fatturati (citati in fondo)
+  e i pagati sul posto; avviso prima dell'invio per righe a prezzo 0 e fuori listino. Testo da copiare o PDF.
+  Non parte niente dall'app.
 
 - **Da fatturare di un mese = lavoro di quel mese − fatture con quel mese di competenza.** Il fatturato in più di altri
   mesi non scala. Esempio Auraterrae: ottobre 8.217,74 da fatturare, non 4.173 (differenza dei totali).

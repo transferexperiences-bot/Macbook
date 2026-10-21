@@ -1,4 +1,4 @@
-// Ponte dell'app Conti: {azione:"leggi"}, {azione:"servizi"} oppure {azione:"scrivi", ops:[...]}.
+// Ponte dell'app Conti: {azione:"leggi"}, {azione:"servizi"}, {azione:"cliente", cliente} oppure {azione:"scrivi", ops:[...]}.
 // Passa dal ponte gx-sessione: una sessione Excel per chiamata, cosi' letture e scritture sono allineate.
 // Per ora solo la COPIA DI PROVA del file.
 const body = $input.first().json.body || {};
@@ -111,7 +111,9 @@ const servizi = async () => {
     const cli = r[12], m = Number(r[4]);
     if (!cli || !(m >= 1 && m <= 12) || r[37] === "Cancellato") continue;
     const c = (mesi[cli] = mesi[cli] || {});
-    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0 });
+    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0, daSvolgere: 0 });
+    // regola 21/10: in fattura vanno solo i servizi svolti; i da svolgere si contano a parte
+    if (r[37] === "Da svolgere") { o.daSvolgere += nn(r[35]); continue; }
     o.lavoro += nn(r[35]); if (!r[36]) o.senzaFatt += nn(r[35]);
     o.incassato += nn(r[29]); o.residuo += nn(r[33]); o.corse++;
   }
@@ -120,7 +122,7 @@ const servizi = async () => {
     if (!cli || !(m >= 1 && m <= 12)) continue;
     const conta = r[14] === "" || r[14] == null ? 1 : Number(r[14]);
     const c = (mesi[cli] = mesi[cli] || {});
-    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0 });
+    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0, daSvolgere: 0 });
     o.fatturato += nn(r[10]) * conta;
   }
   for (const c of Object.values(mesi)) for (const o of Object.values(c)) for (const k of Object.keys(o)) o[k] = r2(o[k]);
@@ -132,6 +134,35 @@ const servizi = async () => {
   const subFirst = firstRowOf(subAddr) + 1;
   const subRighe = (sub || []).slice(1).map((r, i) => ({ riga: subFirst + i, id: String(r[0] || ""), chi: r[8], criterio: r[9], valore: r[10], dobbiamo: nn(r[11]), cidevono: nn(r[12]), stato: r[13], note: r[14], pezzo: r[5] })).filter((x) => x.id);
   return [{ json: { ok: true, file: fileKey, letto: new Date().toISOString(), mesi, dati, sub: subRighe } }];
+};
+
+
+// ---------------- CLIENTE: tutte le righe di Servizi e le fatture di un cliente ----------------
+const cliente = async () => {
+  const nome = String(body.cliente || "").trim();
+  if (!nome) throw new Error("Manca il nome del cliente");
+  const chiave = nome.toLowerCase();
+  const mesiOk = Array.isArray(body.mesi) && body.mesi.length ? body.mesi.map(Number) : null;
+  const addr = await tableAddr("tblServizi");
+  const first = firstRowOf(addr) + 1, last = lastRow(addr);
+  const blocchi = [];
+  for (let a = first; a <= last; a += 1500) blocchi.push([a, Math.min(a + 1499, last)]);
+  const [parti, fatt] = await Promise.all([
+    Promise.all(blocchi.map(([a, b]) => vals("Servizi", `A${a}:AS${b}`).then((v) => v.map((r, i) => [a + i, r])))),
+    gxGet(`tables('tblFatture')/range?$select=values,address`),
+  ]);
+  const servizi = [].concat(...parti).filter(([, r]) => String(r[12] || "").trim().toLowerCase() === chiave && (!mesiOk || mesiOk.includes(Number(r[4])))).map(([riga, r]) => ({
+    riga, data: r[0], ora: r[1], mese: r[4], tipo: r[5], da: r[6], per: r[7], pax: r[8], nome: r[9], volo: r[11], autista: r[14], scambio: r[16],
+    tariffa: nn(r[17]), acconto: nn(r[18]), fee: nn(r[21]), sub: nn(r[22]), netto: nn(r[23]), listino: r[25], scarto: nn(r[27]),
+    modalita: r[28], incassato: nn(r[29]), comeInc: r[30], residuo: nn(r[33]), fatturabile: r[34], daFatt: nn(r[35]), nFatt: r[36],
+    stato: r[37], doppione: r[38], anomalia: r[39], id: r[41], prezzoOk: r[42], tueNote: r[43], noteGest: String(r[44] || "").slice(0, 140),
+  }));
+  const fFirst = firstRowOf(fatt.address) + 1;
+  const fatture = fatt.values.slice(1).map((r, i) => ({ riga: fFirst + i, r })).filter(({ r }) => String(r[6] || "").trim().toLowerCase() === chiave).map(({ riga, r }) => ({
+    riga, num: String(r[0]), profilo: r[1], tipo: r[3], sdi: r[4], data: r[5], competenza: r[8], totale: nn(r[10]), conta: r[14] === "" ? 1 : nn(r[14]),
+    incassato: nn(r[15]), residuo: nn(r[16]), pagata: r[17], eta: r[18], note: String(r[20] || "").slice(0, 200),
+  }));
+  return [{ json: { ok: true, file: fileKey, letto: new Date().toISOString(), cliente: nome, servizi, fatture } }];
 };
 
 // ---------------- SCRIVI ----------------
@@ -253,6 +284,21 @@ const fai = {
     return { esito: "scritto", dove: `Sub-appalti riga ${r}`, dettaglio: `${back[2]} · ${back[4]} · ${op.chi === "Noi" ? "gli dobbiamo " + dob : "ci devono " + dev} €` };
   },
 
+  // Servizi: solo le colonne gialle Prezzo ok (AQ) e Le tue note (AR); la riga si riconosce dall'Id (AP)
+  async servizio(op) {
+    const r = Number(op.riga);
+    if (!(r > 4)) throw new Error("Riga servizio non valida");
+    const row = (await vals("Servizi", `AP${r}:AR${r}`))[0];
+    if (String(row[0]) !== String(op.idServizio)) throw new Error(`Riga ${r} non corrisponde (trovato Id ${row[0]})`);
+    const v = [null, null, null];
+    if (op.prezzoOk !== undefined) { if (!["Sì", "No", ""].includes(op.prezzoOk)) throw new Error("Prezzo ok deve essere Sì o No"); v[1] = op.prezzoOk; }
+    if (op.nota && !String(row[2]).includes(tag(op.id))) v[2] = `${row[2] ? row[2] + " | " : ""}${op.nota} (app ${oggiTesto()}) ${tag(op.id)}`;
+    await gxWrite("PATCH", `worksheets('Servizi')/range(address='AP${r}:AR${r}')`, { values: [v] });
+    const back = (await vals("Servizi", `AP${r}:AR${r}`))[0];
+    if (op.prezzoOk !== undefined && back[1] !== op.prezzoOk) throw new Error("Riletta diversa da quella scritta");
+    return { esito: "scritto", dove: `Servizi riga ${r}`, dettaglio: `Prezzo ok: ${back[1] || "—"}${op.nota ? " · nota aggiunta" : ""}` };
+  },
+
   // Situazione clienti: Stato, Prossima azione, Note (colonne gialle)
   async cliente(op) {
     const r = Number(op.riga);
@@ -292,7 +338,7 @@ const azione = body.azione || "leggi";
 let out;
 try {
   await apriSessione(azione === "scrivi");
-  out = azione === "scrivi" ? await scrivi() : azione === "servizi" ? await servizi() : await leggi();
+  out = azione === "scrivi" ? await scrivi() : azione === "servizi" ? await servizi() : azione === "cliente" ? await cliente() : await leggi();
 } catch (e) {
   out = [{ json: { ok: false, bloccato: !!e.bloccato, errore: String(e.message || e).slice(0, 300) } }];
 } finally {

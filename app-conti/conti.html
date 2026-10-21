@@ -156,6 +156,36 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 12px; font-weight: 600; z-index: 30; max-width: calc(100% - 32px); }
 .esito { font-size: 12.5px; }
+.pill.sm { padding: 4px 10px; font-size: 13px; }
+.btn.sm { padding: 6px 10px; font-size: 13px; border-radius: 10px; }
+.fbox summary { padding: 12px 14px; cursor: pointer; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; list-style: none; }
+.fbox summary::-webkit-details-marker { display: none; }
+.fbox summary .btn { margin-left: auto; }
+.fbody { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.fgrp { display: flex; flex-direction: column; gap: 5px; }
+.fgrp > span { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.fgrp .filters { flex-wrap: wrap; overflow: visible; }
+.kpis.k3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.kpis.k3 .kpi.hero { grid-column: auto; }
+@media (max-width: 560px) { .kpis.k3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpis.k3 .kpi.hero { grid-column: span 2; order: -1; } }
+.cli-head { display: flex; align-items: center; gap: 10px; }
+.cli-head .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cli-nome { margin: 0; font-size: 24px; letter-spacing: -.02em; line-height: 1.1; text-wrap: balance; }
+.row.srv { align-items: flex-start; }
+.chk { width: 26px; height: 26px; flex: none; border-radius: 7px; border: 1.5px solid var(--muted); background: var(--card); color: #fff; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; margin-top: 2px; }
+.chk[aria-pressed="true"] { background: var(--sea); border-color: var(--sea); }
+.linkish { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.tag.yel { background: var(--warn-soft); color: var(--ink); }
+.tag.teal { background: var(--pos-soft); color: var(--sea); }
+.row.canc .t, .row.canc .v { text-decoration: line-through; color: var(--muted); }
+.legenda { font-size: 12px; margin: 0 2px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.selbar { position: fixed; left: 0; right: 0; bottom: calc(58px + env(safe-area-inset-bottom, 0px)); z-index: 7; background: var(--ink); color: var(--bg); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.selbar span { margin-right: auto; }
+.selbar .btn { background: var(--card); color: var(--ink); border-color: transparent; }
+.selbar .btn.ghost { background: none; color: var(--bg); }
+.tgl { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+textarea.recap { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px; font-family: var(--f-num); font-size: 12.5px; line-height: 1.5; resize: vertical; }
 table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
 table.tab th { text-align: right; font-family: var(--f-ui); font-size: 11.5px; color: var(--muted); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 table.tab td { text-align: right; padding: 7px 10px; border-top: 1px solid var(--line); white-space: nowrap; }
@@ -189,6 +219,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
 <div id="sheet-root"></div>
 <div id="toast-root"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 (() => {
   "use strict";
@@ -199,7 +231,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   const MESI_LUNGHI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
   const STATI_PARTITA = ["Concordato", "Manca il prezzo", "Chiuso", "Chiuso / incluso", "Solo nostro gestionale", "Deciso solo da loro"];
   const STATI_CLIENTE = ["Da sollecitare", "Sollecitato", "Fatturato", "Da incassare", "Proposta", "Da decidere", "Da verificare", "Compensato", "Chiuso"];
-  const OP_LABEL = { movimento: "Movimento", incasso_fattura: "Incasso fattura", partita: "Partita collega", cliente: "Cliente", subappalto: "Sub-appalto" };
+  const OP_LABEL = { movimento: "Movimento", incasso_fattura: "Incasso fattura", partita: "Partita collega", cliente: "Cliente", subappalto: "Sub-appalto", servizio: "Servizio" };
   // Chi ha incassato un servizio passato a un collega (regola di Agostino 21/10): carta in cassa, link, bonifico, fattura = noi
   const INCASSA_NOI = ["Fattura", "Sconto in fattura", "Carta", "Link", "Bonifico", "Dalla struttura", "Uber"];
   const INCASSA_LORO = ["Contanti", "Incassare", "Al ritorno", "All'andata"];
@@ -224,6 +256,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     meseFatt: new Date().getMonth() + 1,
     vistaColleghi: "partite",
     filtroSub: "da valorizzare",
+    vista: null, // "cliente" quando è aperta la scheda di un cliente
+    cli: null,
   };
   try { const t = localStorage.getItem("conti.tab"); if (t) st.tab = t; } catch (e) {}
   try { const s = localStorage.getItem("conti.snap"); if (s) { const o = JSON.parse(s); st.snap = o.snap; st.letto = o.letto; } } catch (e) {}
@@ -376,11 +410,11 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     return { meseC3, top, matrice };
   }
 
-  // Da fatturare di un mese = lavoro di quel mese − fatture con competenza di quel mese.
-  // Il fatturato in più degli altri mesi non scala (regola di Agostino 21/10).
+  // Da fatturare di un mese = servizi SVOLTI di quel mese senza numero di fattura (riga per riga).
+  // Il fatturato in più degli altri mesi non scala, i da svolgere restano fuori (regole di Agostino 21/10).
   function mesiCliente(nome) {
     const c = (st.serv && st.serv.mesi && st.serv.mesi[nome]) || {};
-    return Object.keys(c).map(Number).sort((a, b) => a - b).map((m) => ({ m, ...c[m], daFatt: Math.round((c[m].lavoro - c[m].fatturato) * 100) / 100 }));
+    return Object.keys(c).map(Number).sort((a, b) => a - b).map((m) => ({ m, ...c[m], daFatt: c[m].senzaFatt || 0 }));
   }
   function daFatturareMese(m) {
     if (!st.serv) return [];
@@ -388,7 +422,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     return Object.entries(st.serv.mesi).map(([nome, mm]) => {
       const o = mm[m]; if (!o) return null;
       const s = sit.find((c) => c.nome === nome);
-      return { nome, ...o, daFatt: Math.round((o.lavoro - o.fatturato) * 100) / 100, riga: s ? s.riga : null, stato: s ? s.stato : "" };
+      return { nome, ...o, daFatt: o.senzaFatt || 0, riga: s ? s.riga : null, stato: s ? s.stato : "" };
     }).filter((x) => x && x.daFatt > 0.5).sort((a, b) => b.daFatt - a.daFatt);
   }
   function subappalti() {
@@ -738,8 +772,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
         return `<h2>Servizi: incassati e da incassare</h2>
         <div class="facts"><div><span>Già incassati da noi</span><b class="pos">${fmt(inc)}</b></div><div><span>Da incassare (senza fattura)</span><b class="${res > 0.5 ? "neg" : ""}">${fmt(res)}</b></div></div>
         <h2>Mese per mese</h2>
-        <div class="card" style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Lavoro</th><th>Fatturato</th><th>Da fatturare</th></tr></thead><tbody>${mm.map((x) => `<tr><td>${MESI[x.m - 1]}</td><td>${eur0.format(x.lavoro)}</td><td>${eur0.format(x.fatturato)}</td><td class="${x.daFatt > 0.5 ? "neg" : x.daFatt < -0.5 ? "pos" : "mut"}">${x.daFatt > 0.5 ? eur0.format(x.daFatt) : x.daFatt < -0.5 ? "+" + eur0.format(-x.daFatt) + " in più" : "pari"}</td></tr>`).join("")}</tbody></table></div>
-        <p class="mut" style="margin:0;font-size:12.5px">Da fatturare = lavoro del mese − fatture con quel mese di competenza. Il fatturato in più di un mese non scala dagli altri.</p>`;
+        <div class="card" style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Lavoro</th><th>Fatturato</th><th>Da fatturare</th></tr></thead><tbody>${mm.map((x) => `<tr><td>${MESI[x.m - 1]}</td><td>${eur0.format(x.lavoro)}</td><td>${eur0.format(x.fatturato)}</td><td class="${x.daFatt > 0.5 ? "neg" : "mut"}">${x.daFatt > 0.5 ? eur0.format(x.daFatt) : "—"}</td></tr>`).join("")}</tbody></table></div>
+        <p class="mut" style="margin:0;font-size:12.5px">Da fatturare = servizi svolti del mese che non hanno ancora il numero di fattura. Il fatturato in più di un mese non scala dagli altri.</p>`;
       })()}
       <h2>Fatture da incassare</h2>
       <div class="card rows">${fa.length ? fa.map((f) => `<button class="row" data-fr="${f.riga}"><div class="main"><span class="t">n.${esc(f.num)} · ${dataBreve(f.data)}</span><span class="s">${esc(f.sdi || "")} · ${n(f.eta) ? f.eta + " giorni" : ""}</span></div><div class="v">${fmt(f.residuo, true)}<small>di ${fmt(f.totale)}</small></div></button>`).join("") : `<div class="empty">Nessuna fattura aperta.</div>`}</div>
@@ -804,6 +838,267 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       const bs = $("#bz-salva", el); if (bs) bs.addEventListener("click", async () => { await salvaTutto(); pannelloBozze(); });
       el.querySelectorAll("[data-togli]").forEach((b) => b.addEventListener("click", async () => { await togliBozza(b.dataset.togli); pannelloBozze(); }));
       el.querySelectorAll("[data-riprova]").forEach((b) => b.addEventListener("click", async () => { const x = st.bozze.find((y) => y.id === b.dataset.riprova); if (x) await salvaBozza({ ...x, stato: "bozza", dettaglio: "" }); pannelloBozze(); }));
+    });
+  }
+
+  // ---------- scheda cliente: servizi con filtri, partita, recap ----------
+  const FILTRI = {
+    stato: { label: "Stato", vals: ["Svolto", "Da svolgere", "Cancellato"] },
+    incasso: { label: "Incasso", vals: ["Incassati da noi", "Da incassare", "Sconto in fattura", "A fattura", "Dalla struttura"] },
+    fattura: { label: "Fattura", vals: ["Fatturati", "Da fatturare", "Non fatturabili"] },
+    tipo: { label: "Tipo", vals: ["Transfer", "Dispo", "Tour", "Tuk-tuk", "Uber", "Viator"] },
+    chi: { label: "Chi l'ha fatto", vals: ["Nostro autista", "Dato a collega", "Ricevuto da collega"] },
+    controlli: { label: "Da controllare", vals: ["Prezzo", "Doppione", "Dati mancanti", "Soldi", "Sub-appalto"] },
+  };
+  function classe(s) {
+    const a = String(s.anomalia || "");
+    const prezzoOk = s.prezzoOk === "Sì";
+    const ctrl = [];
+    if (!prezzoOk && (/prezzo/i.test(a) || Math.abs(s.scarto) > 0.5)) ctrl.push("Prezzo");
+    if (/doppione/i.test(a) || s.doppione) ctrl.push("Doppione");
+    if (/senza (nome|autista|cliente|data|modalit)/i.test(a)) ctrl.push("Dati mancanti");
+    if (/cancellato con tariffa|senza incasso|senza prova|acconto/i.test(a)) ctrl.push("Soldi");
+    if (/sub-appalto/i.test(a)) ctrl.push("Sub-appalto");
+    const incasso = s.modalita === "Sconto in fattura" ? "Sconto in fattura" : s.modalita === "Dalla struttura" ? "Dalla struttura"
+      : s.incassato > 0.5 ? "Incassati da noi" : s.residuo > 0.5 ? "Da incassare" : s.modalita === "Fattura" ? "A fattura" : "";
+    const fattura = s.nFatt ? "Fatturati" : s.daFatt > 0.5 ? "Da fatturare" : "Non fatturabili";
+    const chi = s.scambio === "Dato a collega" ? "Dato a collega" : s.scambio === "Ricevuto da collega" ? "Ricevuto da collega" : "Nostro autista";
+    return { stato: s.stato, incasso, fattura, tipo: s.tipo, chi, controlli: ctrl };
+  }
+  // prezzo che vede il cliente: per i svolti il «Da fatturare €» della riga (col «Sconto in fattura» è il netto);
+  // per le cancellate, che lì valgono 0, la tariffa (o il netto) che il cliente aveva prenotato
+  const prezzoCliente = (s) => (s.stato === "Svolto" && s.daFatt > 0.005 ? s.daFatt : s.modalita === "Sconto in fattura" ? s.netto : s.tariffa);
+  const oraTxt = (o) => { const m = Math.round(n(o) * 1440); return n(o) ? String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0") : ""; };
+  const giornoLungo = (s) => serialeAData(s).toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "long", timeZone: "UTC" });
+
+  function apriCliente(nome) {
+    const mesePref = new Date().getMonth() + 1;
+    st.cli = { nome, mesi: [mesePref], dati: null, caricando: false, errore: null, f: { stato: ["Svolto", "Da svolgere"] }, sel: [], aperto: null };
+    st.vista = "cliente"; chiudiSheet(); render(); window.scrollTo(0, 0);
+    caricaCliente();
+  }
+  async function caricaCliente() {
+    const c = st.cli; if (!c || c.caricando) return;
+    c.caricando = true; c.errore = null; render();
+    try {
+      const j = await chiamaPonte({ azione: "cliente", file: FILE, cliente: c.nome, mesi: c.mesi });
+      if (!j.ok) throw new Error(j.errore || "Lettura non riuscita.");
+      if (st.cli === c) { c.dati = j; c.sel = []; }
+    } catch (e) { c.errore = testoErrore(e); }
+    finally { c.caricando = false; render(); }
+  }
+  function serviziFiltrati() {
+    const c = st.cli; if (!c || !c.dati) return [];
+    return c.dati.servizi.map((s) => ({ ...s, k: classe(s) })).filter((s) => Object.entries(c.f).every(([g, vals]) => {
+      if (!vals || !vals.length) return true;
+      const v = s.k[g];
+      return Array.isArray(v) ? v.some((x) => vals.includes(x)) : vals.includes(v);
+    })).sort((a, b) => n(a.data) - n(b.data) || n(a.ora) - n(b.ora));
+  }
+  function vistaCliente() {
+    const c = st.cli;
+    const sit = st.snap ? clienti().find((x) => x.nome === c.nome) : null;
+    const mesiBtn = MESI.map((x, i) => `<button class="pill" data-cm="${i + 1}" aria-pressed="${c.mesi.includes(i + 1)}">${x}</button>`).join("");
+    let corpo;
+    if (!c.dati) corpo = c.caricando ? `<div class="skel"></div><div class="skel"></div><div class="skel" style="height:200px"></div><p class="mut" style="text-align:center">Leggo tutti i servizi di ${esc(c.nome)} per ${c.mesi.map((m) => MESI_LUNGHI[m - 1]).join(", ")}…</p>`
+      : `<div class="card empty">${esc(c.errore || "Servizi non letti.")}<br><br><button class="btn primary" id="cli-leggi">Leggi i servizi</button></div>`;
+    else {
+      const L = serviziFiltrati();
+      const tot = (f) => L.reduce((a, s) => a + f(s), 0);
+      const vivi = L.filter((s) => s.stato !== "Cancellato");
+      const gruppi = {};
+      L.forEach((s) => (gruppi[s.data] = gruppi[s.data] || []).push(s));
+      const filtroHtml = Object.entries(FILTRI).map(([g, d]) => `<div class="fgrp"><span>${d.label}</span><div class="filters">${d.vals.map((v) => `<button class="pill sm" data-cf="${g}|${esc(v)}" aria-pressed="${(c.f[g] || []).includes(v)}">${esc(v)}</button>`).join("")}</div></div>`).join("");
+      const nAttivi = Object.values(c.f).reduce((a, v) => a + (v ? v.length : 0), 0);
+      corpo = `
+      <details class="card fbox" ${c.aperto === "filtri" ? "open" : ""} id="cli-filtri"><summary><b>Filtri</b> <span class="mut">${nAttivi ? nAttivi + " attivi" : "nessuno"} · ${L.length} servizi su ${c.dati.servizi.length}</span>${nAttivi ? `<button class="btn ghost sm" id="cli-azzera">Togli tutti</button>` : ""}</summary><div class="fbody">${filtroHtml}</div></details>
+      <div class="kpis k3">
+        <div class="card kpi"><span>Servizi</span><b>${vivi.length}</b><small>${L.length - vivi.length ? (L.length - vivi.length) + " cancellati in elenco" : "nessun cancellato"}</small></div>
+        <div class="card kpi"><span>Tariffe</span><b>${fmt(tot((s) => (s.stato === "Cancellato" ? 0 : s.tariffa)))}</b><small>netto ${fmt(tot((s) => (s.stato === "Cancellato" ? 0 : s.netto)))}</small></div>
+        <div class="card kpi hero"><span>Da fatturare</span><b>${fmt(tot((s) => (s.stato === "Svolto" && !s.nFatt ? s.daFatt : 0)))}</b><small>solo servizi svolti, senza fattura</small></div>
+        <div class="card kpi"><span>Già fatturati</span><b>${fmt(tot((s) => (s.nFatt ? s.daFatt : 0)))}</b><small>${[...new Set(L.filter((s) => s.nFatt).map((s) => "n." + s.nFatt))].slice(0, 4).join(" ") || "nessuno"}</small></div>
+        <div class="card kpi"><span>Incassati da noi</span><b class="pos">${fmt(tot((s) => s.incassato))}</b><small>contanti, carta, link</small></div>
+        <div class="card kpi"><span>Da incassare</span><b class="${tot((s) => s.residuo) > 0.5 ? "neg" : ""}">${fmt(tot((s) => s.residuo))}</b><small>senza fattura e senza incasso</small></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="cli-recap">Prepara il recap</button><button class="btn" id="cli-partita">Partita del cliente</button></div>
+      <div class="card rows">${Object.keys(gruppi).length ? Object.entries(gruppi).map(([d, arr]) => `<div class="groupttl">${giornoLungo(Number(d))} · ${arr.length}</div>` + arr.map(rigaServizio).join("")).join("") : `<div class="empty">Nessun servizio con questi filtri.</div>`}</div>
+      <p class="mut legenda"><span class="tag bad">Cancellata</span> <span class="tag att">Prezzo</span> <span class="tag sea">Doppione?</span> <span class="tag yel">Dati mancanti</span> <span class="tag bad">Soldi</span> <span class="tag teal">Sub-appalto</span> · come i colori dell'Excel</p>`;
+    }
+    const sel = c.sel.length;
+    return `
+      <div class="cli-head"><button class="btn ghost sm" id="cli-indietro">← Clienti</button><div class="main"><h1 class="cli-nome">${esc(c.nome)}</h1>${sit ? `<span class="mut">Saldo <b class="num ${cls(sit.saldo)}">${fmtS(sit.saldo)}</b>${sit.stato ? " · " + esc(sit.stato) : ""}</span>` : ""}</div><button class="iconbtn" id="cli-ricarica" aria-label="Rileggi i servizi" aria-busy="${c.caricando}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
+      <div class="months" role="group" aria-label="Mesi">${mesiBtn}</div>
+      ${c.errore && c.dati ? `<div class="banner err"><div>${esc(c.errore)}</div></div>` : ""}
+      ${corpo}
+      ${sel ? `<div class="selbar"><span><b>${sel}</b> selezionati</span><button class="btn sm" id="sel-ok">Prezzo ok</button><button class="btn sm" id="sel-nota">Nota</button><button class="btn sm" id="sel-fatt">Chiedi fattura</button><button class="btn ghost sm" id="sel-via">✕</button></div>` : ""}`;
+  }
+  function rigaServizio(s) {
+    const k = s.k, c = st.cli;
+    const canc = s.stato === "Cancellato";
+    const tags = [];
+    if (canc) tags.push(`<span class="tag bad">Cancellata</span>`);
+    if (s.stato === "Da svolgere") tags.push(`<span class="tag">Da svolgere</span>`);
+    if (k.controlli.includes("Prezzo")) tags.push(`<span class="tag att">${s.tariffa ? "listino " + (s.listino !== "" && s.listino != null ? eur0.format(n(s.listino)) : "?") : "prezzo 0"}</span>`);
+    if (k.controlli.includes("Doppione")) tags.push(`<span class="tag sea">doppione?</span>`);
+    if (k.controlli.includes("Dati mancanti")) tags.push(`<span class="tag yel">${esc(String(s.anomalia).replace(/^.*senza/i, "senza"))}</span>`);
+    if (k.controlli.includes("Soldi")) tags.push(`<span class="tag bad">${esc(s.anomalia)}</span>`);
+    if (k.controlli.includes("Sub-appalto")) tags.push(`<span class="tag teal">sub-appalto</span>`);
+    if (s.nFatt) tags.push(`<span class="tag ok">n.${esc(s.nFatt)}</span>`);
+    if (s.prezzoOk === "Sì") tags.push(`<span class="tag ok">prezzo ok</span>`);
+    const on = c.sel.includes(s.riga);
+    return `<div class="row srv ${canc ? "canc" : ""}">
+      <button class="chk" data-sel="${s.riga}" aria-pressed="${on}" aria-label="Seleziona">${on ? "✓" : ""}</button>
+      <button class="main linkish" data-srv="${s.riga}"><span class="t">${oraTxt(s.ora)} · ${esc(s.da)}${s.per ? " → " + esc(s.per) : ""}</span><span class="s">${s.pax ? s.pax + " pax · " : ""}${esc(s.nome || "senza nome")} · ${esc(s.tipo)}${s.autista ? " · " + esc(s.autista) : ""}</span><span class="tags">${tags.join("")}</span></button>
+      <div class="v">${eur2.format(prezzoCliente(s))}<small>${esc(s.modalita || "")}</small></div></div>`;
+  }
+  function dettaglioServizio(s) {
+    apriSheet(`
+      <h3>${esc(s.da)}${s.per ? " → " + esc(s.per) : ""}</h3>
+      <p class="sub">${giornoLungo(s.data)} ${oraTxt(s.ora)} · ${esc(s.tipo)} · ${esc(s.stato)} · riga ${s.riga} di Servizi</p>
+      <div class="facts">
+        <div><span>Ospite</span><b style="font-family:var(--f-ui)">${esc(s.nome || "—")}${s.pax ? " · " + s.pax + " pax" : ""}</b></div>
+        <div><span>Autista</span><b style="font-family:var(--f-ui)">${esc(s.autista || "—")}${s.scambio ? " · " + esc(s.scambio) : ""}</b></div>
+        <div><span>Tariffa</span><b>${fmt(s.tariffa, true)}</b></div>
+        <div><span>Listino</span><b>${s.listino !== "" && s.listino != null ? fmt(n(s.listino), true) : "—"}${Math.abs(s.scarto) > 0.5 ? ` <span class="neg">(${s.scarto > 0 ? "+" : ""}${eur2.format(s.scarto)})</span>` : ""}</b></div>
+        <div><span>Fee / sconto</span><b>${fmt(Math.abs(s.fee), true)}</b></div>
+        <div><span>Netto</span><b>${fmt(s.netto, true)}</b></div>
+        <div><span>Pagamento</span><b style="font-family:var(--f-ui)">${esc(s.modalita || "—")}</b></div>
+        <div><span>Incassato · residuo</span><b>${fmt(s.incassato, true)} · ${fmt(s.residuo, true)}</b></div>
+        <div><span>Da fatturare</span><b>${fmt(s.daFatt, true)}</b></div>
+        <div><span>Fattura</span><b>${s.nFatt ? "n." + esc(s.nFatt) : "—"}</b></div>
+        ${s.anomalia ? `<div class="wide"><span>Segnalazione del file</span><b>${esc(s.anomalia)}</b></div>` : ""}
+        ${s.tueNote ? `<div class="wide"><span>Le tue note</span><b>${esc(s.tueNote)}</b></div>` : ""}
+        ${s.noteGest ? `<div class="wide"><span>Note gestionale</span><b>${esc(s.noteGest)}</b></div>` : ""}
+      </div>
+      <form class="f" id="fsv">
+        <label>Prezzo ${segHtml("pok", ["Sì", "No"], s.prezzoOk === "Sì" ? "Sì" : s.prezzoOk === "No" ? "No" : "")}<span class="hint">«Sì» toglie la segnalazione del prezzo. Il prezzo vero si cambia sul gestionale.</span></label>
+        <label>Nota<input id="fsv-nota" autocomplete="off" placeholder="si aggiunge a «Le tue note»"></label>
+        <div class="actions"><button class="btn primary" type="submit">Metti nelle bozze</button><button class="btn ghost" type="button" data-chiudi>Chiudi</button></div>
+      </form>`, (el) => {
+      attivaSeg(el);
+      $("#fsv", el).addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const pok = $('[data-seg="pok"]', el).dataset.val || "";
+        const nota = $("#fsv-nota", el).value.trim();
+        if ((pok === "" || pok === s.prezzoOk) && !nota) { chiudiSheet(); return; }
+        const op = { op: "servizio", riga: s.riga, idServizio: s.id };
+        if (pok && pok !== s.prezzoOk) op.prezzoOk = pok;
+        if (nota) op.nota = nota;
+        await aggiungiBozza(op, `${st.cli.nome} · ${dataBreve(s.data)} ${s.da} · ${op.prezzoOk ? "prezzo ok " + op.prezzoOk : ""}${nota ? " nota" : ""}`);
+        chiudiSheet();
+      });
+    });
+  }
+  function partitaCliente() {
+    const c = st.cli, sit = st.snap ? clienti().find((x) => x.nome === c.nome) : null;
+    const fa = (c.dati ? c.dati.fatture : fatture().filter((f) => f.cliente === c.nome)).slice().sort((a, b) => n(b.data) - n(a.data));
+    const mm = mesiCliente(c.nome);
+    apriSheet(`
+      <h3>Partita · ${esc(c.nome)}</h3>
+      <p class="sub">Tutto l'anno: lavoro, fatture, incassi e saldo.</p>
+      ${sit ? `<div class="facts">
+        <div class="wide"><span>Saldo (+ ci deve · − gli dobbiamo)</span><b class="${cls(sit.saldo)}" style="font-size:22px">${fmtS(sit.saldo)}</b></div>
+        <div><span>Da fatturare</span><b>${fmt(sit.daFatt)}</b></div><div><span>Fatture non pagate</span><b>${fmt(sit.fattAperte)}</b></div>
+        <div><span>Fee che gli dobbiamo</span><b>${fmt(sit.fee)}</b></div><div><span>Sospesi 2025</span><b>${fmt(sit.sosp25)}</b></div>
+      </div>` : ""}
+      ${mm.length ? `<h2>Mese per mese</h2><div class="card" style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Lavoro</th><th>Fatturato</th><th>Da fatturare</th><th>Incassato</th></tr></thead><tbody>${mm.map((x) => `<tr><td>${MESI[x.m - 1]}</td><td>${eur0.format(x.lavoro)}</td><td>${eur0.format(x.fatturato)}</td><td class="${x.daFatt > 0.5 ? "neg" : "mut"}">${x.daFatt > 0.5 ? eur0.format(x.daFatt) : "—"}</td><td>${eur0.format(x.incassato)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+      <h2>Fatture</h2>
+      <div class="card rows">${fa.length ? fa.map((f) => `<div class="row"><div class="main"><span class="t">n.${esc(f.num)} · ${dataBreve(f.data)} · ${f.competenza ? MESI_LUNGHI[n(f.competenza) - 1] || "" : ""}</span><span class="s">${esc(f.tipo || "")} · ${esc(f.sdi || "")}${f.residuo > 0.5 ? " · da incassare " + fmt(f.residuo, true) : " · pagata"}</span></div><div class="v">${fmt(f.totale, true)}</div></div>`).join("") : `<div class="empty">Nessuna fattura.</div>`}</div>
+    `);
+  }
+  function recapTesto(opzioni) {
+    const c = st.cli;
+    const mesiTxt = c.mesi.map((m) => MESI_LUNGHI[m - 1]).join(", ");
+    const tutti = c.dati.servizi.slice().sort((a, b) => n(a.data) - n(b.data) || n(a.ora) - n(b.ora));
+    // regola 10/10: servizi prenotati del mese, cancellate comprese senza diciture; fuori i da svolgere e i gia' fatturati
+    // svolti: si fattura il «Da fatturare €» della riga; chi ha pagato sul posto resta fuori
+    const pagatiPosto = tutti.filter((s) => s.stato === "Svolto" && !s.nFatt && !(s.daFatt > 0.005) && s.incassato > 0.5);
+    const dentro = tutti.filter((s) => s.stato !== "Da svolgere" && !s.nFatt && !pagatiPosto.includes(s) && s.fatturabile !== "No" && !(s.stato === "Cancellato" && (!opzioni.cancellate || !(prezzoCliente(s) > 0))));
+    const giaFatt = {};
+    tutti.filter((s) => s.nFatt).forEach((s) => (giaFatt[s.nFatt] = (giaFatt[s.nFatt] || 0) + prezzoCliente(s)));
+    // a prezzo 0 (fuori dal totale): serve il prezzo o la conferma che sono compresi in un altro servizio; le cancellate senza prezzo chiedono solo la cifra
+    const zero = tutti.filter((s) => s.stato !== "Da svolgere" && !s.nFatt && !pagatiPosto.includes(s) && !(prezzoCliente(s) > 0) && (s.stato !== "Cancellato" || opzioni.cancellate));
+    const fuoriListino = dentro.filter((s) => classe(s).controlli.includes("Prezzo") && prezzoCliente(s) > 0);
+    const daSvolgere = tutti.filter((s) => s.stato === "Da svolgere").length;
+    const righe = [`Riepilogo dei servizi prenotati di ${mesiTxt} ${new Date().getFullYear()} · ${c.nome}`, ""];
+    let giorno = null, tot = 0;
+    dentro.forEach((s) => {
+      if (s.data !== giorno) { giorno = s.data; righe.push((righe.length > 2 ? "\n" : "") + giornoLungo(s.data).replace(/^\w/, (x) => x.toUpperCase())); }
+      const p = prezzoCliente(s); tot += p;
+      righe.push(`• ${oraTxt(s.ora) ? oraTxt(s.ora) + " " : ""}${s.da}${s.per ? " → " + s.per : ""}${s.pax ? " · " + s.pax + " pax" : ""}${s.nome ? " · " + s.nome : ""} · ${eur2.format(p)} €`);
+    });
+    righe.push("", `Totale: ${eur2.format(Math.round(tot * 100) / 100)} €`);
+    const gf = Object.entries(giaFatt);
+    if (gf.length) righe.push(`Già fatturati: ${gf.map(([k, v]) => `n.${k} (${eur2.format(v)} €)`).join(", ")}`);
+    if (pagatiPosto.length) righe.push(`Pagati sul posto: ${pagatiPosto.length} servizi (${eur2.format(pagatiPosto.reduce((a, s) => a + s.incassato, 0))} €), non in fattura`);
+    righe.push("", "Fammi sapere se ti torna tutto, così emettiamo la fattura.");
+    return { testo: righe.join("\n"), dentro, tot, zero, fuoriListino, daSvolgere, mesiTxt, pagatiPosto };
+  }
+  function apriRecap() {
+    const c = st.cli; if (!c.dati) return;
+    const opz = { cancellate: true };
+    const disegna = () => {
+      const r = recapTesto(opz);
+      apriSheet(`
+        <h3>Recap per ${esc(c.nome)}</h3>
+        <p class="sub">${r.dentro.length} servizi prenotati di ${esc(r.mesiTxt)} · totale ${fmt(r.tot, true)}. Fuori: i da svolgere${r.daSvolgere ? " (" + r.daSvolgere + ")" : ""} e quelli già in fattura.</p>
+        ${r.zero.length || r.fuoriListino.length ? `<div class="banner warn"><div><b>Prima di mandarlo</b><br>${r.zero.length ? `${r.zero.length} servizi a prezzo 0: serve il prezzo o la conferma che sono compresi in un altro servizio.<br>` : ""}${r.fuoriListino.length ? `${r.fuoriListino.length} servizi con prezzo diverso dal listino.` : ""}</div></div>
+        <div class="card rows">${[...r.zero, ...r.fuoriListino].map((s) => `<button class="row" data-srv="${s.riga}"><div class="main"><span class="t">${dataBreve(s.data)} ${oraTxt(s.ora)} · ${esc(s.da)}${s.per ? " → " + esc(s.per) : ""}</span><span class="s">${esc(s.nome || "")} · listino ${s.listino !== "" ? eur0.format(n(s.listino)) : "?"}</span></div><div class="v">${eur2.format(prezzoCliente(s))}</div></button>`).join("")}</div>` : ""}
+        <label class="tgl"><input type="checkbox" id="rc-canc" ${opz.cancellate ? "checked" : ""}> Metti anche le corse cancellate (come prenotate, senza diciture)</label>
+        <textarea id="rc-txt" class="recap" rows="14" readonly>${esc(r.testo)}</textarea>
+        <div class="actions"><button class="btn primary" id="rc-copia">Copia il testo</button><button class="btn" id="rc-pdf">Scarica PDF</button><button class="btn ghost" data-chiudi>Chiudi</button></div>
+        <p class="mut" style="font-size:12.5px;margin:0">Non parte niente da qui: lo copi tu, oppure mi dici «manda» e lo mando io dopo averlo visto.</p>`, (el) => {
+        $("#rc-canc", el).addEventListener("change", (e) => { opz.cancellate = e.target.checked; disegna(); });
+        $("#rc-copia", el).addEventListener("click", async () => {
+          const t = $("#rc-txt", el);
+          try { await navigator.clipboard.writeText(t.value); toast("Copiato: incollalo in WhatsApp o nella mail"); }
+          catch (e) { t.removeAttribute("readonly"); t.focus(); t.select(); toast("Selezionato: copialo con il menu del telefono"); }
+        });
+        $("#rc-pdf", el).addEventListener("click", () => recapPdf(r));
+        el.querySelectorAll("[data-srv]").forEach((b) => b.addEventListener("click", () => { const s = c.dati.servizi.find((x) => x.riga === Number(b.dataset.srv)); if (s) dettaglioServizio(s); }));
+      });
+    };
+    disegna();
+  }
+  async function recapPdf(r) {
+    const c = st.cli;
+    const J = window.jspdf && window.jspdf.jsPDF;
+    if (!J) { toast("Il PDF non è disponibile in questa vista: usa Copia il testo"); return; }
+    const doc = new J({ unit: "pt", format: "a4" });
+    doc.setFont("helvetica", "bold"); doc.setFontSize(15);
+    doc.text(`Riepilogo dei servizi prenotati · ${r.mesiTxt} ${new Date().getFullYear()}`, 40, 50);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11);
+    doc.text(`${c.nome} · Transfer Experience`, 40, 68);
+    doc.autoTable({
+      startY: 84, styles: { fontSize: 9, cellPadding: 4 }, headStyles: { fillColor: [11, 95, 122] },
+      head: [["Data", "Ora", "Servizio", "Pax", "Ospite", "€"]],
+      body: r.dentro.map((s) => [dataBreve(s.data), oraTxt(s.ora), `${s.da}${s.per ? " → " + s.per : ""}`, s.pax || "", s.nome || "", eur2.format(prezzoCliente(s))]),
+      foot: [["", "", "Totale", "", "", eur2.format(Math.round(r.tot * 100) / 100)]], footStyles: { fillColor: [225, 239, 244], textColor: 20, fontStyle: "bold" },
+      columnStyles: { 5: { halign: "right" }, 3: { halign: "center" } },
+    });
+    const blob = doc.output("blob");
+    const dl = await claude.use("downloads");
+    if (!dl) { toast("Il salvataggio di file non è disponibile qui: usa Copia il testo"); return; }
+    try { await dl.save({ filename: `Recap ${c.nome} ${r.mesiTxt}.pdf`.replace(/[\\/:*?"<>|]/g, "-"), data: blob }); toast("PDF pronto"); }
+    catch (e) { if (e && e.code !== "declined") toast("PDF non salvato: " + (e.message || e.code)); }
+  }
+  async function chiediFattura() {
+    const c = st.cli; const righe = c.dati.servizi.filter((s) => c.sel.includes(s.riga));
+    const tot = righe.reduce((a, s) => a + prezzoCliente(s), 0);
+    if (!st.db) { toast("Le richieste servono il database dell'app: ricarica la pagina"); return; }
+    await st.db.collection("richieste").doc(nuovoId()).set({ tipo: "fattura", cliente: c.nome, righe: righe.map((s) => ({ riga: s.riga, id: s.id, data: s.data, servizio: `${s.da}${s.per ? " → " + s.per : ""}`, importo: prezzoCliente(s) })), totale: Math.round(tot * 100) / 100, stato: "da fare", creata: new Date().toISOString(), file: FILE });
+    c.sel = []; render();
+    toast(`Richiesta di fattura salvata (${righe.length} servizi, ${fmt(tot, true)}): la preparo io e te la mostro prima`);
+  }
+
+  function notaMultipla() {
+    const c = st.cli;
+    apriSheet(`<h3>Nota su ${c.sel.length} servizi</h3><form class="f" id="fn"><label>Nota<input id="fn-t" autocomplete="off" required></label><div class="actions"><button class="btn primary" type="submit">Metti nelle bozze</button><button class="btn ghost" type="button" data-chiudi>Annulla</button></div></form>`, (el) => {
+      $("#fn", el).addEventListener("submit", async (ev) => {
+        ev.preventDefault(); const t = $("#fn-t", el).value.trim(); if (!t) return;
+        for (const r of c.sel) { const sv = c.dati.servizi.find((x) => x.riga === r); if (sv) await aggiungiBozza({ op: "servizio", riga: sv.riga, idServizio: sv.id, nota: t }, `${c.nome} · ${dataBreve(sv.data)} ${sv.da} · nota`); }
+        c.sel = []; chiudiSheet(); render();
+      });
     });
   }
 
@@ -928,8 +1223,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       <h2>Da fatturare · lavoro di ${MESI_LUNGHI[mF - 1]}</h2>
       <div class="months" role="group" aria-label="Mese di lavoro">${MESI.map((x, i) => `<button class="pill" data-mf="${i + 1}" aria-pressed="${mF === i + 1}">${x}</button>`).join("")}</div>
       ${!st.serv ? `<div class="card empty">${st.caricandoServ ? "Carico i servizi mese per mese…" : esc(st.erroreServ || "Servizi non ancora letti.")}${st.caricandoServ ? "" : `<br><br><button class="btn primary" id="leggi-serv">Leggi i servizi</button>`}</div>` : `
-      <div class="card rows"><div class="row"><div class="main"><span class="s">${daF.length} clienti · lavoro del mese meno le fatture di quel mese</span></div><div class="v">${fmt(totF)}</div></div>
-      ${daF.map((c) => `<button class="row" ${c.riga ? `data-cli="${c.riga}"` : "disabled"}><div class="main"><span class="t">${esc(c.nome)}</span><span class="s">${c.corse} corse · lavoro ${fmt(c.lavoro)}${c.fatturato ? " · già fatturato " + fmt(c.fatturato) : ""}</span></div>${c.stato ? `<span class="tag">${esc(c.stato)}</span>` : ""}<div class="v">${fmt(c.daFatt)}</div></button>`).join("") || `<div class="empty">Niente da fatturare per ${MESI_LUNGHI[mF - 1]}.</div>`}</div>`}
+      <div class="card rows"><div class="row"><div class="main"><span class="s">${daF.length} clienti · servizi svolti del mese senza numero di fattura</span></div><div class="v">${fmt(totF)}</div></div>
+      ${daF.map((c) => `<button class="row" ${c.riga ? `data-cli="${c.riga}"` : "disabled"}><div class="main"><span class="t">${esc(c.nome)}</span><span class="s">${c.corse} svolti · lavoro ${fmt(c.lavoro)}${c.fatturato ? " · fatture del mese " + fmt(c.fatturato) : ""}${c.daSvolgere ? " · da svolgere " + fmt(c.daSvolgere) : ""}</span></div>${c.stato ? `<span class="tag">${esc(c.stato)}</span>` : ""}<div class="v">${fmt(c.daFatt)}</div></button>`).join("") || `<div class="empty">Niente da fatturare per ${MESI_LUNGHI[mF - 1]}.</div>`}</div>`}
       <p class="mut" style="font-size:12.5px;margin:0 2px">Le fatture si emettono da Claude con il tuo ok: qui segni gli incassi.</p>`;
   }
 
@@ -955,7 +1250,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       v.innerHTML = top + (st.caricando ? `<div class="skel"></div><div class="skel"></div><div class="skel" style="height:140px"></div><p class="mut" style="text-align:center">Leggo il Riepilogo, i clienti, le partite, le fatture e le paghe dall'Excel.</p>` : `<div class="card empty">I numeri arrivano dall'Excel tramite n8n.<br><br><button class="btn primary" id="primo">Leggi i dati</button></div>`);
       const pb = $("#primo"); if (pb) pb.addEventListener("click", leggi);
     } else {
-      const html = { mese: vistaMese, clienti: vistaClienti, colleghi: vistaColleghi, autisti: vistaAutisti, fatture: vistaFatture }[st.tab]();
+      const html = st.vista === "cliente" && st.cli ? vistaCliente() : { mese: vistaMese, clienti: vistaClienti, colleghi: vistaColleghi, autisti: vistaAutisti, fatture: vistaFatture }[st.tab]();
       const foc = document.activeElement && document.activeElement.id === "cerca";
       v.innerHTML = top + html;
       if (foc) { const c = $("#cerca"); c.focus(); c.setSelectionRange(c.value.length, c.value.length); }
@@ -968,7 +1263,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   // ---------- eventi ----------
   document.querySelector("nav.tabs").addEventListener("click", (ev) => {
     const b = ev.target.closest("button[data-tab]"); if (!b) return;
-    st.tab = b.dataset.tab; try { localStorage.setItem("conti.tab", st.tab); } catch (e) {}
+    st.tab = b.dataset.tab; st.vista = null; try { localStorage.setItem("conti.tab", st.tab); } catch (e) {}
     render(); window.scrollTo(0, 0);
   });
   $("#vista").addEventListener("click", (ev) => {
@@ -981,12 +1276,28 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     if (t.dataset.mf) { st.meseFatt = Number(t.dataset.mf); render(); return; }
     if (t.id === "leggi-serv") { leggiServizi(); return; }
     if (t.dataset.sub !== undefined) { const d = subappalti().find((x) => x.id === t.dataset.sub); if (d) formSubappalto(d); return; }
-    if (t.dataset.cli) { const c = clienti().find((x) => x.riga === Number(t.dataset.cli)); if (c) dettaglioCliente(c); return; }
+    if (t.dataset.cli) { const c = clienti().find((x) => x.riga === Number(t.dataset.cli)); if (c) apriCliente(c.nome); return; }
+    // scheda cliente
+    const c = st.cli;
+    if (t.id === "cli-indietro") { st.vista = null; render(); window.scrollTo(0, 0); return; }
+    if (t.id === "cli-ricarica" || t.id === "cli-leggi") { caricaCliente(); return; }
+    if (t.dataset.cm) { const m = Number(t.dataset.cm); const i = c.mesi.indexOf(m); if (i >= 0) { if (c.mesi.length > 1) c.mesi.splice(i, 1); } else c.mesi.push(m); c.mesi.sort((a, b) => a - b); c.dati = null; render(); caricaCliente(); return; }
+    if (t.dataset.cf) { const [g, v] = t.dataset.cf.split("|"); const arr = (c.f[g] = c.f[g] || []); const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); c.aperto = "filtri"; render(); return; }
+    if (t.id === "cli-azzera") { ev.preventDefault(); c.f = {}; render(); return; }
+    if (t.id === "cli-recap") { apriRecap(); return; }
+    if (t.id === "cli-partita") { partitaCliente(); return; }
+    if (t.dataset.sel) { const r = Number(t.dataset.sel); const i = c.sel.indexOf(r); if (i >= 0) c.sel.splice(i, 1); else c.sel.push(r); render(); return; }
+    if (t.dataset.srv) { const sv = c.dati.servizi.find((x) => x.riga === Number(t.dataset.srv)); if (sv) dettaglioServizio(sv); return; }
+    if (t.id === "sel-via") { c.sel = []; render(); return; }
+    if (t.id === "sel-fatt") { chiediFattura(); return; }
+    if (t.id === "sel-ok") { (async () => { for (const r of c.sel) { const sv = c.dati.servizi.find((x) => x.riga === r); if (sv && sv.prezzoOk !== "Sì") await aggiungiBozza({ op: "servizio", riga: sv.riga, idServizio: sv.id, prezzoOk: "Sì" }, `${c.nome} · ${dataBreve(sv.data)} ${sv.da} · prezzo ok`); } c.sel = []; render(); })(); return; }
+    if (t.id === "sel-nota") { notaMultipla(); return; }
     if (t.dataset.col) { dettaglioCollega(t.dataset.col); return; }
     if (t.dataset.aut) { dettaglioAutista(t.dataset.aut); return; }
     if (t.dataset.fat) { const f = fatture().find((x) => x.riga === Number(t.dataset.fat)); if (f) formIncasso(f); return; }
     if (t.id === "aut-pag") { formPagamento(); return; }
   });
+  $("#vista").addEventListener("toggle", (ev) => { if (ev.target.id === "cli-filtri" && st.cli) st.cli.aperto = ev.target.open ? "filtri" : null; }, true);
   $("#vista").addEventListener("input", (ev) => { if (ev.target.id === "cerca") { st.cerca = ev.target.value; render(); } });
   $("#btn-aggiorna").addEventListener("click", leggi);
   $("#btn-bozze").addEventListener("click", pannelloBozze);

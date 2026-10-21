@@ -186,6 +186,15 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
 .selbar .btn.ghost { background: none; color: var(--bg); }
 .tgl { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 textarea.recap { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px; font-family: var(--f-num); font-size: 12.5px; line-height: 1.5; resize: vertical; }
+.rapidi { flex-wrap: nowrap; }
+.pill .cnt { font-family: var(--f-num); font-size: 11.5px; opacity: .7; margin-left: 2px; }
+.pill[disabled] { opacity: .4; }
+.cli-sel select { font: inherit; font-size: 21px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--line); padding: 2px 22px 2px 0; max-width: 100%; appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 10px) 55%, calc(100% - 5px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.gbar { cursor: pointer; }
+.gbar:focus-visible { outline: 2px solid var(--sea); }
+.gtip { display: flex; flex-wrap: wrap; gap: 4px 12px; background: var(--sea-soft); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+.gtip b { width: 100%; text-transform: capitalize; }
 .graf { padding: 12px 12px 4px; display: flex; flex-direction: column; gap: 4px; }
 .ghead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 2px; font-size: 14px; }
 .ghead span { white-space: nowrap; font-size: 12.5px; }
@@ -275,8 +284,9 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   const $ = (s, el = document) => el.querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const n = (x) => (typeof x === "number" && isFinite(x) ? x : Number(x) || 0);
-  const eur0 = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 0 });
-  const eur2 = new Intl.NumberFormat("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // "always": l'italiano altrimenti non mette il punto delle migliaia sotto i 10.000 (5032 invece di 5.032)
+  const eur0 = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 0, useGrouping: "always" });
+  const eur2 = new Intl.NumberFormat("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: "always" });
   const fmt = (x, dec) => (dec ? eur2 : eur0).format(Math.round(n(x) * (dec ? 100 : 1)) / (dec ? 100 : 1)) + " €";
   const fmtS = (x) => (n(x) > 0.5 ? "+" : "") + fmt(x);
   const cls = (x) => (n(x) > 0.5 ? "pos" : n(x) < -0.5 ? "neg" : "mut");
@@ -858,6 +868,22 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     chi: { label: "Chi l'ha fatto", vals: ["Nostro autista", "Dato a collega", "Ricevuto da collega"] },
     controlli: { label: "Da controllare", vals: ["Prezzo", "Doppione", "Dati mancanti", "Soldi", "Sub-appalto"] },
   };
+  // Filtri rapidi: un tocco, sostituiscono i filtri del pannello
+  const RAPIDI = [
+    ["Attivi", { stato: ["Svolto", "Da svolgere"] }],
+    ["Svolti", { stato: ["Svolto"] }],
+    ["Da svolgere", { stato: ["Da svolgere"] }],
+    ["Cancellati", { stato: ["Cancellato"] }],
+    ["Doppioni", { controlli: ["Doppione"] }],
+    ["Prezzo da controllare", { controlli: ["Prezzo"] }],
+    ["Da fatturare", { stato: ["Svolto"], fattura: ["Da fatturare"] }],
+    ["Fatturati", { fattura: ["Fatturati"] }],
+    ["Da incassare", { incasso: ["Da incassare"] }],
+    ["Dati mancanti", { controlli: ["Dati mancanti"] }],
+    ["Tutti", {}],
+  ];
+  const chiaveF = (f) => JSON.stringify(Object.keys(f).sort().filter((k) => f[k] && f[k].length).map((k) => [k, f[k].slice().sort()]));
+  const passa = (s, f) => Object.entries(f).every(([g, vals]) => { if (!vals || !vals.length) return true; const v = s.k[g]; return Array.isArray(v) ? v.some((x) => vals.includes(x)) : vals.includes(v); });
   function classe(s) {
     const a = String(s.anomalia || "");
     const prezzoOk = s.prezzoOk === "Sì";
@@ -879,9 +905,18 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   const oraTxt = (o) => { const m = Math.round(n(o) * 1440); return n(o) ? String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0") : ""; };
   const giornoLungo = (s) => serialeAData(s).toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "long", timeZone: "UTC" });
 
+  // tutti i clienti che hanno servizi o una riga in Situazione, in ordine alfabetico
+  function elencoClienti() {
+    const set = new Set();
+    if (st.snap) clienti().forEach((c) => set.add(c.nome));
+    if (st.serv && st.serv.mesi) Object.keys(st.serv.mesi).forEach((k) => set.add(k));
+    if (st.cli) set.add(st.cli.nome);
+    return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b, "it"));
+  }
   function apriCliente(nome) {
     const mesePref = new Date().getMonth() + 1;
-    st.cli = { nome, mesi: [mesePref], dati: null, caricando: false, errore: null, f: { stato: ["Svolto", "Da svolgere"] }, sel: [], aperto: null };
+    const prima = st.cli;
+    st.cli = { nome, mesi: prima ? prima.mesi.slice() : [mesePref], dati: null, caricando: false, errore: null, f: prima ? prima.f : { stato: ["Svolto", "Da svolgere"] }, sel: [], aperto: null, tip: null };
     st.vista = "cliente"; chiudiSheet(); render(); window.scrollTo(0, 0);
     caricaCliente();
   }
@@ -924,11 +959,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
   }
   function serviziFiltrati() {
     const c = st.cli; if (!c || !c.dati) return [];
-    return c.dati.servizi.map((s) => ({ ...s, k: classe(s) })).filter((s) => Object.entries(c.f).every(([g, vals]) => {
-      if (!vals || !vals.length) return true;
-      const v = s.k[g];
-      return Array.isArray(v) ? v.some((x) => vals.includes(x)) : vals.includes(v);
-    })).sort((a, b) => n(a.data) - n(b.data) || n(a.ora) - n(b.ora));
+    return c.dati.servizi.map((s) => ({ ...s, k: classe(s) })).filter((s) => passa(s, c.f)).sort((a, b) => n(a.data) - n(b.data) || n(a.ora) - n(b.ora));
   }
   // Andamento del cliente mese per mese: due grafici con gli stessi mesi (euro e numero di servizi non condividono un asse)
   function graficiCliente(nome, sel) {
@@ -948,7 +979,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
         const on = sel.includes(d.m);
         const y1 = base - h1, y2 = y1 - h2 - (h2 > 0 && h1 > 0 ? 2 : 0);
         const tip = titolo(d);
-        return `<g class="gbar"><title>${esc(tip)}</title><rect x="${i * bw}" y="${top - 6}" width="${bw}" height="${base - top + 22}" fill="transparent"/>`
+        return `<g class="gbar" data-gm="${d.m}" role="button" tabindex="0" aria-label="${esc(tip)}"><title>${esc(tip)}</title><rect x="${i * bw}" y="${top - 6}" width="${bw}" height="${base - top + 22}" fill="transparent"/>`
           + (h1 > 0 ? `<path d="M${x},${base} V${y1 + Math.min(4, h1)} q0,-4 4,-4 h${barW - 8} q4,0 4,4 V${base} Z" fill="var(--sea)" opacity="${sel.length && !on ? 0.45 : 1}"/>` : "")
           + (h2 > 0 ? `<path d="M${x},${y1 - (h1 > 0 ? 2 : 0)} V${y2 + Math.min(4, h2)} q0,-4 4,-4 h${barW - 8} q4,0 4,4 V${y1 - (h1 > 0 ? 2 : 0)} Z" fill="var(--sea-soft)" stroke="var(--sea)" stroke-width="1" opacity="${sel.length && !on ? 0.45 : 1}"/>` : "")
           + (i === iMax && (h1 + h2) > 0 ? `<text x="${x + barW / 2}" y="${Math.min(y1, y2) - 4}" text-anchor="middle" font-size="9.5" fill="var(--muted)" font-weight="600">${fmtv(val(d) + (extra ? extra(d) : 0))}</text>` : "")
@@ -962,6 +993,10 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       <div class="legend"><span><i style="background:var(--sea)"></i>Svolti</span>${D.some((d) => d.dsv) ? `<span><i style="background:var(--sea-soft);outline:1px solid var(--sea)"></i>Da svolgere</span>` : ""}</div>
       <div class="ghead"><b>Servizi svolti</b><span class="mut num">${eur0.format(totC)} da gennaio</span></div>
       <svg viewBox="0 0 ${W} ${H}" class="bars" role="img" aria-label="Servizi svolti per mese di ${esc(nome)}">${barre((d) => d.cor, null, (v) => eur0.format(v), (d) => `${MESI_LUNGHI[d.m - 1]}: ${d.cor} servizi svolti`)}</svg>
+      ${(() => {
+        const t = sel.length === 1 ? D.find((d) => d.m === sel[0]) : null;
+        return t ? `<div class="gtip"><b>${MESI_LUNGHI[t.m - 1]}</b><span>${t.cor} svolti</span><span>venduto ${fmt(t.ven)}</span>${t.dsv ? `<span>da svolgere ${fmt(t.dsv)}</span>` : ""}<span>fatture del mese ${t.fat ? fmt(t.fat) : "—"}</span></div>` : `<p class="mut" style="font-size:12px;margin:0 2px">Tocca una barra per aprire quel mese.</p>`;
+      })()}
       <details class="gtab"><summary>Vedi in tabella</summary><div style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Servizi</th><th>Venduto</th><th>Da svolgere</th><th>Fatture del mese</th></tr></thead><tbody>${D.map((d) => `<tr><td>${d.lab}</td><td>${d.cor}</td><td>${eur0.format(d.ven)}</td><td>${d.dsv ? eur0.format(d.dsv) : "—"}</td><td>${d.fat ? eur0.format(d.fat) : "—"}</td></tr>`).join("")}</tbody></table></div></details>
     </div>`;
   }
@@ -981,7 +1016,15 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
       const filtroHtml = Object.entries(FILTRI).map(([g, d]) => `<div class="fgrp"><span>${d.label}</span><div class="filters">${d.vals.map((v) => `<button class="pill sm" data-cf="${g}|${esc(v)}" aria-pressed="${(c.f[g] || []).includes(v)}">${esc(v)}</button>`).join("")}</div></div>`).join("");
       const nAttivi = Object.values(c.f).reduce((a, v) => a + (v ? v.length : 0), 0);
       corpo = `
-      <details class="card fbox" ${c.aperto === "filtri" ? "open" : ""} id="cli-filtri"><summary><b>Filtri</b> <span class="mut">${nAttivi ? nAttivi + " attivi" : "nessuno"} · ${L.length} servizi su ${c.dati.servizi.length}</span>${nAttivi ? `<button class="btn ghost sm" id="cli-azzera">Togli tutti</button>` : ""}</summary><div class="fbody">${filtroHtml}</div></details>
+      ${(() => {
+        const tutti = c.dati.servizi.map((s) => ({ ...s, k: classe(s) }));
+        const att = chiaveF(c.f);
+        return `<div class="filters rapidi" role="group" aria-label="Filtri rapidi">${RAPIDI.map(([lab, f], i) => {
+          const nn2 = tutti.filter((s) => passa(s, f)).length;
+          return `<button class="pill sm" data-rp="${i}" aria-pressed="${chiaveF(f) === att}" ${nn2 || lab === "Tutti" ? "" : "disabled"}>${esc(lab)} <span class="cnt">${nn2}</span></button>`;
+        }).join("")}</div>`;
+      })()}
+      <details class="card fbox" ${c.aperto === "filtri" ? "open" : ""} id="cli-filtri"><summary><b>Altri filtri</b> <span class="mut">${nAttivi ? nAttivi + " attivi" : "nessuno"} · ${L.length} servizi su ${c.dati.servizi.length}</span>${nAttivi ? `<button class="btn ghost sm" id="cli-azzera">Togli tutti</button>` : ""}</summary><div class="fbody">${filtroHtml}</div></details>
       <div class="kpis k3">
         <div class="card kpi"><span>Servizi</span><b>${vivi.length}</b><small>${L.length - vivi.length ? (L.length - vivi.length) + " cancellati in elenco" : "nessun cancellato"}</small></div>
         <div class="card kpi"><span>Tariffe</span><b>${fmt(tot((s) => (s.stato === "Cancellato" ? 0 : s.tariffa)))}</b><small>netto ${fmt(tot((s) => (s.stato === "Cancellato" ? 0 : s.netto)))}</small></div>
@@ -996,7 +1039,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     }
     const sel = c.sel.length;
     return `
-      <div class="cli-head"><button class="btn ghost sm" id="cli-indietro">← Clienti</button><div class="main"><h1 class="cli-nome">${esc(c.nome)}</h1>${sit ? `<span class="mut">Saldo <b class="num ${cls(sit.saldo)}">${fmtS(sit.saldo)}</b>${sit.stato ? " · " + esc(sit.stato) : ""}</span>` : ""}<span class="mut" style="font-size:12px">${c.caricando ? "Rileggo dall'Excel…" : c.dati && c.dati.letto ? "Letto alle " + new Date(c.dati.letto).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) + " · ↻ per rileggere" : ""}</span></div><button class="iconbtn" id="cli-ricarica" aria-label="Rileggi i servizi" aria-busy="${c.caricando}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
+      <div class="cli-head"><button class="btn ghost sm" id="cli-indietro">← Clienti</button><div class="main"><label class="cli-sel"><span class="vh">Cliente</span><select id="cli-sel">${elencoClienti().map((x) => `<option ${x === c.nome ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></label>${sit ? `<span class="mut">Saldo <b class="num ${cls(sit.saldo)}">${fmtS(sit.saldo)}</b>${sit.stato ? " · " + esc(sit.stato) : ""}</span>` : ""}<span class="mut" style="font-size:12px">${c.caricando ? "Rileggo dall'Excel…" : c.dati && c.dati.letto ? "Letto alle " + new Date(c.dati.letto).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) + " · ↻ per rileggere" : ""}</span></div><button class="iconbtn" id="cli-ricarica" aria-label="Rileggi i servizi" aria-busy="${c.caricando}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button></div>
       ${graficiCliente(c.nome, c.mesi)}
       <div class="months" role="group" aria-label="Mesi">${mesiBtn}</div>
       ${c.errore && c.dati ? `<div class="banner err"><div>${esc(c.errore)}</div></div>` : ""}
@@ -1190,7 +1233,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     const bars = mesi.map((x, i) => {
       const hR = (x.ricavi / max) * (H - 22), hM = (Math.max(0, x.margine) / max) * (H - 22);
       const sel = !anno && i === st.mese - 1;
-      return `<g><rect x="${i * bw + 4}" y="${H - 16 - hR}" width="${bw - 8}" height="${hR}" rx="3" fill="var(--sea-soft)" stroke="${sel ? "var(--sea)" : "none"}"/><rect x="${i * bw + 9}" y="${H - 16 - hM}" width="${bw - 18}" height="${hM}" rx="2" fill="var(--sea)" opacity="${anno || sel ? 1 : .55}"/><text x="${i * bw + bw / 2}" y="${H - 3}" text-anchor="middle" font-size="9.5" fill="${sel ? "var(--ink)" : "var(--muted)"}" font-weight="${sel ? 700 : 500}">${MESI[i]}</text></g>`;
+      return `<g class="gbar" data-gmese="${i + 1}" role="button" tabindex="0"><title>${MESI_LUNGHI[i]}: ricavi ${fmt(x.ricavi)} · margine ${fmt(x.margine)}</title><rect x="${i * bw}" y="0" width="${bw}" height="${H}" fill="transparent"/><rect x="${i * bw + 4}" y="${H - 16 - hR}" width="${bw - 8}" height="${hR}" rx="3" fill="var(--sea-soft)" stroke="${sel ? "var(--sea)" : "none"}"/><rect x="${i * bw + 9}" y="${H - 16 - hM}" width="${bw - 18}" height="${hM}" rx="2" fill="var(--sea)" opacity="${anno || sel ? 1 : .55}"/><text x="${i * bw + bw / 2}" y="${H - 3}" text-anchor="middle" font-size="9.5" fill="${sel ? "var(--ink)" : "var(--muted)"}" font-weight="${sel ? 700 : 500}">${MESI[i]}</text></g>`;
     }).join("");
     return `
       <div class="months" role="group" aria-label="Periodo">${MESI.map((x, i) => `<button class="pill" data-mese="${i + 1}" aria-pressed="${st.mese === i + 1}">${x}</button>`).join("")}<button class="pill" data-mese="0" aria-pressed="${anno}">Anno</button></div>
@@ -1338,6 +1381,9 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     render(); window.scrollTo(0, 0);
   });
   $("#vista").addEventListener("click", (ev) => {
+    const g = ev.target.closest("[data-gm],[data-gmese]");
+    if (g && g.dataset.gmese) { st.mese = Number(g.dataset.gmese); render(); return; }
+    if (g && st.cli) { const m = Number(g.dataset.gm); st.cli.mesi = [m]; st.cli.dati = componiCliente(st.cli); render(); caricaCliente(); return; }
     const t = ev.target.closest("button"); if (!t) return;
     if (t.dataset.mese !== undefined) { st.mese = Number(t.dataset.mese); render(); return; }
     if (t.dataset.vai) { st.tab = t.dataset.vai; render(); window.scrollTo(0, 0); return; }
@@ -1354,6 +1400,7 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     if (t.id === "cli-ricarica" || t.id === "cli-leggi") { caricaCliente(true); return; }
     if (t.dataset.cm) { const m = Number(t.dataset.cm); const i = c.mesi.indexOf(m); if (i >= 0) { if (c.mesi.length > 1) c.mesi.splice(i, 1); } else c.mesi.push(m); c.mesi.sort((a, b) => a - b); c.dati = componiCliente(c); render(); caricaCliente(); return; }
     if (t.dataset.cf) { const [g, v] = t.dataset.cf.split("|"); const arr = (c.f[g] = c.f[g] || []); const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); c.aperto = "filtri"; render(); return; }
+    if (t.dataset.rp !== undefined) { c.f = JSON.parse(JSON.stringify(RAPIDI[Number(t.dataset.rp)][1])); render(); return; }
     if (t.id === "cli-azzera") { ev.preventDefault(); c.f = {}; render(); return; }
     if (t.id === "cli-recap") { apriRecap(); return; }
     if (t.id === "cli-partita") { partitaCliente(); return; }
@@ -1369,6 +1416,8 @@ table.tab th:first-child, table.tab td:first-child { text-align: left; }
     if (t.id === "aut-pag") { formPagamento(); return; }
   });
   $("#vista").addEventListener("toggle", (ev) => { if (ev.target.id === "cli-filtri" && st.cli) st.cli.aperto = ev.target.open ? "filtri" : null; }, true);
+  $("#vista").addEventListener("change", (ev) => { if (ev.target.id === "cli-sel") apriCliente(ev.target.value); });
+  $("#vista").addEventListener("keydown", (ev) => { if ((ev.key === "Enter" || ev.key === " ") && ev.target.closest && ev.target.closest("[data-gm],[data-gmese]")) { ev.preventDefault(); ev.target.closest("[data-gm],[data-gmese]").dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
   $("#vista").addEventListener("input", (ev) => { if (ev.target.id === "cerca") { st.cerca = ev.target.value; render(); } });
   $("#btn-aggiorna").addEventListener("click", leggi);
   $("#btn-bozze").addEventListener("click", pannelloBozze);

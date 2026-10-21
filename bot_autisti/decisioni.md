@@ -40,3 +40,10 @@ servizio con ▶️ Inizio / ⏹️ Fine. Regole generali in `CLAUDE.md`.
 ## Ancora aperto
 - Bot nuovo (@BotFather + credenziale n8n): lo crea Agostino. Prova = chat privata di Agostino col bot (niente gruppo di prova).
 - Promemoria (default se non detto): Inizio +10', Fine = durata stimata +30', max 2 solleciti poi avviso ad Agostino.
+
+## 21/10 — sessione di regia
+- Colonna **Calcolo ore** creata in `tblAutisti` (Excel): Effettive per tutti gli autisti a ore
+  (Angelo Olivieri compreso), **Claudio Moccia = Continuative**, vuota per tuk-tuk, sub-appalto,
+  fuori rubrica. Prima mancava: il motore di prova `E1RapyXw9bjAit9G` ripiegava su Effettive
+  (prova del 12/10 di Claudio, esecuzione `1660565`: «11 h 25 min effettive»).
+- Backup del motore prima di ogni modifica: `backups/n8n/RA_motore_prova_20261021.json`.

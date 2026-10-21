@@ -1,0 +1,191 @@
+<title>Progetto App Conti</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: documento di progetto a colonna, con schermate d'esempio in cornice telefono accanto al testo */
+:root {
+  --bg: #f3f5f6; --paper: #ffffff; --ink: #142028; --muted: #5d6b74; --line: #dde3e6;
+  --sea: #0b5f7a; --sea-soft: #e1eff4; --pos: #19744a; --pos-soft: #e3f3ea; --neg: #b23a2b; --neg-soft: #f8e6e3; --warn: #9a6200; --warn-soft: #fbf0d9;
+  --f-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1418; --paper: #162027; --ink: #e6edf0; --muted: #94a3ab; --line: #26323a;
+  --sea: #5cb8d6; --sea-soft: #12313d; --pos: #5fcf95; --pos-soft: #143425; --neg: #f08a7b; --neg-soft: #3a1c18; --warn: #f0b94e; --warn-soft: #3a2d12; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e1418; --paper: #162027; --ink: #e6edf0; --muted: #94a3ab; --line: #26323a;
+  --sea: #5cb8d6; --sea-soft: #12313d; --pos: #5fcf95; --pos-soft: #143425; --neg: #f08a7b; --neg-soft: #3a1c18; --warn: #f0b94e; --warn-soft: #3a2d12; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 34px; }
+header .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--sea); font-weight: 700; }
+h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.05; letter-spacing: -.025em; margin: 6px 0 10px; font-weight: 800; text-wrap: balance; }
+header p { color: var(--muted); max-width: 62ch; margin: 0; font-size: 17px; }
+h2 { font-size: 24px; letter-spacing: -.015em; margin: 0 0 4px; text-wrap: balance; }
+h3 { font-size: 16px; margin: 0; }
+p { margin: 0; max-width: 66ch; }
+.lead { color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.rule { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; }
+.rule b { font-size: 15px; }
+.rule span { color: var(--muted); font-size: 14px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+@media (max-width: 820px) { .split { grid-template-columns: 1fr; } }
+.phone { background: var(--paper); border: 1px solid var(--line); border-radius: 26px; padding: 14px 12px; box-shadow: 0 10px 40px rgba(20,32,40,.10); display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; max-width: 360px; width: 100%; justify-self: center; }
+.phone .tit { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.phone .tit b { font-size: 18px; letter-spacing: -.01em; }
+.phone .tag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); white-space: nowrap; }
+.chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.tile { border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; display: flex; flex-direction: column; }
+.tile span { font-size: 11px; color: var(--muted); font-weight: 600; }
+.tile b { font-family: var(--f-num); font-size: 16px; }
+.tile.hl { background: var(--sea); border-color: var(--sea); color: #fff; }
+.tile.hl span { color: rgba(255,255,255,.8); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tile.hl { color: #06222c; } :root:not([data-theme="light"]) .tile.hl span { color: rgba(6,34,44,.75); } }
+:root[data-theme="dark"] .tile.hl { color: #06222c; } :root[data-theme="dark"] .tile.hl span { color: rgba(6,34,44,.75); }
+.svc { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.svc div { display: grid; grid-template-columns: 18px 1fr auto; gap: 7px; align-items: center; padding: 7px 9px; border-top: 1px solid var(--line); }
+.svc div:first-child { border-top: 0; }
+.svc i { width: 14px; height: 14px; border: 1.5px solid var(--muted); border-radius: 4px; display: inline-block; }
+.svc i.on { background: var(--sea); border-color: var(--sea); }
+.svc small { display: block; color: var(--muted); font-size: 11.5px; }
+.svc .v { font-family: var(--f-num); text-align: right; white-space: nowrap; }
+.svc .w { color: var(--warn); }
+.bar { display: flex; gap: 6px; }
+.bar span { flex: 1; text-align: center; border-radius: 10px; padding: 8px 4px; font-weight: 700; font-size: 12.5px; border: 1px solid var(--line); }
+.bar span.p { background: var(--sea); color: #fff; border-color: var(--sea); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bar span.p { color: #06222c; } }
+:root[data-theme="dark"] .bar span.p { color: #06222c; }
+.note { font-size: 12px; color: var(--muted); }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.filter { border-left: 3px solid var(--sea); padding: 4px 0 4px 12px; display: flex; flex-direction: column; gap: 2px; }
+.filter span { color: var(--muted); font-size: 14.5px; }
+.screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.screen { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.screen h3 { display: flex; gap: 8px; align-items: baseline; }
+.screen h3 em { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--sea); text-transform: uppercase; letter-spacing: .06em; }
+.screen ul { margin: 0; padding-left: 18px; color: var(--ink); font-size: 14.5px; }
+.screen li { margin: 2px 0; }
+.found { display: flex; flex-direction: column; gap: 8px; }
+.found div { background: var(--warn-soft); border-radius: 10px; padding: 10px 14px; font-size: 15px; }
+.found b { font-weight: 700; }
+ol.phases { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; counter-reset: f; }
+ol.phases li { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px; counter-increment: f; display: flex; flex-direction: column; gap: 4px; font-size: 14.5px; }
+ol.phases li::before { content: "Fase " counter(f); font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--sea); }
+ol.phases li b { font-size: 15.5px; }
+.qs { display: flex; flex-direction: column; gap: 8px; counter-reset: q; }
+.qs div { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 12px 46px; position: relative; counter-increment: q; }
+.qs div::before { content: counter(q); position: absolute; left: 14px; top: 11px; width: 22px; height: 22px; border-radius: 50%; background: var(--sea-soft); color: var(--sea); font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.qs small { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Transfer Experience · progetto · 21 ottobre 2026</div>
+    <h1>L'app dei conti, pensata per rendicontare</h1>
+    <p>Una proposta da discutere prima di scrivere altro codice: cosa vedi, cosa filtri, cosa fai con un tocco, e cosa l'app ti prepara già pronto da mandare. Gli esempi usano i dati veri di Auraterrae di ottobre, letti oggi dall'Excel.</p>
+  </header>
+
+  <section>
+    <h2>Quattro regole che tengono in piedi tutto</h2>
+    <div class="rules">
+      <div class="rule"><b>I numeri li fa l'Excel</b><span>L'app legge le formule, non rifà conti. Se un numero è sbagliato si corregge in un posto solo.</span></div>
+      <div class="rule"><b>Ogni scelta è un bottone</b><span>Stati, incassi, criteri dei sub-appalti: si toccano, non si scrivono. Le parole restano solo per le note.</span></div>
+      <div class="rule"><b>Niente si perde</b><span>Ogni modifica è una bozza finché non è scritta e riletta. Accanto c'è la riga dell'Excel dove è finita.</span></div>
+      <div class="rule"><b>Fuori esce solo con il tuo ok</b><span>Recap ai clienti, estratti ai colleghi, fatture: l'app li prepara, li mandi tu o Claude dopo il tuo sì.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Il cuore: la scheda del cliente</h2>
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <p class="lead">Si apre su un periodo (il mese in corso, oppure da… a…) e mostra tutto quello che serve per chiudere i conti con quel cliente: cosa abbiamo fatto, cosa è incassato, cosa è fatturato, cosa manca. I totali in alto seguono sempre i filtri: se togli i servizi da svolgere, cambiano anche loro.</p>
+        <h3>I filtri</h3>
+        <div class="filters">
+          <div class="filter"><b>Periodo</b><span>Un mese, più mesi, da una data a un'altra. Il mese di competenza è quello del servizio.</span></div>
+          <div class="filter"><b>Stato del servizio</b><span>Svolti · da svolgere · cancellati (questi ultimi nascosti di base).</span></div>
+          <div class="filter"><b>Incasso</b><span>Incassati da noi · da incassare · sconto in fattura · dalla struttura · contanti in mano all'autista.</span></div>
+          <div class="filter"><b>Fattura</b><span>Già in fattura (con il numero) · da fatturare · in proforma.</span></div>
+          <div class="filter"><b>Tipo</b><span>Transfer · dispo · tour · tuk-tuk · Uber · Viator.</span></div>
+          <div class="filter"><b>Chi l'ha fatto</b><span>Un nostro autista · dato a un collega · ricevuto da un collega.</span></div>
+          <div class="filter"><b>Da controllare</b><span>Prezzo diverso dal listino · possibile doppione · dati mancanti · sub-appalto senza costo.</span></div>
+        </div>
+        <h3>Cosa fai da qui</h3>
+        <p>Spunti uno o più servizi e scegli: <b>metti in fattura</b> (prepara la bozza con quelle corse), <b>segna incassato</b>, <b>prezzo ok</b>, <b>segnala doppione</b>, <b>passa a collega</b> con il suo criterio. In fondo: <b>prepara il recap</b> del periodo per il cliente, pronto da copiare in WhatsApp o in mail.</p>
+      </div>
+
+      <div class="phone" aria-label="Esempio della scheda cliente">
+        <div class="tit"><b>Auraterrae</b><span class="tag">Sconto in fattura</span></div>
+        <div class="chips"><span class="chip on">Ottobre</span><span class="chip">Svolti</span><span class="chip on">+ da svolgere</span><span class="chip">Da fatturare</span><span class="chip">Tutti i tipi</span></div>
+        <div class="tiles">
+          <div class="tile hl"><span>Da fatturare ottobre</span><b>8.218 €</b></div>
+          <div class="tile"><span>Servizi</span><b>113</b></div>
+          <div class="tile"><span>Tariffe</span><b>11.180 €</b></div>
+          <div class="tile"><span>Netto (sconto)</span><b>8.273 €</b></div>
+          <div class="tile"><span>Già fatturato</span><b>0 €</b></div>
+          <div class="tile"><span>Incassato da noi</span><b>75 €</b></div>
+        </div>
+        <div class="svc">
+          <div><i></i><span>23/10 17:30 · Monopoli → APT Bari<small>7 pax · Transfer · da svolgere</small></span><span class="v">96,20<small class="w">doppione?</small></span></div>
+          <div><i></i><span>23/10 17:30 · Monopoli → APT Bari<small>7 pax · Transfer · da svolgere</small></span><span class="v">96,20<small class="w">doppione?</small></span></div>
+          <div><i class="on"></i><span>23/10 13:30 · Dispo Alberobello 3h<small>7 pax · Dispo · da svolgere</small></span><span class="v">185,00</span></div>
+          <div><i class="on"></i><span>22/10 22:00 · Polignano → Auraterrae<small>7 pax · Transfer · da svolgere</small></span><span class="v">25,90</span></div>
+        </div>
+        <div class="bar"><span class="p">In fattura (2)</span><span>Incassato</span><span>Prezzo ok</span></div>
+        <div class="note">Esempio con righe vere di ottobre: tre servizi uguali alla stessa ora sono segnalati come possibile doppione dal file.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Le altre schede</h2>
+    <div class="screens">
+      <div class="screen"><h3>Oggi <em>nuova</em></h3><ul><li>Cosa sistemare adesso, già in ordine di soldi: fatture da emettere a mese chiuso, incassi da segnare, prezzi mancanti, doppioni.</li><li>Ogni voce con il suo bottone, senza cercare.</li></ul></div>
+      <div class="screen"><h3>Mese</h3><ul><li>Margine, ricavi, costi del mese e confronto con lo stesso mese prima.</li><li>Da dove viene il margine: per cliente, per tipo di servizio, per mezzo.</li></ul></div>
+      <div class="screen"><h3>Clienti</h3><ul><li>Elenco con saldo, stato e prossima azione.</li><li>Filtri: ci devono, da fatturare a mese chiuso, crediti oltre 60 giorni.</li><li>Tocchi un nome: la scheda qui sopra.</li></ul></div>
+      <div class="screen"><h3>Colleghi e sub-appalti</h3><ul><li>Per ogni collega un estratto conto unico: corse date, corse ricevute, commissioni, pagamenti.</li><li>Chi ha incassato, criterio (80%, totale, prezzo fisso per pezzo), saldato sì o no.</li><li>Estratto pronto da mandare.</li></ul></div>
+      <div class="screen"><h3>Autisti</h3><ul><li>Giorno per giorno: ore (fogli, Moox, gestionale), servizi, contanti incassati e consegnati.</li><li>Dovuto, pagato, residuo; pagamento con un tocco.</li><li>Prospetto paga del mese pronto da mandare.</li></ul></div>
+      <div class="screen"><h3>Fatture</h3><ul><li>Da emettere per mese di lavoro (solo servizi svolti), emesse, da incassare con età.</li><li>Bozza fattura dalle corse spuntate; l'emissione va a Claude con il tuo ok.</li></ul></div>
+      <div class="screen"><h3>Strutture e fee</h3><ul><li>Fee maturate per mese, pagate, compensate, residue.</li><li>Recap fee pronto per la struttura.</li></ul></div>
+      <div class="screen"><h3>Cassa <em>nuova</em></h3><ul><li>Contanti in mano a ogni autista, consegnati, trattenuti a compenso.</li><li>Un colpo d'occhio su quanto contante gira fuori.</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cosa ho visto guardando i dati di ottobre</h2>
+    <div class="found">
+      <div><b>Il «da fatturare» di ottobre conta anche i servizi non ancora fatti.</b> Per Auraterrae 20 servizi su 113 sono «da svolgere». Nella fattura del mese dovrebbero entrare solo i svolti: lo metto come regola, a meno che tu non mi dica il contrario.</div>
+      <div><b>Auraterrae è tutta «Sconto in fattura».</b> Tariffe 11.180 €, netto 8.273 €: lo sconto è circa il 26%. Il «da fatturare» usa già il netto.</div>
+      <div><b>Righe identiche alla stessa ora.</b> Il 23/10 ci sono tre transfer Monopoli → APT Bari alle 17:30 e tre dispo Alberobello alle 13:30. Possono essere tre mezzi per un gruppo: la scheda li mostra, decidi tu con un tocco.</div>
+      <div><b>Fatture di marzo con la competenza di aprile.</b> Marzo sembra non fatturato e aprile fatturato in più di 1.100 €. L'app lo segnala e propone di spostare la competenza.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>In che ordine lo costruirei</h2>
+    <ol class="phases">
+      <li><b>Scheda cliente completa</b>Filtri, elenco servizi, totali che seguono i filtri, spunta e azioni. Da fatturare solo sui svolti.</li>
+      <li><b>Recap pronti</b>Recap cliente del mese, estratto collega, prospetto paga autista, recap fee: testo pronto da copiare.</li>
+      <li><b>Oggi e Cassa</b>La lista delle cose da sistemare in ordine di soldi e i contanti in giro.</li>
+      <li><b>Passaggio al file vero</b>Solo dopo che hai provato tutto sulla copia e mi hai dato l'ok.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Cosa mi serve sapere da te</h2>
+    <div class="qs">
+      <div>Il «da fatturare» del mese deve contare solo i servizi svolti?<small>Proposta: sì, i «da svolgere» restano nel mese ma fuori dalla fattura finché non sono fatti.</small></div>
+      <div>Il recap per il cliente: che cosa ci vuoi dentro e in che forma?<small>Per esempio: elenco servizi con data, tratta, pax, importo, totale, già fatturato, da fatturare. Testo per WhatsApp, PDF o entrambi.</small></div>
+      <div>Quando dicevi «netto meno l'80%» per le partite: l'80% di cosa, e chi lo dà a chi?<small>Mi serve l'esempio pratico che mi avevi accennato.</small></div>
+      <div>Chi altro userà l'app, se qualcuno?<small>Oggi è pensata solo per te. Se servirà a Manuel o Eustachio, decidiamo cosa possono vedere.</small></div>
+      <div>Ci sono schede che non ti servono o che manca?<small>Per esempio mezzi e carburante, noleggi, contestazioni.</small></div>
+    </div>
+  </section>
+</div>

@@ -1,4 +1,4 @@
-// Ponte dell'app Conti: {azione:"leggi"} oppure {azione:"scrivi", ops:[...]}.
+// Ponte dell'app Conti: {azione:"leggi"}, {azione:"servizi"} oppure {azione:"scrivi", ops:[...]}.
 // Passa dal ponte gx-sessione: una sessione Excel per chiamata, cosi' letture e scritture sono allineate.
 // Per ora solo la COPIA DI PROVA del file.
 const body = $input.first().json.body || {};
@@ -88,6 +88,52 @@ const leggi = async () => {
   }];
 };
 
+
+// ---------------- SERVIZI: mese per mese e sub-appalti ----------------
+const r2 = (x) => Math.round(x * 100) / 100;
+const nn = (x) => (typeof x === "number" && isFinite(x) ? x : Number(x) || 0);
+const servizi = async () => {
+  const addr = await tableAddr("tblServizi");
+  const first = firstRowOf(addr) + 1, last = lastRow(addr);
+  const blocchi = [];
+  for (let a = first; a <= last; a += 1500) blocchi.push([a, Math.min(a + 1499, last)]);
+  const [parti, fatt] = await Promise.all([
+    Promise.all(blocchi.map(([a, b]) => vals("Servizi", `A${a}:AS${b}`))),
+    gxGet(`tables('tblFatture')/range?$select=values`).then((r) => r.values),
+  ]);
+  // letta dopo, da sola: in parallelo con i blocchi grandi a volte non risponde
+  let sub = [[]], subAddr = "x!A4:A4";
+  try { const t = await gxGet(`tables('tblSubappalti')/range?$select=values,address`); sub = t.values; subAddr = t.address; }
+  catch (e) { if (!/ItemNotFound|not found/i.test(String(e.message))) throw e; }
+  const righe = [].concat(...parti);
+  const mesi = {};
+  for (const r of righe) {
+    const cli = r[12], m = Number(r[4]);
+    if (!cli || !(m >= 1 && m <= 12) || r[37] === "Cancellato") continue;
+    const c = (mesi[cli] = mesi[cli] || {});
+    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0 });
+    o.lavoro += nn(r[35]); if (!r[36]) o.senzaFatt += nn(r[35]);
+    o.incassato += nn(r[29]); o.residuo += nn(r[33]); o.corse++;
+  }
+  for (const r of fatt.slice(1)) {
+    const cli = r[6], m = Number(r[8]);
+    if (!cli || !(m >= 1 && m <= 12)) continue;
+    const conta = r[14] === "" || r[14] == null ? 1 : Number(r[14]);
+    const c = (mesi[cli] = mesi[cli] || {});
+    const o = (c[m] = c[m] || { lavoro: 0, senzaFatt: 0, incassato: 0, residuo: 0, corse: 0, fatturato: 0 });
+    o.fatturato += nn(r[10]) * conta;
+  }
+  for (const c of Object.values(mesi)) for (const o of Object.values(c)) for (const k of Object.keys(o)) o[k] = r2(o[k]);
+  const dati = righe.filter((r) => r[16] === "Dato a collega" && r[37] !== "Cancellato").map((r) => ({
+    id: String(r[41] || ""), data: r[0], ora: r[1], tipo: r[5], da: r[6], per: r[7], nome: r[9], cliente: r[12], collega: r[14],
+    tariffa: nn(r[17]), fee: nn(r[21]), sub: nn(r[22]), netto: nn(r[23]), modalita: r[28], incassato: nn(r[29]), stato: r[37],
+    note: String(r[44] || "").slice(0, 160),
+  }));
+  const subFirst = firstRowOf(subAddr) + 1;
+  const subRighe = (sub || []).slice(1).map((r, i) => ({ riga: subFirst + i, id: String(r[0] || ""), chi: r[8], criterio: r[9], valore: r[10], dobbiamo: nn(r[11]), cidevono: nn(r[12]), stato: r[13], note: r[14], pezzo: r[5] })).filter((x) => x.id);
+  return [{ json: { ok: true, file: fileKey, letto: new Date().toISOString(), mesi, dati, sub: subRighe } }];
+};
+
 // ---------------- SCRIVI ----------------
 const ops = Array.isArray(body.ops) ? body.ops.slice(0, 20) : [];
 const esiti = [];
@@ -171,10 +217,40 @@ const fai = {
     const v = new Array(12).fill(null);
     if (op.prezzo !== undefined && op.prezzo !== "") { v[5] = num(op.prezzo); v[8] = `Agostino app ${oggiTesto()}`; }
     if (op.stato) { if (!STATI_PARTITA.includes(op.stato)) throw new Error("Stato non ammesso: " + op.stato); v[9] = op.stato; }
-    if (op.nota) v[11] = `${row[11] ? row[11] + " | " : ""}${op.nota} (app ${oggiTesto()})`;
+    if (op.nota && !String(row[11]).includes(tag(op.id))) v[11] = `${row[11] ? row[11] + " | " : ""}${op.nota} (app ${oggiTesto()}) ${tag(op.id)}`;
     await gxWrite("PATCH", `worksheets('Partite')/range(address='O${r}:Z${r}')`, { values: [v] });
     const back = (await vals("Partite", `O${r}:Z${r}`))[0];
     return { esito: "scritto", dove: `Partite riga ${r}`, dettaglio: `${back[0]} · ${back[3]} · prezzo ${back[5]} · ${back[9]}` };
+  },
+
+
+  // Sub-appalti: una riga per servizio (o pezzo di tour), chiave Id servizio; si aggiorna in posto
+  async subappalto(op) {
+    const id = String(op.idServizio || "").trim();
+    if (!id) throw new Error("Manca l'Id del servizio");
+    if (!["Noi", "Loro"].includes(op.chi)) throw new Error("Chi incassa deve essere Noi o Loro");
+    if (!["% importo", "Totale", "Prezzo fisso", "Deciso da Agostino"].includes(op.criterio)) throw new Error("Criterio non ammesso: " + op.criterio);
+    const dob = op.chi === "Noi" ? num(op.dobbiamo) : 0;
+    const dev = op.chi === "Loro" ? num(op.cidevono) : 0;
+    if (dob < 0 || dev < 0) throw new Error("Gli importi non possono essere negativi");
+    const addr = await tableAddr("tblSubappalti");
+    const first = firstRowOf(addr) + 1, last = lastRow(addr);
+    const ids = await vals("Sub-appalti", `A${first}:A${last}`);
+    const i = ids.findIndex((x) => String(x[0]) === id);
+    const nota = `${op.nota ? op.nota + " · " : ""}app ${oggiTesto()}`;
+    const riga = [id, Number(op.data) || "", op.collega || "", op.cliente || "", op.servizio || "", op.pezzo || "", num(op.tariffa || 0), num(op.fee || 0),
+      op.chi, op.criterio, op.valore === "" || op.valore == null ? "" : num(op.valore), dob, dev, op.stato || "Da saldare", nota];
+    let r;
+    if (i >= 0) r = first + i;
+    else if (ids.length === 1 && !ids[0][0]) r = first;
+    if (r) await gxWrite("PATCH", `worksheets('Sub-appalti')/range(address='A${r}:O${r}')`, { values: [riga] });
+    else {
+      const add = await gxWrite("POST", `tables('tblSubappalti')/rows/add`, { index: null, values: [riga] });
+      r = firstRowOf(addr) + 1 + Number(add && add.index);
+    }
+    const back = (await vals("Sub-appalti", `A${r}:O${r}`))[0];
+    if (String(back[0]) !== id || num(back[11]) !== dob || num(back[12]) !== dev) throw new Error("Riletta diversa da quella scritta");
+    return { esito: "scritto", dove: `Sub-appalti riga ${r}`, dettaglio: `${back[2]} · ${back[4]} · ${op.chi === "Noi" ? "gli dobbiamo " + dob : "ci devono " + dev} €` };
   },
 
   // Situazione clienti: Stato, Prossima azione, Note (colonne gialle)
@@ -216,7 +292,7 @@ const azione = body.azione || "leggi";
 let out;
 try {
   await apriSessione(azione === "scrivi");
-  out = azione === "scrivi" ? await scrivi() : await leggi();
+  out = azione === "scrivi" ? await scrivi() : azione === "servizi" ? await servizi() : await leggi();
 } catch (e) {
   out = [{ json: { ok: false, bloccato: !!e.bloccato, errore: String(e.message || e).slice(0, 300) } }];
 } finally {

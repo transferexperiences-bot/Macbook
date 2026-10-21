@@ -156,6 +156,10 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 12px; font-weight: 600; z-index: 30; max-width: calc(100% - 32px); }
 .esito { font-size: 12.5px; }
+table.tab { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.tab th { text-align: right; font-family: var(--f-ui); font-size: 11.5px; color: var(--muted); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+table.tab td { text-align: right; padding: 7px 10px; border-top: 1px solid var(--line); white-space: nowrap; }
+table.tab th:first-child, table.tab td:first-child { text-align: left; }
 .groupttl { padding: 10px 14px 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; border-top: 1px solid var(--line); background: var(--bg); }
 .rows > .groupttl:first-child { border-top: 0; }
 </style>
@@ -195,7 +199,11 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
   const MESI_LUNGHI = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
   const STATI_PARTITA = ["Concordato", "Manca il prezzo", "Chiuso", "Chiuso / incluso", "Solo nostro gestionale", "Deciso solo da loro"];
   const STATI_CLIENTE = ["Da sollecitare", "Sollecitato", "Fatturato", "Da incassare", "Proposta", "Da decidere", "Da verificare", "Compensato", "Chiuso"];
-  const OP_LABEL = { movimento: "Movimento", incasso_fattura: "Incasso fattura", partita: "Partita collega", cliente: "Cliente" };
+  const OP_LABEL = { movimento: "Movimento", incasso_fattura: "Incasso fattura", partita: "Partita collega", cliente: "Cliente", subappalto: "Sub-appalto" };
+  // Chi ha incassato un servizio passato a un collega (regola di Agostino 21/10): carta in cassa, link, bonifico, fattura = noi
+  const INCASSA_NOI = ["Fattura", "Sconto in fattura", "Carta", "Link", "Bonifico", "Dalla struttura", "Uber"];
+  const INCASSA_LORO = ["Contanti", "Incassare", "Al ritorno", "All'andata"];
+  const chiIncassa = (mod) => (INCASSA_NOI.includes(mod) ? "Noi" : INCASSA_LORO.includes(mod) ? "Loro" : "");
 
   // ---------- stato ----------
   const st = {
@@ -210,9 +218,16 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     filtroClienti: "tutti",
     cerca: "",
     salvando: false,
+    serv: null, // servizi mese per mese e sub-appalti (azione "servizi")
+    caricandoServ: false,
+    erroreServ: null,
+    meseFatt: new Date().getMonth() + 1,
+    vistaColleghi: "partite",
+    filtroSub: "da valorizzare",
   };
   try { const t = localStorage.getItem("conti.tab"); if (t) st.tab = t; } catch (e) {}
   try { const s = localStorage.getItem("conti.snap"); if (s) { const o = JSON.parse(s); st.snap = o.snap; st.letto = o.letto; } } catch (e) {}
+  try { const s = localStorage.getItem("conti.serv"); if (s) st.serv = JSON.parse(s); } catch (e) {}
 
   // ---------- utilità ----------
   const $ = (s, el = document) => el.querySelector(s);
@@ -284,10 +299,26 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
       if (!j.ok) throw new Error(j.errore || "Lettura non riuscita.");
       st.snap = j; st.letto = j.letto;
       try { localStorage.setItem("conti.snap", JSON.stringify({ snap: j, letto: j.letto })); } catch (e) {}
+      setTimeout(leggiServizi, 0);
     } catch (e) {
       st.erroreLettura = testoErrore(e);
     } finally {
       st.caricando = false; render();
+    }
+  }
+
+  async function leggiServizi() {
+    if (st.caricandoServ) return;
+    st.caricandoServ = true; st.erroreServ = null; render();
+    try {
+      const j = await chiamaPonte({ azione: "servizi", file: FILE });
+      if (!j.ok) throw new Error(j.errore || "Lettura dei servizi non riuscita.");
+      st.serv = j;
+      try { localStorage.setItem("conti.serv", JSON.stringify(j)); } catch (e) {}
+    } catch (e) {
+      st.erroreServ = testoErrore(e);
+    } finally {
+      st.caricandoServ = false; render();
     }
   }
 
@@ -345,6 +376,31 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     return { meseC3, top, matrice };
   }
 
+  // Da fatturare di un mese = lavoro di quel mese − fatture con competenza di quel mese.
+  // Il fatturato in più degli altri mesi non scala (regola di Agostino 21/10).
+  function mesiCliente(nome) {
+    const c = (st.serv && st.serv.mesi && st.serv.mesi[nome]) || {};
+    return Object.keys(c).map(Number).sort((a, b) => a - b).map((m) => ({ m, ...c[m], daFatt: Math.round((c[m].lavoro - c[m].fatturato) * 100) / 100 }));
+  }
+  function daFatturareMese(m) {
+    if (!st.serv) return [];
+    const sit = clienti();
+    return Object.entries(st.serv.mesi).map(([nome, mm]) => {
+      const o = mm[m]; if (!o) return null;
+      const s = sit.find((c) => c.nome === nome);
+      return { nome, ...o, daFatt: Math.round((o.lavoro - o.fatturato) * 100) / 100, riga: s ? s.riga : null, stato: s ? s.stato : "" };
+    }).filter((x) => x && x.daFatt > 0.5).sort((a, b) => b.daFatt - a.daFatt);
+  }
+  function subappalti() {
+    if (!st.serv) return [];
+    const scritti = Object.fromEntries((st.serv.sub || []).map((x) => [x.id, x]));
+    const inBozza = Object.fromEntries(st.bozze.filter((b) => b.op === "subappalto" && b.p && b.stato !== "scritto").map((b) => [b.p.idServizio, { ...b.p, bozzaId: b.id }]));
+    return st.serv.dati.map((d) => {
+      const pz = String(d.note || "").match(/(\d+)\s*\/\s*(\d+)/);
+      return { ...d, chiAuto: chiIncassa(d.modalita), pezzo: pz ? pz[1] + "/" + pz[2] : "", scritto: scritti[d.id] || null, bozza: inBozza[d.id] || null };
+    });
+  }
+
   // ---------- bozze ----------
   const BOZZE_LS = "conti.bozze.riserva";
   async function avviaBozze() {
@@ -375,7 +431,8 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     else { st.bozze = st.bozze.filter((x) => x.id !== id); try { localStorage.setItem(BOZZE_LS, JSON.stringify(st.bozze)); } catch (e) {} render(); }
   }
   async function aggiungiBozza(op, descr) {
-    const b = { id: nuovoId(), ...op, descr, stato: "bozza", esito: "", dettaglio: "", file: FILE, creata: new Date().toISOString() };
+    // i dati della modifica stanno in "p": cosi' lo stato della bozza non copre lo stato scelto (cliente, sub-appalto)
+    const b = { id: nuovoId(), p: op, op: op.op, descr, stato: "bozza", esito: "", dettaglio: "", file: FILE, creata: new Date().toISOString() };
     await salvaBozza(b);
     toast("Messa nelle bozze: premi Salva tutto quando hai finito");
   }
@@ -392,7 +449,7 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
         giri++;
         const lotto = coda.slice(0, 6);
         for (const b of lotto) await salvaBozza({ ...b, stato: "in_invio" });
-        const ops = lotto.map(({ stato, esito, dettaglio, descr, creata, file, ...op }) => op);
+        const ops = lotto.map((b) => ({ ...b.p, id: b.id }));
         let j;
         try { j = await chiamaPonte({ azione: "scrivi", file: FILE, ops }); }
         catch (e) {
@@ -573,6 +630,88 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     });
   }
 
+  function formSubappalto(d) {
+    const w = d.scritto || {};
+    const b = d.bozza || {};
+    const chi0 = b.chi || w.chi || d.chiAuto || "Noi";
+    const crit0 = b.criterio || w.criterio || (d.pezzo ? "Prezzo fisso" : "% importo");
+    const val0 = b.valore != null ? b.valore : w.valore !== undefined && w.valore !== "" ? w.valore : crit0 === "% importo" ? 80 : "";
+    apriSheet(`
+      <h3>${esc(d.da)} → ${esc(d.per)}</h3>
+      <p class="sub">${dataLunga(d.data)} · ${esc(d.cliente)} · a <b>${esc(d.collega)}</b>${d.pezzo ? " · pezzo " + esc(d.pezzo) : ""}</p>
+      <div class="facts">
+        <div><span>Tariffa</span><b>${fmt(d.tariffa, true)}</b></div>
+        <div><span>Fee struttura</span><b>${fmt(Math.abs(d.fee), true)}</b></div>
+        <div><span>Pagamento</span><b style="font-family:var(--f-ui)">${esc(d.modalita || "—")}</b></div>
+        <div><span>Incassato</span><b>${fmt(d.incassato, true)}</b></div>
+        ${d.note ? `<div class="wide"><span>Note gestionale</span><b>${esc(d.note)}</b></div>` : ""}
+      </div>
+      <form class="f" id="fs">
+        <label>Chi ha incassato ${segHtml("chi", ["Noi", "Loro"], chi0)}<span class="hint">${d.chiAuto ? "Proposto dal pagamento «" + esc(d.modalita) + "»." : "Il pagamento non lo dice: scegli tu."}</span></label>
+        <div id="fs-noi">
+          <label>Quanto gli diamo ${segHtml("crit", ["% importo", "Totale", "Prezzo fisso"], crit0 === "Deciso da Agostino" ? "Prezzo fisso" : crit0)}</label>
+          <div class="two" style="margin-top:8px">
+            <label id="fs-vl">Percentuale<input id="fs-val" inputmode="decimal" value="${esc(val0 === "" ? "" : String(val0).replace(".", ","))}" autocomplete="off"></label>
+            <label>Gli dobbiamo €<input id="fs-dob" inputmode="decimal" autocomplete="off"></label>
+          </div>
+        </div>
+        <div id="fs-loro" hidden>
+          <label>Ci devono €<input id="fs-dev" inputmode="decimal" value="${eur2.format(w.chi === "Loro" ? w.cidevono : Math.abs(d.fee))}" autocomplete="off"><span class="hint">Proposta: la commissione della struttura (${fmt(Math.abs(d.fee), true)}). Decidi tu.</span></label>
+        </div>
+        <label>Pezzo del tour<input id="fs-pz" value="${esc(b.pezzo || w.pezzo || d.pezzo)}" placeholder="es. 2/3, vuoto se servizio unico" autocomplete="off"></label>
+        <label>Stato ${segHtml("stato", ["Da saldare", "Saldato"], b.stato || w.stato || "Da saldare")}</label>
+        <label>Nota<input id="fs-nota" autocomplete="off"></label>
+        <p class="err-text" id="fs-err" hidden></p>
+        <div class="actions"><button class="btn primary" type="submit">Metti nelle bozze</button><button class="btn ghost" type="button" data-chiudi>Annulla</button></div>
+      </form>`, (el) => {
+      attivaSeg(el);
+      const segChi = $('[data-seg="chi"]', el), segCrit = $('[data-seg="crit"]', el);
+      const val = $("#fs-val", el), dob = $("#fs-dob", el);
+      let toccatoDob = false;
+      const ricalcola = () => {
+        const noi = segChi.dataset.val === "Noi";
+        $("#fs-noi", el).hidden = !noi; $("#fs-loro", el).hidden = noi;
+        const c = segCrit.dataset.val;
+        $("#fs-vl", el).firstChild.textContent = c === "% importo" ? "Percentuale" : c === "Prezzo fisso" ? "Prezzo €" : "—";
+        val.disabled = c === "Totale";
+        if (toccatoDob) return;
+        const v = parseImporto(val.value);
+        const x = c === "% importo" ? (d.tariffa * (isFinite(v) ? v : 0)) / 100 : c === "Totale" ? d.tariffa : isFinite(v) ? v : 0;
+        dob.value = eur2.format(Math.round(x * 100) / 100);
+      };
+      if (b.chi === "Noi") { dob.value = eur2.format(b.dobbiamo); toccatoDob = true; }
+      else if (w.chi === "Noi" && !b.chi) { dob.value = eur2.format(w.dobbiamo); toccatoDob = true; }
+      segChi.addEventListener("change", ricalcola);
+      segCrit.addEventListener("change", () => { toccatoDob = false; if (segCrit.dataset.val === "% importo" && !val.value) val.value = "80"; ricalcola(); });
+      val.addEventListener("input", () => { toccatoDob = false; ricalcola(); });
+      dob.addEventListener("input", () => { toccatoDob = true; });
+      ricalcola();
+      $("#fs", el).addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const err = $("#fs-err", el);
+        const chi = segChi.dataset.val;
+        const op = { op: "subappalto", idServizio: d.id, data: d.data, collega: d.collega, cliente: d.cliente, servizio: `${d.da} → ${d.per}`, pezzo: $("#fs-pz", el).value.trim(), tariffa: d.tariffa, fee: Math.abs(d.fee), chi, stato: $('[data-seg="stato"]', el).dataset.val, nota: $("#fs-nota", el).value.trim() };
+        if (!d.id) { err.hidden = false; err.textContent = "Questo servizio non ha Id nel gestionale: va sistemato lì prima."; return; }
+        if (chi === "Noi") {
+          const x = parseImporto(dob.value);
+          if (!(x >= 0)) { err.hidden = false; err.textContent = "Scrivi quanto gli dobbiamo."; return; }
+          const c = segCrit.dataset.val;
+          op.criterio = toccatoDob && c !== "Totale" ? "Deciso da Agostino" : c;
+          op.valore = c === "Totale" ? "" : parseImporto(val.value);
+          if (op.valore !== "" && !isFinite(op.valore)) op.valore = "";
+          op.dobbiamo = x;
+        } else {
+          const x = parseImporto($("#fs-dev", el).value);
+          if (!(x >= 0)) { err.hidden = false; err.textContent = "Scrivi quanto ci devono (anche 0)."; return; }
+          op.criterio = "Deciso da Agostino"; op.valore = ""; op.cidevono = x;
+        }
+        if (d.bozza) await togliBozza(d.bozza.bozzaId);
+        await aggiungiBozza(op, `${d.collega} · ${dataBreve(d.data)} ${d.da} → ${d.per}${op.pezzo ? " (" + op.pezzo + ")" : ""} · ${chi === "Noi" ? "gli dobbiamo " + fmt(op.dobbiamo, true) : "ci devono " + fmt(op.cidevono, true)}`);
+        chiudiSheet();
+      });
+    });
+  }
+
   // ---------- dettagli ----------
   function dettaglioCliente(c) {
     const fa = fatture().filter((f) => f.cliente === c.nome && f.residuo > 0.5 && f.conta !== 0);
@@ -591,6 +730,17 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
         ${c.note ? `<div class="wide"><span>Note</span><b>${esc(c.note)}</b></div>` : ""}
       </div>
       <div class="actions"><button class="btn primary" id="dc-stato">Stato e azione</button>${c.collega ? `<button class="btn" id="dc-part">Apri la partita</button>` : ""}</div>
+      ${(() => {
+        const mm = mesiCliente(c.nome);
+        if (!st.serv) return `<p class="mut" style="margin:0">${st.caricandoServ ? "Carico il dettaglio mese per mese…" : "Dettaglio mese per mese non ancora letto."}</p>`;
+        if (!mm.length) return "";
+        const inc = mm.reduce((a, x) => a + x.incassato, 0), res = mm.reduce((a, x) => a + x.residuo, 0);
+        return `<h2>Servizi: incassati e da incassare</h2>
+        <div class="facts"><div><span>Già incassati da noi</span><b class="pos">${fmt(inc)}</b></div><div><span>Da incassare (senza fattura)</span><b class="${res > 0.5 ? "neg" : ""}">${fmt(res)}</b></div></div>
+        <h2>Mese per mese</h2>
+        <div class="card" style="overflow-x:auto"><table class="tab num"><thead><tr><th>Mese</th><th>Lavoro</th><th>Fatturato</th><th>Da fatturare</th></tr></thead><tbody>${mm.map((x) => `<tr><td>${MESI[x.m - 1]}</td><td>${eur0.format(x.lavoro)}</td><td>${eur0.format(x.fatturato)}</td><td class="${x.daFatt > 0.5 ? "neg" : x.daFatt < -0.5 ? "pos" : "mut"}">${x.daFatt > 0.5 ? eur0.format(x.daFatt) : x.daFatt < -0.5 ? "+" + eur0.format(-x.daFatt) + " in più" : "pari"}</td></tr>`).join("")}</tbody></table></div>
+        <p class="mut" style="margin:0;font-size:12.5px">Da fatturare = lavoro del mese − fatture con quel mese di competenza. Il fatturato in più di un mese non scala dagli altri.</p>`;
+      })()}
       <h2>Fatture da incassare</h2>
       <div class="card rows">${fa.length ? fa.map((f) => `<button class="row" data-fr="${f.riga}"><div class="main"><span class="t">n.${esc(f.num)} · ${dataBreve(f.data)}</span><span class="s">${esc(f.sdi || "")} · ${n(f.eta) ? f.eta + " giorni" : ""}</span></div><div class="v">${fmt(f.residuo, true)}<small>di ${fmt(f.totale)}</small></div></button>`).join("") : `<div class="empty">Nessuna fattura aperta.</div>`}</div>
     `, (el) => {
@@ -620,7 +770,7 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     const p = paghe();
     const m = p.matrice.find((x) => x.nome === nome);
     const top = p.top[nome];
-    const pag = st.bozze.filter((b) => b.op === "movimento" && b.chi === nome);
+    const pag = st.bozze.filter((b) => b.op === "movimento" && b.p && b.p.chi === nome);
     apriSheet(`
       <h3>${esc(nome)}</h3>
       <p class="sub">Residuo = dovuto − pagato con competenza in quel mese. Positivo: da dare.</p>
@@ -715,6 +865,32 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
       </div>`;
   }
   function vistaColleghi() {
+    const sw = `<div class="filters"><button class="pill" data-vc="partite" aria-pressed="${st.vistaColleghi === "partite"}">Partite</button><button class="pill" data-vc="sub" aria-pressed="${st.vistaColleghi === "sub"}">Sub-appalti</button></div>`;
+    if (st.vistaColleghi === "sub") return sw + vistaSubappalti();
+    return sw + vistaPartite();
+  }
+  function vistaSubappalti() {
+    if (!st.serv) return st.caricandoServ ? `<div class="skel"></div><div class="skel"></div>` : `<div class="card empty">${esc(st.erroreServ || "Servizi non ancora letti.")}<br><br><button class="btn primary" id="leggi-serv">Leggi i servizi</button></div>`;
+    const tutti = subappalti();
+    const stato = (d) => (d.bozza ? "in bozza" : d.scritto ? (d.scritto.stato === "Saldato" ? "saldato" : "valorizzato") : "da valorizzare");
+    const f = st.filtroSub;
+    const list = tutti.filter((d) => f === "tutti" || stato(d) === f).sort((a, b) => n(b.data) - n(a.data));
+    const per = {};
+    list.forEach((d) => (per[d.collega] = per[d.collega] || []).push(d));
+    const tot = (arr, k) => arr.reduce((a, d) => a + (d.scritto ? n(d.scritto[k]) : 0), 0);
+    const chip = (k, l) => `<button class="pill" data-fs="${k}" aria-pressed="${f === k}">${l} ${tutti.filter((d) => k === "tutti" || stato(d) === k).length}</button>`;
+    return `
+      <div class="filters">${chip("da valorizzare", "Da valorizzare")}${chip("in bozza", "In bozza")}${chip("valorizzato", "Da saldare")}${chip("saldato", "Saldati")}${chip("tutti", "Tutti")}</div>
+      <div class="kpis"><div class="card kpi"><span>Gli dobbiamo</span><b class="neg">${fmt(tot(tutti.filter((d) => stato(d) === "valorizzato"), "dobbiamo"))}</b><small>incassato da noi, da saldare</small></div><div class="card kpi"><span>Ci devono</span><b class="pos">${fmt(tot(tutti.filter((d) => stato(d) === "valorizzato"), "cidevono"))}</b><small>incassato dai loro driver</small></div></div>
+      <div class="card rows">${Object.keys(per).length ? Object.entries(per).map(([col, arr]) => `<div class="groupttl">${esc(col)} · ${arr.length}</div>` + arr.map((d) => {
+        const w = d.scritto, b = d.bozza;
+        const val = b ? (b.chi === "Noi" ? "−" + fmt(b.dobbiamo) : "+" + fmt(b.cidevono)) : w ? (w.chi === "Noi" ? "−" + fmt(w.dobbiamo) : "+" + fmt(w.cidevono)) : fmt(d.tariffa);
+        const cl = b ? "sea" : w ? (w.stato === "Saldato" ? "ok" : "att") : "bad";
+        return `<button class="row" data-sub="${esc(d.id)}"><div class="main"><span class="t">${dataBreve(d.data)} · ${esc(d.da)} → ${esc(d.per)}</span><span class="s">${esc(d.cliente)} · ${esc(d.modalita || "?")} · ${d.chiAuto ? "incassa " + d.chiAuto.toLowerCase() : "chi incassa?"}${d.pezzo ? " · pezzo " + esc(d.pezzo) : ""}</span></div><span class="tag ${cl}">${esc(stato(d))}</span><div class="v">${val}${!w && !b ? "<small>tariffa</small>" : ""}</div></button>`;
+      }).join("")).join("") : `<div class="empty">Nessun servizio con questo filtro.</div>`}</div>
+      <p class="mut" style="font-size:12.5px;margin:0 2px">− = gli dobbiamo (incassato noi) · + = ci devono (incassato il loro driver). Si scrive nel foglio Sub-appalti.</p>`;
+  }
+  function vistaPartite() {
     const P = partite();
     const nomi = [...new Set(P.map((p) => p.collega))];
     const sit = clienti();
@@ -743,13 +919,17 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
   function vistaFatture() {
     const aperte = fatture().filter((f) => f.residuo > 0.5 && f.conta !== 0).sort((a, b) => n(b.eta) - n(a.eta));
     const totA = aperte.reduce((s, f) => s + f.residuo, 0);
-    const daF = clienti().filter((c) => c.daFatt > 0.5 && !/chius|proforma/i.test(c.stato)).sort((a, b) => b.daFatt - a.daFatt);
+    const mF = st.meseFatt;
+    const daF = daFatturareMese(mF);
     const totF = daF.reduce((s, c) => s + c.daFatt, 0);
     return `
       <h2>Da incassare · ${fmt(totA)}</h2>
       <div class="card rows">${aperte.map((f) => `<button class="row" data-fat="${f.riga}"><div class="main"><span class="t">n.${esc(f.num)} · ${esc(f.cliente)}</span><span class="s">${dataBreve(f.data)} · ${esc(f.profilo || "")}${f.sollecito ? " · sollecito " + esc(f.sollecito) : ""}</span></div>${n(f.eta) > 60 ? `<span class="tag bad">${f.eta} gg</span>` : n(f.eta) > 30 ? `<span class="tag att">${f.eta} gg</span>` : ""}<div class="v">${fmt(f.residuo, true)}</div></button>`).join("") || `<div class="empty">Nessuna fattura aperta.</div>`}</div>
-      <h2>Da fatturare · ${fmt(totF)}</h2>
-      <div class="card rows">${daF.map((c) => `<button class="row" data-cli="${c.riga}"><div class="main"><span class="t">${esc(c.nome)}</span><span class="s">${c.corse} corse senza fattura</span></div><div class="v">${fmt(c.daFatt)}</div></button>`).join("") || `<div class="empty">Niente da fatturare.</div>`}</div>
+      <h2>Da fatturare · lavoro di ${MESI_LUNGHI[mF - 1]}</h2>
+      <div class="months" role="group" aria-label="Mese di lavoro">${MESI.map((x, i) => `<button class="pill" data-mf="${i + 1}" aria-pressed="${mF === i + 1}">${x}</button>`).join("")}</div>
+      ${!st.serv ? `<div class="card empty">${st.caricandoServ ? "Carico i servizi mese per mese…" : esc(st.erroreServ || "Servizi non ancora letti.")}${st.caricandoServ ? "" : `<br><br><button class="btn primary" id="leggi-serv">Leggi i servizi</button>`}</div>` : `
+      <div class="card rows"><div class="row"><div class="main"><span class="s">${daF.length} clienti · lavoro del mese meno le fatture di quel mese</span></div><div class="v">${fmt(totF)}</div></div>
+      ${daF.map((c) => `<button class="row" ${c.riga ? `data-cli="${c.riga}"` : "disabled"}><div class="main"><span class="t">${esc(c.nome)}</span><span class="s">${c.corse} corse · lavoro ${fmt(c.lavoro)}${c.fatturato ? " · già fatturato " + fmt(c.fatturato) : ""}</span></div>${c.stato ? `<span class="tag">${esc(c.stato)}</span>` : ""}<div class="v">${fmt(c.daFatt)}</div></button>`).join("") || `<div class="empty">Niente da fatturare per ${MESI_LUNGHI[mF - 1]}.</div>`}</div>`}
       <p class="mut" style="font-size:12.5px;margin:0 2px">Le fatture si emettono da Claude con il tuo ok: qui segni gli incassi.</p>`;
   }
 
@@ -796,6 +976,11 @@ form.f { display: flex; flex-direction: column; gap: 10px; }
     if (t.dataset.mese !== undefined) { st.mese = Number(t.dataset.mese); render(); return; }
     if (t.dataset.vai) { st.tab = t.dataset.vai; render(); window.scrollTo(0, 0); return; }
     if (t.dataset.fc) { st.filtroClienti = t.dataset.fc; render(); return; }
+    if (t.dataset.vc) { st.vistaColleghi = t.dataset.vc; render(); return; }
+    if (t.dataset.fs) { st.filtroSub = t.dataset.fs; render(); return; }
+    if (t.dataset.mf) { st.meseFatt = Number(t.dataset.mf); render(); return; }
+    if (t.id === "leggi-serv") { leggiServizi(); return; }
+    if (t.dataset.sub !== undefined) { const d = subappalti().find((x) => x.id === t.dataset.sub); if (d) formSubappalto(d); return; }
     if (t.dataset.cli) { const c = clienti().find((x) => x.riga === Number(t.dataset.cli)); if (c) dettaglioCliente(c); return; }
     if (t.dataset.col) { dettaglioCollega(t.dataset.col); return; }
     if (t.dataset.aut) { dettaglioAutista(t.dataset.aut); return; }

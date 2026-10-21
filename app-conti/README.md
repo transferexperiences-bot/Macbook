@@ -27,11 +27,26 @@ App (telefono) --connettore n8n: execute_workflow + get_workflow_execution--> AP
 | `incasso_fattura` | `Fatture` col. P `Incassato €` (+ importo) e nota in U |
 | `partita` | `Partite` riga di `tblPartite`: Prezzo (T), Stato (X), nota in coda (Z) |
 | `cliente` | `Situazione clienti` colonne gialle J-L |
+| `subappalto` | foglio nuovo `Sub-appalti` (`tblSubappalti`, solo sulla copia): una riga per servizio o pezzo di tour, chiave Id servizio, aggiornata in posto |
 
 - Ogni bozza ha un id; il ponte lo scrive nella nota (`[app <id>]`) e **non scrive due volte** la stessa bozza.
 - Prima di scrivere controlla che la riga sia quella giusta (numero fattura + cliente, collega + data, nome cliente).
 - File aperto in Excel → esito `bloccato`, la bozza resta. Oltre 35 s di lavoro → `rimandato`, l'app rimanda.
 - Mai cancellazioni, mai colonne formula.
+
+- **Servizi** (`azione: "servizi"`, ~11-14 s, letta dopo i dati principali): per cliente e mese lavoro (`Da fatturare €`),
+  fatturato con quella competenza (`tblFatture` col. I, × Conta), incassato, residuo; elenco dei servizi «Dato a collega»; righe di `tblSubappalti`.
+
+## Regole di Agostino (21/10)
+
+- **Da fatturare di un mese = lavoro di quel mese − fatture con quel mese di competenza.** Il fatturato in più di altri
+  mesi non scala. Esempio Auraterrae: ottobre 8.217,74 da fatturare, non 4.173 (differenza dei totali).
+- **Sub-appalti** (servizi «Dato a collega»): chi ha incassato si legge dal pagamento — carta (in cassa), link, bonifico,
+  fattura, sconto in fattura = **noi**; contanti, incassare, al ritorno = **il driver del collega**.
+  - Noi incassiamo → gli dobbiamo: 80% dell'importo, oppure il totale (la commissione la mettiamo sopra noi), oppure un
+    **prezzo preventivo fisso per ogni pezzo** del tour spezzettato. Si sceglie servizio per servizio.
+  - Incassa il loro driver → ci devono: lo decide Agostino ogni volta; l'app propone la fee della struttura.
+- Perché un foglio nuovo e non la colonna `Sub-appalto €` di Servizi: quella colonna la riscrive il giro notturno dal gestionale.
 
 ## Trappole trovate nel collaudo (21/10)
 
@@ -44,7 +59,7 @@ App (telefono) --connettore n8n: execute_workflow + get_workflow_execution--> AP
 
 1. Agostino prova l'app sulla copia e dice cosa cambiare.
 2. Aggiungere `vero` a `FILES` in `ponte_n8n.js` e il bottone/scelta nell'app; pubblicare e rileggere il nodo.
-3. Il nodo `partita` aggiunge di nuovo la nota se la stessa bozza viene rimandata: mettere il controllo `[app id]` come negli altri.
+3. Creare il foglio `Sub-appalti` anche nel file vero (oggi c'è solo sulla copia) e decidere se il saldo dei sub-appalti entra in `Partite`.
 4. Le righe di prova sulla copia (Movimenti 575 «PROVA APP», Fatture 25, Partite 16, Situazione 6) restano lì: la copia si può
    rifare da zero copiando di nuovo il file vero.
 

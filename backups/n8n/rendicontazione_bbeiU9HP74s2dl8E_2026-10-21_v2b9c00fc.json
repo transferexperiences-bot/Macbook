@@ -1,0 +1,3755 @@
+{
+  "id": "bbeiU9HP74s2dl8E",
+  "name": "Rendicontazione",
+  "active": true,
+  "isArchived": false,
+  "versionId": "2b9c00fc-9647-4144-9eaf-d134427c0428",
+  "activeVersionId": "2b9c00fc-9647-4144-9eaf-d134427c0428",
+  "triggerCount": 2,
+  "nodeCount": 79,
+  "createdAt": "2026-01-18T14:31:29.033Z",
+  "updatedAt": "2026-09-01T10:50:09.967Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "tags": [
+    {
+      "id": "BGJMdOFDrdzDObmE",
+      "name": "TE · Tocca il foglio"
+    }
+  ],
+  "parentFolderId": "3hczOPEgCsmHL1sr",
+  "scopes": [
+    "execution:delete",
+    "execution:list",
+    "execution:read",
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true,
+  "connections": {
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Append row": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_rows": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool_pasti": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool Lavaggio": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Mezzi (dynamic)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message4": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "tool_Rifornimento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Tool_pasti",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "Tool Lavaggio",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "tool_Rifornimento",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {},
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetMezzo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMezzo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizer (kind/text/file_id)": {
+      "main": [
+        [
+          {
+            "node": "Switch (kind)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch (kind)": {
+      "main": [
+        [
+          {
+            "node": "Telegram Download (document)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Download (image)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Download (voice/audio)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Download (voice/audio)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set text (direct text)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Message (callback only)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Download (document)": {
+      "main": [
+        [
+          {
+            "node": "IF (vCard mime?)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF (vCard mime?)": {
+      "main": [
+        [
+          {
+            "node": "Extract vCard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CloudConvert (PDF->JPG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract vCard": {
+      "main": [
+        [
+          {
+            "node": "Set text (vCard)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text (vCard)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CloudConvert (PDF->JPG)": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Vision (PDF images)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Vision (PDF images)": {
+      "main": [
+        [
+          {
+            "node": "Set text (PDF Vision)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text (PDF Vision)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Telegram Download (image)": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image (optional)": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Vision (image)": {
+      "main": [
+        [
+          {
+            "node": "Set text (Image Vision)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text (Image Vision)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Telegram Download (voice/audio)": {
+      "main": [
+        [
+          {
+            "node": "Fix formato audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Transcribe": {
+      "main": [
+        [
+          {
+            "node": "Set text (Transcript)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Vocale non leggibile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text (Transcript)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Delete Message (callback only)": {
+      "main": [
+        [
+          {
+            "node": "Set text (callback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set text (callback)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Set text (direct text)": {
+      "main": [
+        [
+          {
+            "node": "Merge (all inputs)",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge (all inputs)": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "tool_Rifornimento",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tool Lavaggio",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tool_pasti",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fine Servizio": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get Rubrica Autisti",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Rendicontazione (dynamic)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "Tool_speseVarie",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tool_speseVarie",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool_speseVarie": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message2": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Bottone Visionato (set credentials)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Bottone Visionato (set credentials)2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Delete rows or columns from sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Chat-Id valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Vision (image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rubrica Autisti": {
+      "main": [
+        [
+          {
+            "node": "Normalizer (kind/text/file_id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Mezzi (dynamic)": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leggi Veicoli": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Rendicontazione (dynamic)": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat-Id valido?": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Fix formato audio": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Transcribe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Anti Doppio Tap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anti Doppio Tap": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get Spese Oggi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Spese Oggi": {
+      "main": [
+        [
+          {
+            "node": "Aggiungi Spese",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggiungi Spese": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "contextWindowLength": 10
+      },
+      "id": "3ed7ddbc-bc75-4ef9-b8d1-a625f4f6dff1",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        1616
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "options": {}
+      },
+      "id": "84877c07-c491-471c-97e5-7d7c729d0835",
+      "name": "OpenAI Chat Model4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        1616
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}{{ $json.foto_link ? '\\n\\nFOTO_LINK: ' + $json.foto_link : '' }}",
+        "options": {
+          "systemMessage": "=ORCHESTRATORE RENDICONTAZIONE v6.5 — GPT-5.2\nGestisci rendicontazione giornaliera autisti. Delega ai tool specializzati.\nDATA: {{ $now.toFormat('dd/MM/yyyy') }}\nAUTISTA: {{ $('Normalizer (kind/text/file_id)').item.json.Autista }}\n\n\n---\n\n## OUTPUT JSON (SEMPRE)\nRispondi SEMPRE con UN SOLO JSON valido (niente prosa fuori dal JSON):\n{\n  \"text\": \"frase in italiano per il driver\",\n  \"buttons\": [[{\"text\":\"Etichetta\",\"callback_data\":\"azione_x\"}]],\n  \"Foto1\": \"\",\n  \"Foto2\": \"\"\n}\n\n### Regole bottoni\n- buttons = array di righe; ogni riga = array di bottoni (max 4 per riga, preferisci 2-3).\n- \"buttons\": [] quando NON serve una scelta (conferme, info, saluti).\n- callback_data SEMPRE in snake_case ASCII senza spazi ne accenti.\n\n### Pattern callback_data canonici\n- Menu principale: reg_pasto | reg_lavaggio | reg_rifornimento | reg_spesa | riepilogo | chiusura\n- Conferma: conferma | annulla\n- Scelta mezzo (DOPO aver chiamato il tool Leggi Veicoli): callback_data = nome completo del mezzo \"<Modello> <Targa>\" (es. \"Maybach GZ441BF\")\n- Spesa varia: spesa_<tipo>  (es. spesa_pedaggio, spesa_parcheggio, spesa_olio)\n- Rifornimento tipo: rif_gasolio | rif_adblue\n- Fine giornata: ore_ok | ore_correggi\n\n### Quando usare i bottoni\n- Domanda con risposte finite -> SEMPRE bottoni.\n- Domanda aperta (descrizione testuale, importi, link) -> NESSUN bottone.\n- Per scelta mezzo: prima chiama il tool 'Leggi Veicoli' e poi metti UN bottone per ogni mezzo restituito (callback_data = \"<Modello> <Targa>\").\n\n## MEZZI\n[lista dinamica dal foglio Veicoli]\n\n---\n\n## GESTIONE LINK FOTO (v6.5)\n\n### Riconoscimento foto_link\nQuando l'input contiene foto_link (URL Google Drive), DEVI:\n1. Estrarre e salvare il link in memoria\n2. Associarlo all'operazione in corso\n3. Passarlo al tool appropriato\n4. Includerlo nella row finale\n\n### Logica salvataggio:\n\n#### FOTO SINGOLA (Pasti, Lavaggi, Rifornimenti stazione, Spese varie):\n- Salva foto_link come Foto1\n- Foto2 rimane \"\"\n\n#### CISTERNA (2 foto):\n- Prima foto → salva come foto1_link_temp\n- Seconda foto → salva come foto2_link_temp\n- Alla conferma: Foto1 = prima foto, Foto2 = seconda foto\n\n### Struttura row CON FOTO:\n{\n  \"Mezzo\": \"string\",\n  \"Tipologia\": \"string\",\n  \"Litri\": \"string\",\n  \"€\": \"string\",\n  \"Descrizione\": \"string\",\n  \"Foto1\": \"https://drive.google.com/...\",\n  \"Foto2\": \"https://drive.google.com/... (solo cisterna, altrimenti vuoto)\"\n}\n\n### REGOLA CRITICA:\n- MAI perdere i link foto durante il flusso\n- Quando salvi INPUT_PENDENTE, includi anche foto_link\n- Quando recuperi INPUT_PENDENTE, recupera anche foto_link\n\n---\n\n## TOOLS\n| Tool | Quando usare |\n|------|--------------|\n| GetMezzo | Verificare mezzo corrente |\n| SetMezzo | Salvare mezzo selezionato |\n| Tool_pasti | Foto scontrino pasto (max 2/giorno) |\n| Tool_Lavaggio | Lavaggio (mancini o scontrino) |\n| tool_Rifornimento | Foto contatore cisterna, scontrino distributore, o AdBlue |\n| Tool_speseVarie | Scontrino parcheggio/tessera/materiali/manutenzione |\n| Fine_servizio | \"fine servizio\", \"chiusura giornata\" |\n| get_rows | Riepilogo giornata / conteggio pasti |\n| Append_row | Salvare registrazione confermata |\n\n---\n\n## FLUSSO STANDARD\n\n### 1. VERIFICA MEZZO (CON SALVATAGGIO INPUT E FOTO)\nPrima di registrare qualsiasi servizio:\n\nGetMezzo() → Se vuoto:\n  1. SALVA in memoria:\n     - INPUT_PENDENTE = input originale\n     - FOTO_LINK_PENDENTE = foto_link (se presente)\n  2. Rispondi: {\n       \"text\": \"🚗 Prima di registrare, seleziona il mezzo:\",\n       \"chiave\": [],\n       \"mezzi\": [lista dinamica dal foglio Veicoli]\n     }\n  3. STOP\n\n### 2. SELEZIONE MEZZO (CON RIPRESA INPUT E FOTO)\nCallback bottone mezzo → Mappa:\n- 1 → \"Maybach GZ441BF\"\n- 2 → \"Classe V FN751MD\"\n- 3 → \"Classe V FM300TR\"\n- 4 → \"Maserati GR941TP\"\n- 5 → \"Porsche ES031YK\"\n- 6 → \"Sprinter GZ204TT\"\n- 7 → \"Vito FJ154PR\"\n- 8 → \"Ape Calessino DD63585\"\n- 9 → \"BMW FC098CW\"\n- 10 → \"Tuk-tuk FT61049\"\n\nChiama SetMezzo({mezzo: \"X\"})\n\n**DOPO SetMezzo:**\n\n#### A) SE ESISTE INPUT_PENDENTE:\n1. Recupera INPUT_PENDENTE\n2. Recupera FOTO_LINK_PENDENTE\n3. Processa input con mezzo e foto_link\n4. Cancella pendenti dalla memoria\n\n#### B) SE NON ESISTE INPUT_PENDENTE:\n- Rispondi: {\"text\": \"✅ Mezzo impostato: X\", \"chiave\": [], \"mezzi\": []}\n\n### 3. VERIFICA LIMITE PASTI (solo per pasti)\nget_rows() → Conta Tipologia=\"Pasto\"\nSe >= 2 → {\"text\": \"⚠️ Limite raggiunto: hai già registrato 2 pasti oggi.\", \"chiave\": [], \"mezzi\": []} → STOP\n\n### 4. ROUTING\n| Input contiene | Azione |\n|----------------|--------|\n| foto scontrino pasto/bar/ristorante | Verifica limite → Tool_pasti(input, foto_link) |\n| \"mancini\", \"lavaggio\", foto spazzole | Tool_Lavaggio(input, foto_link) |\n| foto contatore, \"cisterna\", scontrino carburante | tool_Rifornimento(input, foto_link) |\n| \"adblue\", \"ad blue\", foto/testo litri adblue | tool_Rifornimento(input, foto_link) con carburante=ADBLUE |\n| foto parcheggio/tessera, \"parcheggio\", \"tessera\" | Tool_speseVarie(input, foto_link) |\n| \"gommista\", \"detersivo\", \"scope\", acquisti | Tool_speseVarie(input, foto_link) |\n| \"ho speso X€ di/per...\" | Tool_speseVarie(input, foto_link) |\n| \"fine servizio\", \"chiusura\", \"chiudi\" | Fine_servizio() |\n| \"riepilogo\", \"cosa ho fatto\" | get_rows() |\n| \"cambia mezzo\" | mostra bottoni mezzi |\n\n### 5. DOPO TOOL SERVIZIO\n\nSe tool risponde con needs_confirmation: true:\n1. Recupera row dal tool\n2. VERIFICA che row contenga Foto1 (e Foto2 per cisterna)\n3. Se Foto1 manca ma hai foto_link in memoria → aggiungi a row\n4. Verifica row.Mezzo → se vuoto, recupera con GetMezzo()\n5. Salva row completa in memoria\n6. Rispondi con chiave=[\"conferma\",\"annulla\"]\n\nSe tool risponde con needs_confirmation: false:\n- Mostra solo il text del tool\n- Per cisterna prima foto: salva foto_link come foto1_link_temp\n\n### 6. GESTIONE CALLBACK\n\n#### Callback da chiave:\n| Callback | Azione |\n|----------|--------|\n| \"conferma\" / \"Conferma\" | Recupera row (con Foto1, Foto2) → Append_row(row) → \"✅ Registrato!\" |\n| \"annulla\" / \"Annulla\" | Cancella row → \"❌ Annullato\" |\n\n#### Callback da mezzi:\n| Callback | Azione |\n|----------|--------|\n| \"1\" o \"Maybach GZ441BF\" | SetMezzo → controlla INPUT_PENDENTE e FOTO_LINK_PENDENTE |\n| \"2\" o \"Classe V FN751MD\" | SetMezzo → controlla pendenti |\n| \"3\" o \"Classe V FM300TR\" | SetMezzo → controlla pendenti |\n| \"4\" o \"Maserati GR941TP\" | SetMezzo → controlla pendenti |\n| \"5\" o \"Porsche ES031YK\" | SetMezzo → controlla pendenti |\n| \"6\" o \"Sprinter GZ204TT\" | SetMezzo → controlla pendenti |\n| \"7\" o \"Vito FJ154PR\" | SetMezzo → controlla pendenti |\n| \"8\" o \"Ape Calessino DD63585\" | SetMezzo → controlla pendenti |\n| \"9\" o \"BMW FC098CW\" | SetMezzo → controlla pendenti |\n| \"10\" o \"Tuk-tuk FT61049\" | SetMezzo → controlla pendenti |\n\n---\n\n## FINE SERVIZIO\nQuando utente dice \"fine servizio\" / \"chiusura\" / \"chiudi giornata\", oppure clicca \"Conferma\"/\"Annulla\"/\"Sono diverse\" mentre un dialogo Fine_servizio è in corso:\n1. Se utente ha cliccato \"Conferma\" → passa al sub-agent il messaggio \"sì\"\n2. Se utente ha cliccato \"Annulla\" o \"Sono diverse\" → passa al sub-agent il messaggio \"no\"\n3. Altrimenti chiama Fine_servizio(messaggio: \"[input utente testuale]\")\n4. Restituisci output del sub-agent IDENTICO nel campo text\n5. Aggiunta bottoni:\n   - Se l output contiene \"confermi?\" o \"Sono CORRETTE?\" → chiave=[\"✅ Confermo\",\"❌ Sono diverse\"]\n   - Se l output chiede l incasso (contiene \"incassato\" o \"contanti\") → NON aggiungere chiave (input libero numerico)\n   - Se l output dice \"Buona giornata\" o \"Chiusura salvata\" → NON aggiungere chiave\n   - Se l output chiede correzione ore (contiene \"Indicami il numero ESATTO\") → NON aggiungere chiave (input libero)\n6. NON aggiungere mai mezzi\n7. Continua a passare messaggi al sub-agent finché non completa\n\n---\n\n## RIEPILOGO GIORNATA\nget_rows() → Formatta:\n📊 RIEPILOGO [Data]\n🍽️ PASTI: [n] (€[tot])\n🧼 LAVAGGI: [n] (€[tot])\n⛽ RIFORNIMENTI: [n] ([tot] L)\n💧 ADBLUE: [n] ([tot] L)\n🧾 SPESE VARIE: [n] (€[tot])\n💰 TOTALE: €[somma]\n\n---\n\n## REGOLE\n\n### ✅ DEVI\n1. Verificare mezzo prima di ogni registrazione\n2. Salvare INPUT_PENDENTE E FOTO_LINK_PENDENTE quando mezzo non impostato\n3. Dopo selezione mezzo, riprendere elaborazione con foto_link\n4. Verificare limite pasti (max 2/giorno)\n5. Aggiungere mezzo alla row se mancante\n6. INCLUDERE Foto1 (e Foto2 per cisterna) nella row\n7. Delegare completamente a Fine_servizio quando attivato\n8. Usare formato € italiano: \"X,XX\"\n9. Per cisterna: salvare entrambi i link foto separatamente\n\n### ❌ NON DEVI\n1. Registrare senza mezzo\n2. Perdere INPUT_PENDENTE o FOTO_LINK_PENDENTE\n3. Registrare pasti oltre limite 2\n4. Modificare output di Fine_servizio\n5. Inventare dati\n6. Salvare row senza mezzo\n7. PERDERE I LINK FOTO durante il flusso\n8. Confondere Foto1 e Foto2 per cisterna\n\n---\n\n## ESEMPI CON FOTO\n\n### Foto pasto CON selezione mezzo\nUser: [foto scontrino bar + foto_link: \"https://drive.google.com/file/d/ABC123/view\"] (nessun mezzo)\n→ GetMezzo() → vuoto\n→ Salva INPUT_PENDENTE = \"[vision json]\"\n→ Salva FOTO_LINK_PENDENTE = \"https://drive.google.com/file/d/ABC123/view\"\n→ Output: {\"text\": \"🚗 Prima di registrare, seleziona il mezzo:\", \"chiave\": [], \"mezzi\": [...]}\n\nUser: [clicca \"1\"]\n→ SetMezzo({mezzo: \"Maybach GZ441BF\"})\n→ Recupera INPUT_PENDENTE e FOTO_LINK_PENDENTE\n→ Tool_pasti({mezzo: \"Maybach GZ441BF\", input: \"[vision json]\", foto_link: \"https://...\"})\n→ Tool risponde con row che include Foto1\n→ Output: {\"text\": \"📋 RIEPILOGO PASTO\\n📅 09/02/2026 | 🚛 Maybach GZ441BF\\n...\", \"chiave\": [\"conferma\",\"annulla\"], \"mezzi\": []}\n\nUser: [clicca \"conferma\"]\n→ Append_row(row) // row.Foto1 = \"https://drive.google.com/file/d/ABC123/view\"\n→ Output: {\"text\": \"✅ Registrato!\", \"chiave\": [], \"mezzi\": []}\n\n### Cisterna 2 foto\nUser: [prima foto contatore + foto_link: \"https://drive.google.com/file/d/FOTO1/view\"]\n→ GetMezzo() → ok \"Porsche ES031YK\"\n→ tool_Rifornimento({input: \"[vision json 333]\", foto_link: \"https://.../FOTO1/view\"})\n→ Tool risponde: needs_confirmation: false, salva foto1_link_temp\n→ Output: {\"text\": \"✅ Prima foto acquisita: 333 L\\n📸 Ora invia la foto DOPO.\", \"chiave\": [], \"mezzi\": []}\n\nUser: [seconda foto contatore + foto_link: \"https://drive.google.com/file/d/FOTO2/view\"]\n→ tool_Rifornimento({input: \"[vision json 370]\", foto_link: \"https://.../FOTO2/view\"})\n→ Tool calcola: 370-333 = 37 L\n→ Tool risponde con row: {Foto1: \"https://.../FOTO1/view\", Foto2: \"https://.../FOTO2/view\", ...}\n→ Output: {\"text\": \"📋 RIEPILOGO RIFORNIMENTO\\n...\\n📸 Foto: 2 allegate\", \"chiave\": [\"conferma\",\"annulla\"], \"mezzi\": []}\n\nUser: [clicca \"conferma\"]\n→ Append_row(row) // row.Foto1 e row.Foto2 valorizzati\n→ Output: {\"text\": \"✅ Registrato!\", \"chiave\": [], \"mezzi\": []}\n\n### Lavaggio Mancini (senza foto)\nUser: \"mancini\"\n→ GetMezzo() → ok \"Sprinter GZ204TT\"\n→ Tool_Lavaggio({input: \"mancini\"}) // nessun foto_link\n→ Tool risponde con row: {Foto1: \"\", Foto2: \"\", ...}\n→ Output con chiave=[\"conferma\",\"annulla\"]\n\n---\n\nFINE ORCHESTRATORE v6.5\n\nMEZZI / FLOTTA — istruzione: prima di popolare l'array mezzi[] chiama SEMPRE il tool 'Leggi Veicoli' per ottenere la lista aggiornata. Usa SOLO i mezzi restituiti, non inventare targhe. Il formato per ogni elemento di mezzi[] e' \"<Modello> <Targa>\".\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2144,
+        1392
+      ],
+      "id": "016a9068-52c5-4d8f-916f-308760f1ce71",
+      "name": "AI Agent2",
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds",
+          "mode": "list",
+          "cachedResultName": "Recap",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data": "={{ $now.toFormat('dd/MM/yyyy') }}",
+            "Autista": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}",
+            "Mezzo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Mezzo', `nome del veicolo`, 'string') }}",
+            "Tipologia": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tipologia', `Descrizione`, 'string') }}",
+            "Litri": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Litri', `litri erogati`, 'string') }}",
+            "€": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_', `Importo presente in scontrino o da registrare`, 'string') }}",
+            "Descrizione": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Descrizione', `Riepilogo dati`, 'string') }}",
+            "Foto1": "={{ $fromAI('Foto1', 'Link Google Drive prima foto o foto singola, stringa vuota se non presente', 'string') }}",
+            "Foto2": "={{ $fromAI('Foto2', 'Link Google Drive seconda foto solo per cisterna, stringa vuota se non presente', 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Autista",
+              "displayName": "Autista",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mezzo",
+              "displayName": "Mezzo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipologia",
+              "displayName": "Tipologia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Litri",
+              "displayName": "Litri",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descrizione",
+              "displayName": "Descrizione",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "€",
+              "displayName": "€",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Foto1",
+              "displayName": "Foto1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Foto2",
+              "displayName": "Foto2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        1616
+      ],
+      "id": "41ca86e5-ec8d-402d-8ee2-079b413cd219",
+      "name": "Append row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds",
+          "cachedResultName": "Recap",
+          "cachedResultUrl": "https://docs....1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.g...eets/d/1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Data",
+              "lookupValue": "={{ $now.toFormat('dd/MM/yyyy') }}"
+            },
+            {
+              "lookupColumn": "Autista",
+              "lookupValue": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4f4d83db-05da-4738-a824-a953521e51c3",
+      "name": "get_rows",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1424,
+        1616
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "text": "={{ $json.agent_output_clean }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2128,
+        2096
+      ],
+      "id": "e2da7ae8-0e00-42bd-884d-cf80af3d4a52",
+      "name": "Send a text message1",
+      "webhookId": "8af0e5f0-3714-413c-89a4-e122891cdb8f",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "disabled": true,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Gestisci la registrazione dei pasti con limiti giornalieri e importi massimi.\n",
+        "text": "={{ $fromAI('output', '', 'string') }}",
+        "options": {
+          "systemMessage": "=# TOOL PASTI v11 — CON GESTIONE FOTO\n\nRegistri pasti SOLO con scontrino (foto).\nOutput strutturato con chiavi definite, NON in formato JSON.\n\nDATA OGGI: {{ $now.toFormat('dd/MM/yyyy') }}\n\n## INPUT (dall'orchestratore):\n{\n  \"mezzo\": \"string\",\n  \"input_completo\": \"string (JSON vision o testo)\",\n  \"foto_link\": \"string (URL Google Drive, può essere vuoto)\"\n}\n\n## OUTPUT STRUTTURATO:\ntext: [messaggio all'utente]\nneeds_confirmation: [true/false]\nrow: {\n  Mezzo: [string]\n  Tipologia: \"Pasto\"\n  Litri: \"\"\n  €: [X,XX]\n  Descrizione: [string]\n  Foto1: [foto_link o \"\"]\n  Foto2: \"\"\n}\n\n## CHIAVI OBBLIGATORIE ROW:\n1. Mezzo: prendi da input.mezzo oppure \"\" se assente\n2. Tipologia: SEMPRE \"Pasto\"\n3. Litri: SEMPRE \"\" (vuoto)\n4. €: importo formato \"X,XX\" (virgola, 2 decimali, SENZA simbolo €)\n5. Descrizione: formato \"Pasto - [Esercente] - [Località] - €X,XX\"\n6. Foto1: foto_link ricevuto, oppure \"\" se non presente\n7. Foto2: SEMPRE \"\" (i pasti hanno una sola foto)\n\n---\n\n## REGOLE\n\n### Requisiti Obbligatori:\n- ✅ DEVE essere scontrino con articoli alimentari (cibo, bevande, caffè, ecc.)\n- ✅ DEVE avere foto/prova visiva\n- ✅ Data DEVE essere oggi\n- ✅ Totale DEVE essere presente e > 0\n- ⚠️ Importo massimo riconosciuto: **10,00€**\n\n### Formato Importi:\n- SEMPRE \"X,XX\" con virgola italiana e 2 decimali\n- SENZA simbolo €\n- Esempi: \"8,50\" ✅ | \"8.50\" ❌ | \"€8,50\" ❌\n\n---\n\n## COME LEGGERE I DATI\n\n### 1) Se input_completo è JSON Vision:\nAccetta lo scontrino come PASTO se:\n- categoria == \"SCONTRINO\"\n- tipologia_scontrino == \"PASTO\" OPPURE tipologia_scontrino == \"ALTRO\" con articoli alimentari visibili (caffè, cibo, bevande, puccia, cornetto, lattina, acqua, ecc.)\n- data == {{ $now.toFormat('dd/MM/yyyy') }}\n- totale presente e valido\n- esercente e localita (opzionali ma preferiti)\n\nIMPORTANTE: Il nome dell'esercente NON determina se è un pasto valido.\nUn centro sportivo, un distributore, un supermercato possono vendere cibo.\nGuarda SEMPRE gli articoli acquistati per decidere.\n\n### 2) Se NON è JSON:\n- Cerca \"FONTE: FOTO\" o indicatori di scontrino\n- Estrai data dd/MM/yyyy e totale\n- Verifica che gli articoli siano alimentari\n\n---\n\n## VALIDAZIONI\n\n### ❌ NON è scontrino con articoli alimentari:\ntext: ⚠️ Questo scontrino non sembra contenere articoli alimentari. Invia lo scontrino di un pasto (bar, ristorante, pizzeria, ecc.).\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Data diversa da oggi:\ntext: ⚠️ La data dello scontrino non corrisponde a oggi ({{ $now.toFormat('dd/MM/yyyy') }}). Puoi registrare solo pasti di oggi.\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Totale mancante/illeggibile:\ntext: ⚠️ Non riesco a leggere l'importo totale. Invia una foto più nitida dello scontrino.\nneeds_confirmation: false\n[row: omesso]\n\n### ⚠️ CAP 10€:\nSe totale > 10,00:\n- Importo registrato = \"10,00\"\n- Descrizione DEVE includere: \"Scontrino €X,XX → registrati €10,00\"\n\n---\n\n## TESTO RIEPILOGO (quando OK)\n\n📋 RIEPILOGO PASTO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n🍽️ Pasto\n📍 [Esercente] - [Località]\n💰 [X,XX]€ [se cappato: \"(scontrino €Y,YY → registrati €10,00)\"]\n📸 Foto allegata\n\nScrivi 'conferma' per registrare.\n\n---\n\n## ROW (quando OK)\n\nMezzo: \"[input.mezzo o '']\"\nTipologia: \"Pasto\"\nLitri: \"\"\n€: \"[importo_registrato]\"\nDescrizione: \"Pasto - [Esercente] - [Località] - €[totale]\"\nFoto1: \"[foto_link ricevuto o '']\"\nFoto2: \"\"\n\n---\n\n## DECISIONE FINALE\n\n### ✅ Se tutto OK:\ntext: [riepilogo formattato con 📸 Foto allegata]\nneeds_confirmation: true\nrow: {completo con Foto1}\n\n### ❌ Se errore:\ntext: [messaggio errore]\nneeds_confirmation: false\n[row: omesso]\n\n---\n\nFINE TOOL PASTI v11"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        1616
+      ],
+      "id": "c47e25c6-2c7d-42a6-9a51-4114ed4bde5a",
+      "name": "Tool_pasti"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Gestisci la registrazione dei lavaggi con due tipologie: convenzionato (Mancini) e non convenzionato (a pagamento).\n",
+        "text": "={{ $fromAI('output', '', 'string') }}",
+        "options": {
+          "systemMessage": "=# TOOL LAVAGGIO v12 — CON GESTIONE FOTO\n\nGestisci registrazione lavaggi: convenzionato Mancini (gratuito) o non convenzionato (a pagamento).\nOutput strutturato con chiavi definite, NON in formato JSON.\n\nDATA OGGI: {{ $now.toFormat('dd/MM/yyyy') }}\n\n## INPUT:\n{\n  \"mezzo\": \"string\",\n  \"input_completo\": \"string\",\n  \"foto_link\": \"string (URL Google Drive, può essere vuoto)\"\n}\n\n## OUTPUT STRUTTURATO:\ntext: [messaggio all'utente]\nneeds_confirmation: [true/false]\nrow: {\n  Mezzo: [string]\n  Tipologia: \"Lavaggio convenzionato Mancini\" | \"Lavaggio non convenzionato\"\n  Litri: \"\"\n  €: [X,XX]\n  Descrizione: [string]\n  Foto1: [foto_link o \"\"]\n  Foto2: \"\"\n}\n\n## CHIAVI OBBLIGATORIE ROW:\n1. Mezzo: prendi da input.mezzo oppure \"\" se assente\n2. Tipologia: \"Lavaggio convenzionato Mancini\" OPPURE \"Lavaggio non convenzionato\"\n3. Litri: SEMPRE \"\" (vuoto)\n4. €: \"0,00\" per Mancini | \"X,XX\" per non convenzionato\n5. Descrizione: dettaglio completo lavaggio\n6. Foto1: foto_link ricevuto (per foto mezzo o scontrino), oppure \"\" se solo testo \"mancini\"\n7. Foto2: SEMPRE \"\"\n\n---\n\n## TIPI LAVAGGIO\n\n### A) CONVENZIONATO MANCINI (gratuito)\n\n**Trigger:**\n- Testo contiene: \"mancini\" | \"spazzole\" | \"convenzionato\"\n- Vision JSON: categoria == \"MEZZO_AL_LAVAGGIO\"\n\n**Registrazione:**\nTipologia: \"Lavaggio convenzionato Mancini\"\n€: \"0,00\"\nDescrizione: \"Lavaggio Mancini - Gratuito convenzionato\"\nFoto1: \"[foto_link se presente, altrimenti '']\"\nFoto2: \"\"\n\n**NO foto scontrino richiesta** (basta foto mezzo o menzione \"mancini\")\n\n---\n\n### B) NON CONVENZIONATO (a pagamento)\n\n**Requisiti OBBLIGATORI:**\n- ✅ DEVE avere scontrino foto\n- ✅ Vision JSON: categoria == \"SCONTRINO\" e tipologia_scontrino == \"LAVAGGIO\"\n- ✅ data == oggi\n- ✅ totale presente, valido (>0 e ≤100,00)\n\n**Registrazione:**\nTipologia: \"Lavaggio non convenzionato\"\n€: \"[totale formato X,XX]\"\nDescrizione: \"Lavaggio non convenzionato - [Esercente] - [Località] - €X,XX\"\nFoto1: \"[foto_link]\"\nFoto2: \"\"\n\n---\n\n## VALIDAZIONI\n\n### ❌ Tipo non chiaro:\ntext: 📄 Per registrare un lavaggio specifica il tipo:\n\n🧼 CONVENZIONATO MANCINI (gratuito): \n   • Scrivi \"mancini\" \n   • Oppure invia foto del mezzo alle spazzole\n\n🧼 NON CONVENZIONATO (a pagamento):\n   • Invia foto dello scontrino dell'autolavaggio\n\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Data non oggi:\ntext: ⚠️ La data dello scontrino non corrisponde a oggi ({{ $now.toFormat('dd/MM/yyyy') }}).\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Totale non leggibile:\ntext: ⚠️ Non riesco a leggere l'importo totale. Invia una foto più nitida.\nneeds_confirmation: false\n[row: omesso]\n\n---\n\n## RIEPILOGO OK (Mancini)\n\n📋 RIEPILOGO LAVAGGIO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n🧼 Lavaggio convenzionato Mancini\n💰 0,00€ (gratuito)\n[📸 Foto allegata] ← solo se foto_link presente\n\nScrivi 'conferma' per registrare.\n\n---\n\n## RIEPILOGO OK (Non convenzionato)\n\n📋 RIEPILOGO LAVAGGIO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n🧼 Lavaggio non convenzionato\n💰 [X,XX]€\n📍 [Esercente] - [Località]\n📸 Foto allegata\n\nScrivi 'conferma' per registrare.\n\n---\n\n## DECISIONE FINALE\n\n### ✅ Se tutto OK:\ntext: [riepilogo formattato]\nneeds_confirmation: true\nrow: {completo con Foto1}\n\n### ❌ Se errore:\ntext: [messaggio errore]\nneeds_confirmation: false\n[row: omesso]\n\n---\n\nFINE TOOL LAVAGGIO v12"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1840,
+        1616
+      ],
+      "id": "0d1dd325-8db8-4154-92a1-fa9ee31daaba",
+      "name": "Tool Lavaggio"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "af944eec-95b0-48e0-bb0c-a8921cbd386a",
+                    "leftValue": "={{ $('AI Agent2').item.json.output.mezzi }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7f80becb-70d4-453d-aabc-25187cb7309c",
+                    "leftValue": "={{ $('AI Agent2').item.json.output.chiave }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  },
+                  {
+                    "id": "cnf-cond-fuc678kl",
+                    "leftValue": "={{ $json.agent_output_clean }}",
+                    "rightValue": "confermi?",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        3424,
+        2000
+      ],
+      "id": "1e6b734b-0174-4500-a66e-607a57d4da4e",
+      "name": "Switch",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "text": "=Seleziona:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.chiave?.[0] || '✅ Confermo' }}",
+                    "additionalFields": {
+                      "callback_data": "Conferma"
+                    }
+                  },
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.chiave?.[1] || '❌ Sono diverse' }}",
+                    "additionalFields": {
+                      "callback_data": "Annulla"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3648,
+        2096
+      ],
+      "id": "55b6e9e7-b0b0-416a-a759-59946d2a0bc8",
+      "name": "Send a text message",
+      "webhookId": "0f4fec7e-0dcd-4a8e-b720-29d247997242",
+      "disabled": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "text": "=Seleziona:",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[0] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[0] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[1] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[1] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[2] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[2] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[3] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[3] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[4] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[4] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[5] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[5] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[6] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[6] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[7] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[7] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[8] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[8] }}"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $('AI Agent2').item.json.output.mezzi[9] }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $('AI Agent2').item.json.output.mezzi[9] }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3648,
+        2288
+      ],
+      "id": "43541978-3d7b-48f9-8c9f-f71a5aa61787",
+      "name": "Send a text message4",
+      "webhookId": "07af1b2a-c5ef-42e4-9be7-39f61244b385",
+      "disabled": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Chiamare quando l'input contiene riferimenti a:\n- Rifornimenti di carburante (gasolio, benzina, AdBlue)\n- Cisterne\n- Litri, euro spesi per carburante\n- Distributori, stazioni di servizio\n- Parole chiave: \"gasolio\", \"rifornimento\", \"carburante\", \"litri\", \"pieno\", \"cisterna\"",
+        "text": "={{ $fromAI('output', '', 'string') }}",
+        "options": {
+          "systemMessage": "=Esempi:\n- 980 → 015: litri = (999 - 980) + 15 + 1 = 19 + 16 = 35 L\n- 995 → 003: litri = (999 - 995) + 3 + 1 = 4 + 4 = 8 L\n- 950 → 050: litri = (999 - 950) + 50 + 1 = 49 + 51 = 100 L\n- 900 → 100: litri = (999 - 900) + 100 + 1 = 99 + 101 = 200 L\n\n### VALIDAZIONE POST-CALCOLO:\n- Se litri_erogati > 200 → probabile errore, chiedi conferma esplicita\n- Se litri_erogati <= 0 → errore di calcolo, chiedi correzione\n- Se litri_erogati tra 1 e 200 → OK, procedi normalmente\n\n---\n\n## OUTPUT SECONDA FOTO (CASO NORMALE)\n\ntext:\n📋 RIEPILOGO RIFORNIMENTO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n⛽ Cisterna interna\n📊 [X,XX] L ([prima] → [seconda])\n💰 0,00€ (cisterna aziendale)\n📸 2 foto allegate\n\nScrivi 'conferma' per registrare.\n\nneeds_confirmation: true\nrow: {\n  Mezzo: \"[mezzo]\"\n  Tipologia: \"Rifornimento da cisterna interna\"\n  Litri: \"[X,XX]\"\n  €: \"0,00\"\n  Descrizione: \"Rifornimento cisterna - [X,XX] L ([prima] → [seconda])\"\n  Foto1: \"[foto1_link dalla memoria]\"\n  Foto2: \"[foto2_link corrente]\"\n}\n\n---\n\n## OUTPUT SECONDA FOTO (CASO RESET CONTATORE)\n\ntext:\n📋 RIEPILOGO RIFORNIMENTO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n⛽ Cisterna interna\n📊 [X,XX] L ([prima] → [seconda], reset contatore)\n💰 0,00€ (cisterna aziendale)\n📸 2 foto allegate\n\nScrivi 'conferma' per registrare.\n\nneeds_confirmation: true\nrow: {\n  Mezzo: \"[mezzo]\"\n  Tipologia: \"Rifornimento da cisterna interna\"\n  Litri: \"[X,XX]\"\n  €: \"0,00\"\n  Descrizione: \"Rifornimento cisterna - [X,XX] L ([prima] → [seconda], reset)\"\n  Foto1: \"[foto1_link]\"\n  Foto2: \"[foto2_link]\"\n}\n\n---\n\n## VALIDAZIONI\n\n### ⚠️ Rifornimento molto grande (> 200 L):\ntext: ⚠️ Il calcolo indica [X] litri. È corretto?\n\n📊 Letture rilevate: [prima] → [seconda]\n🔄 Tipo: [normale / reset contatore]\n\nSe è giusto, scrivi 'conferma litri'.\nSe vuoi correggere:\n- \"la prima è [numero]\"\n- \"la seconda è [numero]\"\n- \"sono [numero] litri\"\n\nneeds_confirmation: false\nwaiting_for: conferma_litri_grande\n[row: salvata in memoria ma non confermata]\n\n### ❌ Litri <= 0 (errore calcolo):\ntext: ⚠️ Non riesco a calcolare i litri dalle letture [prima] → [seconda].\n\nPuoi:\n- Correggere la prima lettura: \"la prima è [numero]\"\n- Correggere la seconda lettura: \"la seconda è [numero]\"\n- Indicare i litri direttamente: \"sono [numero] litri\"\n- Ricominciare: scrivi 'reset'\n\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Scontrino non è rifornimento:\ntext: ⚠️ Questo scontrino non sembra essere di un rifornimento.\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Data non oggi (solo scontrini):\ntext: ⚠️ La data dello scontrino non corrisponde a oggi.\nneeds_confirmation: false\n[row: omesso]\n\n---\n\n### B) STAZIONE SERVIZIO (scontrino)\n\nRequisiti:\n- Vision JSON: categoria == \"SCONTRINO\", tipologia_scontrino == \"RIFORNIMENTO\"\n- carburante ≠ \"ADBLUE\"\n- data == oggi\n- totale e litri presenti\n\nOutput OK:\ntext:\n📋 RIEPILOGO RIFORNIMENTO\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n⛽ Stazione di servizio\n📊 [X,XX] L [Carburante]\n💰 [Y,YY]€\n📍 [Esercente] - [Località]\n📸 Foto allegata\n\nScrivi 'conferma' per registrare.\n\nneeds_confirmation: true\nrow: {\n  Mezzo: \"[mezzo]\"\n  Tipologia: \"Rifornimento da stazione di servizio\"\n  Litri: \"[X,XX]\"\n  €: \"[Y,YY]\"\n  Descrizione: \"Rifornimento stazione - [X,XX] L [Carburante] - €[Y,YY] - [Esercente]\"\n  Foto1: \"[foto_link]\"\n  Foto2: \"\"\n}\n\n---\n\n### C) ADBLUE\n\nInput possibili:\n- Dichiarazione testuale: \"ho fatto 10 litri di adblue\"\n- Foto scontrino con carburante == \"ADBLUE\"\n\nOutput OK:\ntext:\n📋 ADBLUE\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n💧 Litri: [X,XX]\n💰 [Y,YY]€\n[📸 Foto allegata] ← solo se foto presente\n\nScrivi 'conferma' per registrare.\n\nneeds_confirmation: true\nrow: {\n  Mezzo: \"[mezzo]\"\n  Tipologia: \"AdBlue\"\n  Litri: \"[X,XX]\"\n  €: \"[Y,YY]\"\n  Descrizione: \"AdBlue - [X,XX] L\"\n  Foto1: \"[foto_link se presente, altrimenti '']\"\n  Foto2: \"\"\n}\n\n---\n\n## COME RICONOSCERE SE ESISTE PRIMA LETTURA (CRITICO)\n\nPRIMA DI ELABORARE, CONTROLLA LA BUFFER MEMORY:\n\n### Cerca questi pattern nei messaggi precedenti:\n- \"Prima foto acquisita: XXX L\"\n- \"✅ Prima foto acquisita:\"\n- foto1_link salvato\n\n### Se TROVI prima_lettura in memoria:\n1. Questa è la SECONDA foto\n2. Recupera prima_lettura e foto1_link\n3. Calcola litri con la formula appropriata (normale o reset)\n4. Prepara row con Foto1 e Foto2\n5. needs_confirmation: true\n\n### Se NON TROVI prima_lettura:\n1. Questa è la PRIMA foto\n2. Salva prima_lettura e foto1_link in memoria\n3. Chiedi seconda foto\n4. needs_confirmation: false\n\n---\n\n## COMANDO RESET/ANNULLA\n\nSe input contiene \"reset\" | \"annulla\" | \"ricomincia\":\ntext: 🔄 Rifornimento cisterna annullato. Invia una nuova foto per iniziare.\nneeds_confirmation: false\n[row: omesso]\n[memoria: cancellata, inclusi foto1_link]\n\n---\n\n## CORREZIONI UTENTE\n\nQuando l'utente corregge letture:\n\n### Pattern prima lettura:\n\"la prima è XXX\", \"prima lettura XXX\", \"partivo da XXX\"\n→ Aggiorna prima_lettura in memoria (MANTIENI foto1_link)\n→ Ricalcola se esiste seconda_lettura\n\n### Pattern seconda lettura:\n\"la seconda è XXX\", \"finale XXX\", \"arrivo a XXX\"\n→ Aggiorna seconda_lettura\n→ Ricalcola\n\n### Pattern litri diretti:\n\"sono XX litri\", \"ho fatto XX\", \"conferma litri\"\n→ Usa come litri_erogati\n→ Aggiungi \"- correzione manuale\" in Descrizione se diverso dal calcolo\n\n### Pattern conferma litri grandi:\n\"conferma litri\", \"sì è corretto\", \"confermo\"\n→ Se c'era attesa conferma per litri > 200, procedi con conferma normale\n\n---\n\n## ERRORE GUIDA (tipo non identificabile)\n\ntext:\n📄 Per registrare un rifornimento invia:\n\n🛢️ CISTERNA INTERNA:\n   1. Foto contatore PRIMA del rifornimento\n   2. Foto contatore DOPO il rifornimento\n   \n⛽ STAZIONE SERVIZIO:\n   • Foto scontrino distributore\n\n💧 ADBLUE:\n   • Foto scontrino AdBlue, oppure\n   • Messaggio con litri (es: \"10 litri adblue\")\n\nneeds_confirmation: false\n[row: omesso]\n\n---\n\n## ESEMPI COMPLETI\n\n### Esempio 1 - Cisterna normale:\nPrima foto: 333 L\nSeconda foto: 370 L\nCalcolo: 370 - 333 = 37 L (normale)\nOutput: \"📊 37,00 L (333 → 370)\"\nDescrizione: \"Rifornimento cisterna - 37,00 L (333 → 370)\"\n\n### Esempio 2 - Cisterna con reset:\nPrima foto: 980 L\nSeconda foto: 015 L\nCalcolo: (999 - 980) + 15 + 1 = 35 L (reset)\nOutput: \"📊 35,00 L (980 → 015, reset contatore)\"\nDescrizione: \"Rifornimento cisterna - 35,00 L (980 → 015, reset)\"\n\n### Esempio 3 - Reset con pochi litri:\nPrima foto: 997 L\nSeconda foto: 002 L\nCalcolo: (999 - 997) + 2 + 1 = 5 L (reset)\nOutput: \"📊 5,00 L (997 → 002, reset contatore)\"\n\n### Esempio 4 - Rifornimento grande (richiede conferma):\nPrima foto: 800 L\nSeconda foto: 050 L\nCalcolo: (999 - 800) + 50 + 1 = 250 L (reset, > 200)\nOutput: \"⚠️ Il calcolo indica 250 litri. È corretto?\"\n\n### Esempio 5 - Stazione servizio:\nScontrino: 45,50 L diesel, €78,30\nOutput: \"📊 45,50 L DIESEL | 💰 78,30€\"\n\n---\n\n## DECISIONE FINALE\n\n### ✅ Cisterna completa (2 foto, litri ≤ 200):\ntext: [riepilogo con \"📸 2 foto allegate\"]\nneeds_confirmation: true\nrow: {con Foto1 e Foto2 valorizzati}\n\n### ⚠️ Cisterna completa (2 foto, litri > 200):\ntext: [richiesta conferma esplicita]\nneeds_confirmation: false\nwaiting_for: conferma_litri_grande\n\n### 📸 Prima foto cisterna (attesa seconda):\ntext: [conferma + istruzioni]\nneeds_confirmation: false\n[row: omesso]\n[memoria: salva prima_lettura E foto1_link]\n\n### ✅ Stazione/AdBlue (1 foto):\ntext: [riepilogo con \"📸 Foto allegata\"]\nneeds_confirmation: true\nrow: {con Foto1 valorizzato, Foto2 = \"\"}\n\n### ❌ Errore:\ntext: [messaggio errore]\nneeds_confirmation: false\n[row: omesso]\n\n---\n\n## NOTE IMPORTANTI\n\n1. Formato Litri: SEMPRE \"X,XX\" con 2 decimali\n2. Formato €: SEMPRE \"Y,YY\" con 2 decimali\n3. CISTERNA: DEVE avere Foto1 E Foto2 nella row finale\n4. STAZIONE/ADBLUE: DEVE avere Foto1, Foto2 = \"\"\n5. Buffer Memory: salvare foto1_link insieme a prima_lettura\n6. MAI perdere i link foto durante correzioni\n7. RESET CONTATORE: usare formula (999 - prima) + seconda + 1\n8. LITRI > 200: sempre chiedere conferma esplicita\n\n---\n\nFINE TOOL RIFORNIMENTO v12"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2128,
+        1616
+      ],
+      "id": "3d7949b4-817a-461d-854f-f2e1c328560d",
+      "name": "tool_Rifornimento"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "contextWindowLength": 3
+      },
+      "id": "5cb66fdc-ab8f-4f54-b9b2-72531a4f88c6",
+      "name": "Window Buffer Memory2",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "contextWindowLength": 3
+      },
+      "id": "740691b6-8102-4cd2-aa9d-0a04af6ae697",
+      "name": "Window Buffer Memory3",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "contextWindowLength": 4
+      },
+      "id": "2b10e874-0696-4766-b494-d86439cb18af",
+      "name": "Window Buffer Memory4",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2544,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"text\": \"Cosa vuoi registrare?\",\n  \"buttons\": [\n    [\n      {\n        \"text\": \"🍝 Pasto\",\n        \"callback_data\": \"reg_pasto\"\n      },\n      {\n        \"text\": \"🧼 Lavaggio\",\n        \"callback_data\": \"reg_lavaggio\"\n      }\n    ],\n    [\n      {\n        \"text\": \"⛽ Rifornimento\",\n        \"callback_data\": \"reg_rifornimento\"\n      },\n      {\n        \"text\": \"💸 Spesa varia\",\n        \"callback_data\": \"reg_spesa\"\n      }\n    ],\n    [\n      {\n        \"text\": \"📋 Riepilogo\",\n        \"callback_data\": \"riepilogo\"\n      },\n      {\n        \"text\": \"🔒 Chiusura\",\n        \"callback_data\": \"chiusura\"\n      }\n    ]\n  ],\n  \"Foto1\": \"\",\n  \"Foto2\": \"\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1200,
+        3392
+      ],
+      "id": "7490a97b-1ef7-4743-88cf-bd68f3e6cf01",
+      "name": "Structured Output Parser",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        2416,
+        1616
+      ],
+      "id": "4d5e2981-bd2a-413d-a7b3-2b82222535d7",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "vScSmX7skqUt74lZ",
+          "mode": "list",
+          "cachedResultName": "Mezzo",
+          "cachedResultUrl": "/projects/QBb49wu2rmLX0wgk/datatables/vScSmX7skqUt74lZ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chatid",
+              "keyValue": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}{{ $now.toFormat('dd/MM/yyyy') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        2544,
+        1616
+      ],
+      "id": "01c72d5e-e4a0-4814-9885-17edbc545f46",
+      "name": "GetMezzo"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "vScSmX7skqUt74lZ",
+          "mode": "list",
+          "cachedResultName": "Mezzo",
+          "cachedResultUrl": "/projects/QBb49wu2rmLX0wgk/datatables/vScSmX7skqUt74lZ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "chatid",
+              "keyValue": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}{{ $now.toFormat('dd/MM/yyyy') }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mezzo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('mezzo', `Mezzo`, 'string') }}",
+            "chatid": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}{{ $now.toFormat('dd/MM/yyyy') }}"
+          },
+          "matchingColumns": [
+            "mezzo"
+          ],
+          "schema": [
+            {
+              "id": "mezzo",
+              "displayName": "mezzo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chatid",
+              "displayName": "chatid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        2672,
+        1616
+      ],
+      "id": "aa99a974-bc53-4ba4-a1bb-85f55c8988f2",
+      "name": "SetMezzo"
+    },
+    {
+      "parameters": {
+        "jsCode": "// =====================\n// NORMALIZER v2 — canonici dallo sheet\n// =====================\n\n// --- Rubrica dallo sheet ---\nconst book = $input.all().map(i => i.json).filter(r => r[\"Autisti\"]);\n\n// --- Telegram update (primo item del trigger) ---\nconst root = $('Telegram Trigger1').first().json || {};\nconst u = root.message || {};\nconst cb = root.callback_query || {};\n\n// =====================\n// UTILS\n// =====================\nfunction stripDiacritics(s) {\n  return (s || \"\").normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\");\n}\n\nfunction normalizeKey(s) {\n  return stripDiacritics(s)\n    .toLowerCase()\n    .trim()\n    .replace(/[.,;:!?\"'`´^~_*()\\[\\]{}<>|\\\\\\/+-]/g, \" \")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\nfunction variants(sNorm) {\n  const parts = sNorm.split(\" \").filter(Boolean);\n  const out = new Set([sNorm]);\n  if (parts.length === 2) out.add(`${parts[1]} ${parts[0]}`);\n  if (parts.length >= 3) out.add(`${parts[parts.length - 1]} ${parts.slice(0, parts.length - 1).join(\" \")}`);\n  return [...out].filter(Boolean);\n}\n\n// =====================\n// FUZZY (Levenshtein)\n// =====================\nfunction levenshtein(a, b) {\n  a = a || \"\"; b = b || \"\";\n  const m = a.length, n = b.length;\n  if (m === 0) return n;\n  if (n === 0) return m;\n  let prev = Array.from({ length: n + 1 }, (_, i) => i);\n  let curr = new Array(n + 1);\n  for (let i = 1; i <= m; i++) {\n    curr[0] = i;\n    const ca = a.charCodeAt(i - 1);\n    for (let j = 1; j <= n; j++) {\n      const cb = b.charCodeAt(j - 1);\n      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (ca === cb ? 0 : 1));\n    }\n    [prev, curr] = [curr, prev];\n  }\n  return prev[n];\n}\n\nfunction similarity(a, b) {\n  const maxLen = Math.max(a.length, b.length);\n  return maxLen === 0 ? 1 : 1 - levenshtein(a, b) / maxLen;\n}\n\nfunction splitName(norm) {\n  const parts = (norm || \"\").split(\" \").filter(Boolean);\n  if (parts.length === 0) return { first: \"\", last: \"\" };\n  if (parts.length === 1) return { first: parts[0], last: \"\" };\n  return { first: parts[0], last: parts[parts.length - 1] };\n}\n\n// =====================\n// INDICE NORMALIZZATO (dallo sheet)\n// =====================\nconst canonList = book.map(x => {\n  const name = String(x[\"Autisti\"]);\n  const norm = normalizeKey(name);\n  const t = splitName(norm);\n  return {\n    name,\n    norm,\n    first: t.first,\n    last: t.last,\n    chat_id: x[\"chat id\"] || null,\n    gruppo_id: x[\"gruppo id\"] || null,\n    email: x[\"mail\"] || null,\n  };\n});\n\nconst canonMap = new Map(canonList.map(c => [c.norm, c]));\n\n// =====================\n// SMART FUZZY\n// =====================\nfunction smartFuzzyAutista(rawNorm) {\n  const { first: rawFirst, last: rawLast } = splitName(rawNorm);\n  if (!rawLast) return null;\n\n  const scored = canonList.map(c => {\n    const sLast = similarity(rawLast, c.last);\n    const sFirst = similarity(rawFirst, c.first);\n    const score = 0.7 * sLast + 0.3 * sFirst;\n    return { ...c, score, sFirst, sLast };\n  }).sort((a, b) => b.score - a.score);\n\n  const best = scored[0];\n  const second = scored[1] || { score: 0 };\n  const gap = best.score - second.score;\n  const minFirstDynamic = best.sLast >= 0.98 ? 0.70 : 0.80;\n\n  if (best.score >= 0.90 && best.sLast >= 0.92 && best.sFirst >= minFirstDynamic && gap >= 0.03) {\n    return { entry: best, MatchType: `smart_fuzzy:${best.score.toFixed(3)}` };\n  }\n  return null;\n}\n\n// =====================\n// NORMALIZE AUTISTA\n// =====================\nfunction normalizeAutistaFromRoot(root) {\n  const sources = [\n    root.message?.from,\n    root.callback_query?.from,\n    root.callback_query?.message?.chat,\n  ];\n\n  let first = \"\", last = \"\", chat_id = \"\";\n  for (const s of sources) {\n    if (s?.first_name) {\n      first = String(s.first_name || \"\");\n      last = String(s.last_name || \"\");\n      chat_id = String(s.id ?? \"\");\n      break;\n    }\n  }\n\n  const raw = `${first} ${last}`.replace(/\\s+/g, \" \").trim();\n  const rawNorm = normalizeKey(raw);\n\n  // 1) match diretto\n  if (canonMap.has(rawNorm)) {\n    const e = canonMap.get(rawNorm);\n    return { Autista: e.name, AutistaRaw: raw, MatchType: \"direct\", ChatId: chat_id };\n  }\n\n  // 2) varianti\n  for (const v of variants(rawNorm)) {\n    if (canonMap.has(v)) {\n      const e = canonMap.get(v);\n      return { Autista: e.name, AutistaRaw: raw, MatchType: \"variant\", ChatId: chat_id };\n    }\n  }\n\n  // 3) inclusione\n  const incl = canonList.filter(c =>\n    c.norm.includes(rawNorm) || rawNorm.includes(c.norm)\n  );\n  if (incl.length === 1) {\n    return { Autista: incl[0].name, AutistaRaw: raw, MatchType: \"inclusion\", ChatId: chat_id };\n  }\n\n  // 4) smart fuzzy\n  const sf = smartFuzzyAutista(rawNorm);\n  if (sf) {\n    return { Autista: sf.entry.name, AutistaRaw: raw, MatchType: sf.MatchType, ChatId: chat_id };\n  }\n\n  // 5) fallback\n  return { Autista: raw, AutistaRaw: raw, MatchType: \"fallback_raw\", ChatId: chat_id };\n}\n\n// =====================\n// ROUTER\n// =====================\nconst aut = normalizeAutistaFromRoot(root);\n\nconst out = {\n  kind: \"\",\n  text: \"\",\n  file_id: \"\",\n  mime: \"\",\n  chat_id: cb?.message?.chat?.id ?? u?.chat?.id ?? aut.ChatId ?? \"\",\n  message_id: cb?.message?.message_id ?? u?.message_id ?? \"\",\n  callback_data: cb?.data ?? \"\",\n  Autista: aut.Autista,\n  AutistaRaw: aut.AutistaRaw,\n  MatchType: aut.MatchType,\n  ChatId: aut.ChatId,\n};\n\nif (cb?.data) { out.kind = \"callback\"; out.text = String(cb.data || \"\").trim(); return [{ json: out }]; }\nif (u?.text)  { out.kind = \"text\";     out.text = String(u.text || \"\").trim();  return [{ json: out }]; }\n\nif (Array.isArray(u.photo) && u.photo.length) {\n  out.kind = \"image\";\n  out.file_id = u.photo[u.photo.length - 1].file_id;\n  out.text = String(u.caption || \"\").trim();\n  return [{ json: out }];\n}\n\nif (u?.voice?.file_id)    { out.kind = \"voice\";    out.file_id = u.voice.file_id;    out.text = String(u.caption || \"\").trim(); return [{ json: out }]; }\nif (u?.audio?.file_id)    { out.kind = \"audio\";    out.file_id = u.audio.file_id;    out.text = String(u.caption || \"\").trim(); return [{ json: out }]; }\nif (u?.document?.file_id) { out.kind = \"document\"; out.file_id = u.document.file_id; out.mime = String(u.document.mime_type || \"\"); out.text = String(u.caption || \"\").trim(); return [{ json: out }]; }\n\nout.kind = \"unknown\";\nout.text = String(u.caption || \"\").trim();\nreturn [{ json: out }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        2592
+      ],
+      "id": "4e5eecc9-31b5-4060-a1b9-a8d241898088",
+      "name": "Normalizer (kind/text/file_id)"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.kind }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "document"
+            },
+            {
+              "value2": "image"
+            },
+            {
+              "value2": "voice"
+            },
+            {
+              "value2": "audio"
+            },
+            {
+              "value2": "text"
+            },
+            {
+              "value2": "callback"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        2016
+      ],
+      "id": "a78bb725-eb64-4e7c-ad4f-a951eff2bfad",
+      "name": "Switch (kind)"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        1216
+      ],
+      "id": "fa7de767-f305-4399-8d2d-16f223a05c41",
+      "name": "Telegram Download (document)",
+      "webhookId": "3f1ef84f-6c66-4f09-8484-0bdb1cdc6efe",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Normalizer (kind/text/file_id)').item.json.mime }}",
+              "rightValue": "text/x-vcard",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "id": "efb245e1-5d49-4e55-8a03-0e6601ccbaf2"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        1216
+      ],
+      "id": "50318ec1-5eb3-48ae-afd9-3ee7ec13e844",
+      "name": "IF (vCard mime?)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        1120
+      ],
+      "id": "528be653-fc07-4c53-aecf-5de6517476c8",
+      "name": "Extract vCard"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "text",
+              "value": "={{ $json[\"BEGIN:VCARD\"] || $json.text || \"\" }}",
+              "type": "string"
+            },
+            {
+              "name": "kind",
+              "value": "vcard",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        1120
+      ],
+      "id": "245ac312-a669-49a2-b0e6-16d7b7121247",
+      "name": "Set text (vCard)"
+    },
+    {
+      "parameters": {
+        "outputFormat": "jpg"
+      },
+      "type": "@cloudconvert/n8n-nodes-cloudconvert.cloudConvert",
+      "typeVersion": 1,
+      "position": [
+        144,
+        1312
+      ],
+      "id": "7c9fa1bf-46ee-4f46-9c9b-3f2bddd1c4e8",
+      "name": "CloudConvert (PDF->JPG)",
+      "credentials": {
+        "cloudConvertOAuth2Api": {
+          "id": "mKQSbxodSFPNz8Gy",
+          "name": "CloudConvert account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "# VISION AGENT v5 — OTTIMIZZATO LETTURA CONTATORI K33\n\nSei un agente Vision specializzato per analisi immagini operative flotte.\nRicevi UNA FOTO e devi:\n1) Classificare la foto in UNA categoria\n2) Estrarre SOLO dati certi e leggibili\n3) Restituire SOLO JSON, senza markdown, senza testo extra.\n\n## CATEGORIE (una sola):\n- SCONTRINO\n- CONTATORE_CISTERNA\n- MEZZO_AL_LAVAGGIO\n- STATO_MEZZO\n- NON_RICONOSCIUTA\n\n## REGOLE ASSOLUTE\n- Per CONTATORE_CISTERNA: SEMPRE fornire una lettura, anche approssimativa se necessario\n- Per SCONTRINI: se un dato non è chiaramente leggibile → null\n- Importi: restituisci come stringa con virgola italiana e 2 decimali, SENZA simbolo € (es: \"12,50\")\n- Litri: stringa con virgola e 2 decimali se presenti (es: \"45,12\"), altrimenti null\n- Date: formato \"dd/MM/yyyy\" oppure null\n\n## OUTPUT JSON (sempre tutte le chiavi presenti):\n{\n  \"fonte\": \"FOTO\",\n  \"categoria\": \"SCONTRINO|CONTATORE_CISTERNA|MEZZO_AL_LAVAGGIO|STATO_MEZZO|NON_RICONOSCIUTA\",\n  \"data\": \"dd/MM/yyyy|null\",\n  \"totale\": \"X,XX|null\",\n  \"tipologia_scontrino\": \"RIFORNIMENTO|PASTO|LAVAGGIO|ALTRO|null\",\n  \"litri\": \"X,XX|null\",\n  \"carburante\": \"DIESEL|BENZINA|}GPL|ADBLUE|null\",\n  \"esercente\": \"string|null\",\n  \"localita\": \"string|null\",\n  \"contatore_litri\": \"string|null\",\n  \"descrizione_visiva\": \"string|null\"\n}\n\n---\n\n## REGOLE ESTRAZIONE\n\n### SCONTRINO:\n- data: cerca una data leggibile\n- totale: cerca totale/tot/eur/€ finale\n- tipologia_scontrino:\n  - RIFORNIMENTO se trovi diesel/benzina/gpl/adblue o elementi distributore\n  - PASTO se gli articoli acquistati sono alimentari (caffè, cibo, bevande, puccia, cornetto, pranzo, acqua, lattina, ecc.) indipendentemente dal nome dell'esercente. Il nome del locale NON determina la tipologia: guarda SEMPRE gli articoli in scontrino.\n  - LAVAGGIO se trovi autolavaggio/car wash/lavaggio\n  - ALTRO se è scontrino ma non rientra sopra\n- litri: se presenti e leggibili\n- esercente/localita: se chiaramente presenti\n\n---\n\n### CONTATORE_CISTERNA (K33 HIGH ACCURACY METER):\n\nIMPORTANTE: Questo è un contatore meccanico con cifre a rotazione (flip digits).\n\n#### CARATTERISTICHE DISPLAY:\n- Marca: K33 HIGH ACCURACY METER\n- Display nero con scritta bianca \"LITRE\" seguita da punto \".\" e 3 cifre bianche\n- Cifre meccaniche a rotazione (tipo orologio flip)\n- Formato: \"LITRE .X Y Z\" dove X Y Z sono cifre 0-9\n- Range: 0-999 litri, poi si resetta\n\n---\n\n## ⚠️ ATTENZIONE CRITICA: DISTINZIONE 3 vs 7 SUL DISPLAY K33\n\nIl display K33 usa cifre meccaniche flip. È MOLTO COMUNE confondere il \"3\" con il \"7\".\n\n### COME DISTINGUERLI:\n\nIL NUMERO \"3\":\n- Ha DUE CURVE ARROTONDATE (una sopra, una sotto)\n- Forma come due \"C\" impilate una sull'altra\n- La parte superiore è CURVA, non dritta\n- La parte centrale ha una PANCIA/CURVA verso destra\n- Sembra un \"8\" tagliato a metà verticalmente\n\nIL NUMERO \"7\":\n- Ha una LINEA ORIZZONTALE DRITTA in alto\n- Ha una LINEA DIAGONALE che scende verso sinistra\n- NON ha curve, solo linee dritte e angoli\n- La parte superiore è PIATTA e DRITTA\n\n### VERIFICA VISIVA PASSO-PASSO:\n\n1. Guarda la parte SUPERIORE della cifra:\n   - Se è CURVA/ARROTONDATA → è un \"3\"\n   - Se è una LINEA DRITTA ORIZZONTALE → è un \"7\"\n\n2. Guarda la parte CENTRALE della cifra:\n   - Se c'è una CURVA/PANCIA verso destra → è un \"3\"\n   - Se c'è solo una LINEA DIAGONALE dritta → è un \"7\"\n\n3. Guarda la parte INFERIORE della cifra:\n   - Se è CURVA/ARROTONDATA → è un \"3\"\n   - Se finisce a punta o non c'è nulla → è un \"7\"\n\n### REGOLA D'ORO:\nSe vedi QUALSIASI curva nella cifra → è un \"3\", NON un \"7\".\nIl \"7\" ha SOLO linee dritte, ZERO curve.\n\n### STATISTICAMENTE:\nNel 90% dei casi su questo contatore, se hai dubbi tra 3 e 7, è probabilmente un \"3\".\n\n---\n\n#### REGOLE CRITICHE LETTURA:\n\n1. IDENTIFICAZIONE CIFRE:\n- Le 3 cifre sono SEMPRE presenti dopo \"LITRE .\"\n- Ogni cifra è in una finestrella separata\n- Le cifre possono essere in fase di rotazione (parzialmente visibili)\n\n2. INTERPRETAZIONE CIFRE IN ROTAZIONE:\nQuando una cifra è in fase di transizione (rotazione meccanica), vedi 2 numeri sovrapposti:\n- Metà superiore: cifra vecchia che sta uscendo\n- Metà inferiore: cifra nuova che sta entrando\n\nATTENZIONE: Se la cifra sembra essere principalmente UN numero con solo una piccola parte di un altro numero visibile, leggi il numero PRINCIPALE (quello che occupa più spazio nella finestrella).\n\nEsempi:\n- Se vedi un \"3\" quasi completo con appena un accenno di \"4\" sotto → leggi \"3\"\n- Se vedi metà \"3\" sopra e metà \"4\" sotto (50/50) → leggi \"4\" (metà inferiore)\n- Se la cifra è al 80% un \"3\" → leggi \"3\"\n\n3. CIFRE STABILI vs IN ROTAZIONE:\n\nCifra STABILE (completamente visibile, centrata):\n- Numero chiaramente leggibile\n- Completamente dentro la finestrella\n- Nessuna sovrapposizione\n→ Leggi il numero visibile\n\nCifra IN ROTAZIONE (due numeri sovrapposti):\n- Vedi 2 numeri parziali\n- C'è movimento/transizione\n- Metà superiore + metà inferiore diverse\n→ Leggi la cifra che occupa più spazio, o la metà INFERIORE se 50/50\n\n4. LETTURA SISTEMATICA:\n\nLeggi sempre da SINISTRA a DESTRA dopo \"LITRE .\":\n\nPosizione 1 (centinaia): Prima cifra dopo il punto\nPosizione 2 (decine): Seconda cifra  \nPosizione 3 (unità): Terza cifra\n\n5. CASI COMUNI:\n\nCaso A - Tutte cifre stabili:\nDisplay: \"LITRE .3 3 3\"\n→ contatore_litri: \"333\"\n\nCaso B - Ultima cifra in rotazione:\nDisplay: \"LITRE .3 7 [8 sopra/0 sotto]\"\n→ Leggi metà inferiore: \"0\"\n→ contatore_litri: \"370\"\n\nCaso C - Prima cifra visibile:\nDisplay: \"LITRE .3 7 0\"\n→ Prima cifra presente = sicuramente 3 cifre\n→ contatore_litri: \"370\"\n\nCaso D - Cifre basse con zeri:\nDisplay: \"LITRE .0 4 5\"\n→ contatore_litri: \"045\"\n\nCaso E - Reset appena avvenuto:\nDisplay: \"LITRE .0 0 2\"\n→ contatore_litri: \"002\"\n\n6. COSA FARE SE NON SEI SICURO:\n\nSe una cifra è sfocata/ambigua ma riesci comunque a distinguere qualcosa:\n→ Fai la MIGLIORE INTERPRETAZIONE possibile\n→ Scegli la cifra più probabile basandoti su:\n  - Forma parziale visibile\n  - Contesto delle altre cifre\n  - Posizione della cifra nella finestrella\n  - RICORDA: se ha curve è un 3, se ha solo linee dritte è un 7\n\nIMPORTANTE: Devi SEMPRE fornire un valore per contatore_litri, MAI null.\n\nEsempi di interpretazione:\n- Cifra con curve arrotondate → sicuramente 0, 3, 6, 8, o 9\n- Cifra con solo linee dritte → sicuramente 1, 4, o 7\n- Se sembra \"3\" o \"7\" ma ha curve → è un \"3\"\n\nSe la foto è completamente illeggibile (nero totale, sfocatura estrema):\n→ contatore_litri: \"000\"\n→ descrizione_visiva: \"Contatore non leggibile, foto troppo sfocata - valore indicativo\"\n\n---\n\n#### ESEMPI ANNOTATI:\n\nEsempio 1:\nFoto mostra: K33 display con \"LITRE .3 3 3\"\nAnalisi: \n- Prima cifra: \"3\" stabile, centrata, ha curve → 3\n- Seconda cifra: \"3\" stabile, centrata, ha curve → 3  \n- Terza cifra: \"3\" stabile, centrata, ha curve → 3\nOutput: \"333\"\n\nEsempio 2:\nFoto mostra: K33 display con \"LITRE .3 7 0\"\nAnalisi:\n- Prima cifra: \"3\" con curve arrotondate → 3\n- Seconda cifra: \"7\" con linea dritta sopra e diagonale → 7\n- Terza cifra: \"0\" tondo → 0\nOutput: \"370\"\n\nEsempio 3:\nFoto mostra: K33 display con tre cifre che sembrano tutte uguali con curve\nAnalisi:\n- Tutte e tre hanno curve arrotondate\n- Nessuna ha linee dritte orizzontali in alto\n- Sono tutti \"3\"\nOutput: \"333\"\n\nEsempio 4:\nFoto mostra: K33 display, seconda cifra ambigua tra 3 e 7\nAnalisi:\n- Controllo: la parte superiore è curva o dritta?\n- Se curva → è un 3\n- Se dritta → è un 7\n- Nel dubbio, se vedo qualsiasi curva → è un 3\n\n---\n\n#### OUTPUT CONTATORE CISTERNA:\n\n{\n  \"fonte\": \"FOTO\",\n  \"categoria\": \"CONTATORE_CISTERNA\",\n  \"data\": null,\n  \"totale\": null,\n  \"tipologia_scontrino\": null,\n  \"litri\": null,\n  \"carburante\": null,\n  \"esercente\": null,\n  \"localita\": null,\n  \"contatore_litri\": \"XXX\",\n  \"descrizione_visiva\": null\n}\n\nSe la foto è molto sfocata ma qualcosa si distingue:\n{\n  \"contatore_litri\": \"XXX\",\n  \"descrizione_visiva\": \"Lettura approssimativa da foto sfocata\"\n}\n\nSe la foto è completamente illeggibile:\n{\n  \"contatore_litri\": \"000\",\n  \"descrizione_visiva\": \"Foto illeggibile - valore indicativo 000\"\n}\n\n---\n\n### MEZZO_AL_LAVAGGIO:\n- descrizione_visiva: breve (es. \"veicolo alle spazzole autolavaggio\")\n- Altri campi: null\n\n### STATO_MEZZO:\n- descrizione_visiva: descrizione neutra visibile (es. \"graffio portiera dx\")\n- Altri campi: null\n\n### NON_RICONOSCIUTA:\n- Tutto null eccetto fonte e categoria\n\n---\n\n## PROCEDURA ANALISI FOTO\n\nQuando ricevi una foto:\n\n1. Identifica il tipo:\n   - C'è scritto \"K33\" + \"LITRE\"? → CONTATORE_CISTERNA\n   - È uno scontrino cartaceo? → SCONTRINO\n   - Vedi un veicolo alle spazzole? → MEZZO_AL_LAVAGGIO\n   - Vedi danni/stato veicolo? → STATO_MEZZO\n   - Altro? → NON_RICONOSCIUTA\n\n2. Per CONTATORE_CISTERNA:\n   - Trova il display nero con \"LITRE .\"\n   - Identifica le 3 finestrelle delle cifre\n   - Per ogni cifra:\n     * È stabile? → leggi numero visibile\n     * È in rotazione? → leggi la cifra principale o metà INFERIORE\n     * È ambigua tra 3 e 7? → CERCA LE CURVE: se curve → 3, se linee dritte → 7\n   - Componi la stringa 3 cifre\n   - SEMPRE fornire un valore, MAI null\n   - Se completamente illeggibile → \"000\"\n\n3. Per SCONTRINO:\n   - Cerca data (formato italiano dd/MM/yyyy)\n   - Cerca totale (ultima riga con €)\n   - Identifica tipo basandoti SUGLI ARTICOLI ACQUISTATI, non sul nome dell'esercente\n   - Estrai litri se presenti\n   - Estrai esercente/località se leggibili\n\n4. Output JSON:\n   - Compila TUTTE le chiavi\n   - Mai inventare dati\n   - Se non sicuro → null\n\n---\n\n## CHECKLIST FINALE CONTATORE\n\nPrima di restituire contatore_litri, verifica:\n\n✅ Hai identificato il display K33?\n✅ Hai visto \"LITRE .\" seguito dalle cifre?\n✅ Per OGNI cifra hai verificato se ha CURVE (→3) o LINEE DRITTE (→7)?\n✅ Hai fatto il MIGLIOR tentativo possibile di leggere tutte e 3 le cifre?\n✅ Per cifre in rotazione, hai preso quella principale o la metà inferiore?\n✅ Per cifre dubbie 3/7, hai controllato la presenza di curve?\n\nIMPORTANTE: Devi SEMPRE restituire un valore a 3 cifre, MAI null.\n\nSe la foto è completamente nera/illeggibile → \"000\"\n\n---\n\n## NOTE FINALI\n\n- SEMPRE fornire una lettura del contatore, anche approssimativa\n- Per SCONTRINI: se dati non leggibili → null (solo per scontrini)\n- Per CONTATORI: interpretare al meglio anche se sfocato, MAI null\n- Se completamente illeggibile → \"000\" con descrizione\n- Restituisci SOLO JSON, niente testo prima/dopo\n- Mantieni TUTTE le chiavi anche se null (tranne contatore_litri che è sempre valorizzato)\n- RICORDA: 3 ha curve, 7 ha solo linee dritte. Nel dubbio → 3.\n- RICORDA: la tipologia_scontrino si determina dagli ARTICOLI, non dal nome dell'esercente.\n\n---\n\nFINE VISION AGENT v5",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        368,
+        1312
+      ],
+      "id": "8466d9f4-e60d-404c-90f0-21a243bf2441",
+      "name": "OpenAI Vision (PDF images)",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "text",
+              "value": "={{ $json.content || \"\" }}",
+              "type": "string"
+            },
+            {
+              "name": "kind",
+              "value": "pdf_vision",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        1312
+      ],
+      "id": "2e3a9d17-15bd-477c-8057-b2d92a0480b1",
+      "name": "Set text (PDF Vision)"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        1504
+      ],
+      "id": "b138b057-9717-4822-9877-f6f81265bde8",
+      "name": "Telegram Download (image)",
+      "webhookId": "2be3bd92-3957-45b2-8902-c234abb922eb",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "composite",
+        "dataPropertyNameComposite": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        3168
+      ],
+      "id": "5c98d0bc-e648-4c5d-be98-dfe9a263acab",
+      "name": "Edit Image (optional)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "# VISION AGENT v5 — OTTIMIZZATO LETTURA CONTATORI K33\n\nSei un agente Vision specializzato per analisi immagini operative flotte.\nRicevi UNA FOTO e devi:\n1) Classificare la foto in UNA categoria\n2) Estrarre SOLO dati certi e leggibili\n3) Restituire SOLO JSON, senza markdown, senza testo extra.\n\n## CATEGORIE (una sola):\n- SCONTRINO\n- CONTATORE_CISTERNA\n- MEZZO_AL_LAVAGGIO\n- STATO_MEZZO\n- NON_RICONOSCIUTA\n\n## REGOLE ASSOLUTE\n- Per CONTATORE_CISTERNA: SEMPRE fornire una lettura, anche approssimativa se necessario\n- Per SCONTRINI: se un dato non è chiaramente leggibile → null\n- Importi: restituisci come stringa con virgola italiana e 2 decimali, SENZA simbolo € (es: \"12,50\")\n- Litri: stringa con virgola e 2 decimali se presenti (es: \"45,12\"), altrimenti null\n- Date: formato \"dd/MM/yyyy\" oppure null\n\n## OUTPUT JSON (sempre tutte le chiavi presenti):\n{\n  \"fonte\": \"FOTO\",\n  \"categoria\": \"SCONTRINO|CONTATORE_CISTERNA|MEZZO_AL_LAVAGGIO|STATO_MEZZO|NON_RICONOSCIUTA\",\n  \"data\": \"dd/MM/yyyy|null\",\n  \"totale\": \"X,XX|null\",\n  \"tipologia_scontrino\": \"RIFORNIMENTO|PASTO|LAVAGGIO|ALTRO|null\",\n  \"litri\": \"X,XX|null\",\n  \"carburante\": \"DIESEL|BENZINA|}GPL|ADBLUE|null\",\n  \"esercente\": \"string|null\",\n  \"localita\": \"string|null\",\n  \"contatore_litri\": \"string|null\",\n  \"descrizione_visiva\": \"string|null\"\n}\n\n---\n\n## REGOLE ESTRAZIONE\n\n### SCONTRINO:\n- data: cerca una data leggibile\n- totale: cerca totale/tot/eur/€ finale\n- tipologia_scontrino:\n  - RIFORNIMENTO se trovi diesel/benzina/gpl/adblue o elementi distributore\n  - PASTO se gli articoli acquistati sono alimentari (caffè, cibo, bevande, puccia, cornetto, pranzo, acqua, lattina, ecc.) indipendentemente dal nome dell'esercente. Il nome del locale NON determina la tipologia: guarda SEMPRE gli articoli in scontrino.\n  - LAVAGGIO se trovi autolavaggio/car wash/lavaggio\n  - ALTRO se è scontrino ma non rientra sopra\n- litri: se presenti e leggibili\n- esercente/localita: se chiaramente presenti\n\n---\n\n### CONTATORE_CISTERNA (K33 HIGH ACCURACY METER):\n\nIMPORTANTE: Questo è un contatore meccanico con cifre a rotazione (flip digits).\n\n#### CARATTERISTICHE DISPLAY:\n- Marca: K33 HIGH ACCURACY METER\n- Display nero con scritta bianca \"LITRE\" seguita da punto \".\" e 3 cifre bianche\n- Cifre meccaniche a rotazione (tipo orologio flip)\n- Formato: \"LITRE .X Y Z\" dove X Y Z sono cifre 0-9\n- Range: 0-999 litri, poi si resetta\n\n---\n\n## ⚠️ ATTENZIONE CRITICA: DISTINZIONE 3 vs 7 SUL DISPLAY K33\n\nIl display K33 usa cifre meccaniche flip. È MOLTO COMUNE confondere il \"3\" con il \"7\".\n\n### COME DISTINGUERLI:\n\nIL NUMERO \"3\":\n- Ha DUE CURVE ARROTONDATE (una sopra, una sotto)\n- Forma come due \"C\" impilate una sull'altra\n- La parte superiore è CURVA, non dritta\n- La parte centrale ha una PANCIA/CURVA verso destra\n- Sembra un \"8\" tagliato a metà verticalmente\n\nIL NUMERO \"7\":\n- Ha una LINEA ORIZZONTALE DRITTA in alto\n- Ha una LINEA DIAGONALE che scende verso sinistra\n- NON ha curve, solo linee dritte e angoli\n- La parte superiore è PIATTA e DRITTA\n\n### VERIFICA VISIVA PASSO-PASSO:\n\n1. Guarda la parte SUPERIORE della cifra:\n   - Se è CURVA/ARROTONDATA → è un \"3\"\n   - Se è una LINEA DRITTA ORIZZONTALE → è un \"7\"\n\n2. Guarda la parte CENTRALE della cifra:\n   - Se c'è una CURVA/PANCIA verso destra → è un \"3\"\n   - Se c'è solo una LINEA DIAGONALE dritta → è un \"7\"\n\n3. Guarda la parte INFERIORE della cifra:\n   - Se è CURVA/ARROTONDATA → è un \"3\"\n   - Se finisce a punta o non c'è nulla → è un \"7\"\n\n### REGOLA D'ORO:\nSe vedi QUALSIASI curva nella cifra → è un \"3\", NON un \"7\".\nIl \"7\" ha SOLO linee dritte, ZERO curve.\n\n### STATISTICAMENTE:\nNel 90% dei casi su questo contatore, se hai dubbi tra 3 e 7, è probabilmente un \"3\".\n\n---\n\n#### REGOLE CRITICHE LETTURA:\n\n1. IDENTIFICAZIONE CIFRE:\n- Le 3 cifre sono SEMPRE presenti dopo \"LITRE .\"\n- Ogni cifra è in una finestrella separata\n- Le cifre possono essere in fase di rotazione (parzialmente visibili)\n\n2. INTERPRETAZIONE CIFRE IN ROTAZIONE:\nQuando una cifra è in fase di transizione (rotazione meccanica), vedi 2 numeri sovrapposti:\n- Metà superiore: cifra vecchia che sta uscendo\n- Metà inferiore: cifra nuova che sta entrando\n\nATTENZIONE: Se la cifra sembra essere principalmente UN numero con solo una piccola parte di un altro numero visibile, leggi il numero PRINCIPALE (quello che occupa più spazio nella finestrella).\n\nEsempi:\n- Se vedi un \"3\" quasi completo con appena un accenno di \"4\" sotto → leggi \"3\"\n- Se vedi metà \"3\" sopra e metà \"4\" sotto (50/50) → leggi \"4\" (metà inferiore)\n- Se la cifra è al 80% un \"3\" → leggi \"3\"\n\n3. CIFRE STABILI vs IN ROTAZIONE:\n\nCifra STABILE (completamente visibile, centrata):\n- Numero chiaramente leggibile\n- Completamente dentro la finestrella\n- Nessuna sovrapposizione\n→ Leggi il numero visibile\n\nCifra IN ROTAZIONE (due numeri sovrapposti):\n- Vedi 2 numeri parziali\n- C'è movimento/transizione\n- Metà superiore + metà inferiore diverse\n→ Leggi la cifra che occupa più spazio, o la metà INFERIORE se 50/50\n\n4. LETTURA SISTEMATICA:\n\nLeggi sempre da SINISTRA a DESTRA dopo \"LITRE .\":\n\nPosizione 1 (centinaia): Prima cifra dopo il punto\nPosizione 2 (decine): Seconda cifra  \nPosizione 3 (unità): Terza cifra\n\n5. CASI COMUNI:\n\nCaso A - Tutte cifre stabili:\nDisplay: \"LITRE .3 3 3\"\n→ contatore_litri: \"333\"\n\nCaso B - Ultima cifra in rotazione:\nDisplay: \"LITRE .3 7 [8 sopra/0 sotto]\"\n→ Leggi metà inferiore: \"0\"\n→ contatore_litri: \"370\"\n\nCaso C - Prima cifra visibile:\nDisplay: \"LITRE .3 7 0\"\n→ Prima cifra presente = sicuramente 3 cifre\n→ contatore_litri: \"370\"\n\nCaso D - Cifre basse con zeri:\nDisplay: \"LITRE .0 4 5\"\n→ contatore_litri: \"045\"\n\nCaso E - Reset appena avvenuto:\nDisplay: \"LITRE .0 0 2\"\n→ contatore_litri: \"002\"\n\n6. COSA FARE SE NON SEI SICURO:\n\nSe una cifra è sfocata/ambigua ma riesci comunque a distinguere qualcosa:\n→ Fai la MIGLIORE INTERPRETAZIONE possibile\n→ Scegli la cifra più probabile basandoti su:\n  - Forma parziale visibile\n  - Contesto delle altre cifre\n  - Posizione della cifra nella finestrella\n  - RICORDA: se ha curve è un 3, se ha solo linee dritte è un 7\n\nIMPORTANTE: Devi SEMPRE fornire un valore per contatore_litri, MAI null.\n\nEsempi di interpretazione:\n- Cifra con curve arrotondate → sicuramente 0, 3, 6, 8, o 9\n- Cifra con solo linee dritte → sicuramente 1, 4, o 7\n- Se sembra \"3\" o \"7\" ma ha curve → è un \"3\"\n\nSe la foto è completamente illeggibile (nero totale, sfocatura estrema):\n→ contatore_litri: \"000\"\n→ descrizione_visiva: \"Contatore non leggibile, foto troppo sfocata - valore indicativo\"\n\n---\n\n#### ESEMPI ANNOTATI:\n\nEsempio 1:\nFoto mostra: K33 display con \"LITRE .3 3 3\"\nAnalisi: \n- Prima cifra: \"3\" stabile, centrata, ha curve → 3\n- Seconda cifra: \"3\" stabile, centrata, ha curve → 3  \n- Terza cifra: \"3\" stabile, centrata, ha curve → 3\nOutput: \"333\"\n\nEsempio 2:\nFoto mostra: K33 display con \"LITRE .3 7 0\"\nAnalisi:\n- Prima cifra: \"3\" con curve arrotondate → 3\n- Seconda cifra: \"7\" con linea dritta sopra e diagonale → 7\n- Terza cifra: \"0\" tondo → 0\nOutput: \"370\"\n\nEsempio 3:\nFoto mostra: K33 display con tre cifre che sembrano tutte uguali con curve\nAnalisi:\n- Tutte e tre hanno curve arrotondate\n- Nessuna ha linee dritte orizzontali in alto\n- Sono tutti \"3\"\nOutput: \"333\"\n\nEsempio 4:\nFoto mostra: K33 display, seconda cifra ambigua tra 3 e 7\nAnalisi:\n- Controllo: la parte superiore è curva o dritta?\n- Se curva → è un 3\n- Se dritta → è un 7\n- Nel dubbio, se vedo qualsiasi curva → è un 3\n\n---\n\n#### OUTPUT CONTATORE CISTERNA:\n\n{\n  \"fonte\": \"FOTO\",\n  \"categoria\": \"CONTATORE_CISTERNA\",\n  \"data\": null,\n  \"totale\": null,\n  \"tipologia_scontrino\": null,\n  \"litri\": null,\n  \"carburante\": null,\n  \"esercente\": null,\n  \"localita\": null,\n  \"contatore_litri\": \"XXX\",\n  \"descrizione_visiva\": null\n}\n\nSe la foto è molto sfocata ma qualcosa si distingue:\n{\n  \"contatore_litri\": \"XXX\",\n  \"descrizione_visiva\": \"Lettura approssimativa da foto sfocata\"\n}\n\nSe la foto è completamente illeggibile:\n{\n  \"contatore_litri\": \"000\",\n  \"descrizione_visiva\": \"Foto illeggibile - valore indicativo 000\"\n}\n\n---\n\n### MEZZO_AL_LAVAGGIO:\n- descrizione_visiva: breve (es. \"veicolo alle spazzole autolavaggio\")\n- Altri campi: null\n\n### STATO_MEZZO:\n- descrizione_visiva: descrizione neutra visibile (es. \"graffio portiera dx\")\n- Altri campi: null\n\n### NON_RICONOSCIUTA:\n- Tutto null eccetto fonte e categoria\n\n---\n\n## PROCEDURA ANALISI FOTO\n\nQuando ricevi una foto:\n\n1. Identifica il tipo:\n   - C'è scritto \"K33\" + \"LITRE\"? → CONTATORE_CISTERNA\n   - È uno scontrino cartaceo? → SCONTRINO\n   - Vedi un veicolo alle spazzole? → MEZZO_AL_LAVAGGIO\n   - Vedi danni/stato veicolo? → STATO_MEZZO\n   - Altro? → NON_RICONOSCIUTA\n\n2. Per CONTATORE_CISTERNA:\n   - Trova il display nero con \"LITRE .\"\n   - Identifica le 3 finestrelle delle cifre\n   - Per ogni cifra:\n     * È stabile? → leggi numero visibile\n     * È in rotazione? → leggi la cifra principale o metà INFERIORE\n     * È ambigua tra 3 e 7? → CERCA LE CURVE: se curve → 3, se linee dritte → 7\n   - Componi la stringa 3 cifre\n   - SEMPRE fornire un valore, MAI null\n   - Se completamente illeggibile → \"000\"\n\n3. Per SCONTRINO:\n   - Cerca data (formato italiano dd/MM/yyyy)\n   - Cerca totale (ultima riga con €)\n   - Identifica tipo basandoti SUGLI ARTICOLI ACQUISTATI, non sul nome dell'esercente\n   - Estrai litri se presenti\n   - Estrai esercente/località se leggibili\n\n4. Output JSON:\n   - Compila TUTTE le chiavi\n   - Mai inventare dati\n   - Se non sicuro → null\n\n---\n\n## CHECKLIST FINALE CONTATORE\n\nPrima di restituire contatore_litri, verifica:\n\n✅ Hai identificato il display K33?\n✅ Hai visto \"LITRE .\" seguito dalle cifre?\n✅ Per OGNI cifra hai verificato se ha CURVE (→3) o LINEE DRITTE (→7)?\n✅ Hai fatto il MIGLIOR tentativo possibile di leggere tutte e 3 le cifre?\n✅ Per cifre in rotazione, hai preso quella principale o la metà inferiore?\n✅ Per cifre dubbie 3/7, hai controllato la presenza di curve?\n\nIMPORTANTE: Devi SEMPRE restituire un valore a 3 cifre, MAI null.\n\nSe la foto è completamente nera/illeggibile → \"000\"\n\n---\n\n## NOTE FINALI\n\n- SEMPRE fornire una lettura del contatore, anche approssimativa\n- Per SCONTRINI: se dati non leggibili → null (solo per scontrini)\n- Per CONTATORI: interpretare al meglio anche se sfocato, MAI null\n- Se completamente illeggibile → \"000\" con descrizione\n- Restituisci SOLO JSON, niente testo prima/dopo\n- Mantieni TUTTE le chiavi anche se null (tranne contatore_litri che è sempre valorizzato)\n- RICORDA: 3 ha curve, 7 ha solo linee dritte. Nel dubbio → 3.\n- RICORDA: la tipologia_scontrino si determina dagli ARTICOLI, non dal nome dell'esercente.\n\n---\n\nFINE VISION AGENT v5",
+        "imageUrls": "={{ $('Upload file').item.json.webContentLink }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        368,
+        1504
+      ],
+      "id": "ba5a46e5-e692-439f-b76c-fdbb2886c099",
+      "name": "OpenAI Vision (image)",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "text",
+              "value": "={{ $json.content || \"\" }}",
+              "type": "string",
+              "id": "a48acd17-a737-40a5-9021-5b1a9c3abbf6"
+            },
+            {
+              "name": "kind",
+              "value": "image_vision",
+              "type": "string",
+              "id": "e35d7d79-db8b-41a1-bcde-7bc3f42532d0"
+            },
+            {
+              "id": "ac3f6417-3c63-4d90-ae37-0a07d60997c6",
+              "name": "foto_link",
+              "value": "={{ $('Upload file').item.json.webViewLink }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        1504
+      ],
+      "id": "354d9616-aa1c-4969-a7a4-6b12cde81229",
+      "name": "Set text (Image Vision)"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        1792
+      ],
+      "id": "b2f38f63-1562-4715-844a-9405d00ae02e",
+      "name": "Telegram Download (voice/audio)",
+      "webhookId": "c4ec0191-206a-4e6e-bea5-87b084f67773",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        368,
+        1792
+      ],
+      "id": "a2fe91c3-be7d-44e9-b9cb-a7b4eb3680cb",
+      "name": "OpenAI Transcribe",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "text",
+              "value": "={{ $json.text || $json.content || \"\" }}",
+              "type": "string"
+            },
+            {
+              "name": "kind",
+              "value": "audio_transcript",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        1696
+      ],
+      "id": "09bd40db-13c6-4cfb-a608-ba7a94de7e22",
+      "name": "Set text (Transcript)"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.chat_id }}",
+        "messageId": "={{ $json.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        2272
+      ],
+      "id": "e0dbb3f7-b30e-4d64-be14-5df5c125f1a0",
+      "name": "Delete Message (callback only)",
+      "webhookId": "d7b3e1a8-0188-46f2-8834-53521e7a4b18",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 6
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        816,
+        1536
+      ],
+      "id": "7f34e4ca-4fdf-435b-8573-582d6826139c",
+      "name": "Merge (all inputs)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "993cd550-78cc-4a13-967c-de42aa3bb2f1",
+              "name": "=text",
+              "value": "={{ $('Telegram Trigger1').item.json.callback_query.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        2272
+      ],
+      "id": "3e49fe52-d754-49bf-9630-bf9996d4ff49",
+      "name": "Set text (callback)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string",
+              "id": "c9e4bc48-2a93-4784-a82e-ea80605421bc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        2080
+      ],
+      "id": "2f69af1f-609d-4613-b9f2-0391f209f768",
+      "name": "Set text (direct text)"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        1824
+      ],
+      "id": "b3525ccd-e2dc-413a-b0dc-a0a61d7dcc19",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1840,
+        1824
+      ],
+      "id": "2be54651-1883-4345-90b6-ec4b547c189d",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1568,
+        1824
+      ],
+      "id": "67e0600e-919f-4ea6-961d-ec9df64e8e30",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Gestisce la chiusura della giornata lavorativa dell'autista. Chiamare SOLO quando l'utente dice: \"fine servizio\", \"chiusura giornata\", \"chiudi servizio\", \"chiudi\", \"finito\". Passa il messaggio completo dell'utente nel parametro message. Questo tool gestisce tutto il flusso: recupera i servizi, mostra il riepilogo, chiede conferma e salva la chiusura.",
+        "workflowId": {
+          "__rl": true,
+          "value": "OkGFUfSlxs2VQRl1gt34A",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OkGFUfSlxs2VQRl1gt34A",
+          "cachedResultName": "Fine Servizio"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $fromAI('message', 'Il messaggio dell utente', 'string') }}",
+            "chatid": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+            "idunivoco": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('idunivoco', ``, 'string') }}",
+            "autista": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "chatid",
+              "displayName": "chatid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "idunivoco",
+              "displayName": "idunivoco",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "autista",
+              "displayName": "autista",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2800,
+        1616
+      ],
+      "id": "9fe35868-b997-4477-a729-6fde60f0df6e",
+      "name": "Fine Servizio"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "*",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1200,
+        2592
+      ],
+      "id": "0296ab1f-c4af-4e89-932d-9a8535d7a0a5",
+      "name": "Telegram Trigger1",
+      "webhookId": "fcf3a345-7474-4c00-acd2-fd1377363471",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI",
+          "mode": "list",
+          "cachedResultName": "Check list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1477457448,
+          "mode": "list",
+          "cachedResultName": "Fogli di viaggio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit#gid=1477457448"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Registrato"
+            },
+            {
+              "lookupColumn": "Autista",
+              "lookupValue": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        2592
+      ],
+      "id": "322a6599-a25a-40dc-9de6-22444c7d57e4",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Code node (JavaScript) - Run Once for All Items\n * INPUT: items[0].json.data = [ { servizio }, ... ]\n * OUTPUT: 1 item riepilogativo, con merge sulla riga esistente se presente\n * FIX 14/07/2026 (Claude):\n *  - durate day-aware: i servizi dopo mezzanotte non producono più ~24h\n *  - guardia refusi: fine<inizio con wrap >6h = orario sospetto → |diff| + ⚠️ nel riepilogo\n *    (i servizi sospetti NON entrano nel calcolo dello span della Durata totale)\n *  - dedup servizi (nel batch e contro la riga già esistente di oggi)\n *  - input vuoto / nessun servizio nuovo → return [] (NON scrive righe vuote)\n *  - Durata totale mai < Durata effettiva\n */\n\n// ------------------ HELPERS ------------------\nfunction s(v) {\n  return String(v ?? \"\").trim();\n}\n\nfunction pick(obj, keys) {\n  for (const k of keys) {\n    const v = obj?.[k];\n    if (v !== undefined && v !== null && s(v) !== \"\") return v;\n  }\n  return \"\";\n}\n\nfunction isTimeHHMM(x) {\n  return /^([01]?\\d|2[0-3]):[0-5]\\d$/.test(s(x));\n}\n\nfunction timeToMin(x) {\n  if (!isTimeHHMM(x)) return null;\n  const [h, m] = s(x).split(\":\").map(Number);\n  return h * 60 + m;\n}\n\nfunction toNumber(v) {\n  if (typeof v === \"number\" && Number.isFinite(v)) return v;\n  const n = Number(s(v).replace(\",\", \".\"));\n  return Number.isFinite(n) ? n : null;\n}\n\nfunction round2(n) {\n  return Number(Number(n).toFixed(2));\n}\n\nfunction hoursFromMinutesIT(min) {\n  const hours = round2((Number(min) || 0) / 60);\n  return hours.toFixed(2).replace(\".\", \",\");\n}\n\nfunction parseHoursIT(str) {\n  if (!str) return 0;\n  const n = Number(String(str).replace(\",\", \".\"));\n  return isNaN(n) ? 0 : n;\n}\n\nfunction isGarbage(v) {\n  const t = s(v);\n  return !t || t === \":\" || t === \"-\" || (t.startsWith(\"{\") && t.endsWith(\"}\"));\n}\n\n// Durata di un singolo servizio (minuti) + flag refuso.\n// fine < inizio: se il wrap (+24h) dà una durata <= 6h è un vero passaggio di\n// mezzanotte; altrimenti è quasi certamente un refuso → uso |diff| e segnalo ⚠️.\nfunction durataServizio(startMin, endMin) {\n  // FUNZIONE UNICA ORE (24/07): invertiti/impossibili = sospetto a ZERO (non gonfia); mezzanotte vera <= 8h\n  if (startMin === null || endMin === null) return { min: 0, sospetto: true };\n  const diff = endMin - startMin;\n  if (diff < 0) {\n    const wrap = diff + 1440;\n    if (wrap <= 480) return { min: wrap, sospetto: false };\n    return { min: 0, sospetto: true };\n  }\n  if (diff > 1440) return { min: 0, sospetto: true };\n  return { min: diff, sospetto: false };\n}\n\n// ------------------ UNIQUE ID ------------------\nfunction generateId() {\n  const d = new Date();\n  const pad = (n) => String(n).padStart(2, \"0\");\n  const date = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());\n  const time = pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());\n  const rand = Math.random().toString(36).substring(2, 8).toUpperCase();\n  return `CH-${date}-${time}-${rand}`;\n}\n\n// ------------------ RIGA ESISTENTE ------------------\nconst existingRow = $('Get row(s) in sheet3').first()?.json ?? null;\nconst IdChiusura = (existingRow?.Id && String(existingRow.Id).trim())\n  ? String(existingRow.Id).trim()\n  : generateId();\n\n// ------------------ INPUT ------------------\nconst rows = Array.isArray(items?.[0]?.json?.data)\n  ? items[0].json.data\n  : [];\n\n// ------------------ FIELD MAP ------------------\nconst F = {\n  Data:    r => s(pick(r, [\"Data\"])),\n  Mezzo:   r => s(pick(r, [\"Veicolo\", \"Mezzo\"])),\n  Autista: r => s(pick(r, [\"Autista\"])),\n  Da:      r => s(pick(r, [\"Transfer > Da\"])),\n  Per:     r => s(pick(r, [\"Transfer < Per\"])),\n  Inizio:  r => s(pick(r, [\"Inizio\"])),\n  Fine:    r => s(pick(r, [\"Fine\"])),\n  KmTot:   r => pick(r, [\"Km Tot\"]),\n  KmInizio:r => pick(r, [\"Km inizio\"]),\n  KmFine:  r => pick(r, [\"Km fine\"]),\n};\n\nfunction isValidRow(r) {\n  if (!F.Da(r) || !F.Per(r)) return false;\n  if (isGarbage(F.Inizio(r)) || isGarbage(F.Fine(r))) return false;\n  if (!isTimeHHMM(F.Inizio(r)) || !isTimeHHMM(F.Fine(r))) return false;\n  return true;\n}\n\nconst valid = rows.filter(isValidRow);\n\n// Niente da compattare → NON scrivere nulla (prima creava righe vuote)\nif (!valid.length) {\n  return [];\n}\n\n// ------------------ DEDUP SERVIZI ------------------\n// Scarta doppioni nel batch e servizi già presenti nella riga di oggi\n// (es. doppio click sul bottone \"Fine servizio\").\nconst oldRiepilogoText = existingRow?.[\"Riepilogo servizi\"]\n  ? String(existingRow[\"Riepilogo servizi\"])\n  : \"\";\nconst seen = new Set();\nconst nuovi = [];\nfor (const r of valid) {\n  const sig = `${F.Da(r)}→${F.Per(r)} (${F.Inizio(r)}–${F.Fine(r)}`;\n  if (seen.has(sig)) continue;\n  if (oldRiepilogoText.includes(sig)) continue;\n  seen.add(sig);\n  nuovi.push(r);\n}\n\nif (!nuovi.length) {\n  // Tutti i servizi erano già registrati: non scrivere nulla\n  return [];\n}\n\n// ------------------ COMPATTA NUOVI SERVIZI (day-aware) ------------------\nconst Data    = F.Data(nuovi[0]);\nconst Autista = [...new Set(nuovi.map(F.Autista).filter(Boolean))].join(\" / \");\n\nlet minAdjStart = null;\nlet maxAdjEnd = null;\nlet sommaMin = 0;\nlet offset = 0;\nlet prevRawStart = null;\nconst parti = [];\n\nfor (const r of nuovi) {\n  const rawStart = timeToMin(F.Inizio(r));\n  const rawEnd = timeToMin(F.Fine(r));\n  const d = durataServizio(rawStart, rawEnd);\n  sommaMin += d.min;\n\n  parti.push(`${F.Da(r)}→${F.Per(r)} (${F.Inizio(r)}–${F.Fine(r)}${d.sospetto ? \" ⚠️\" : \"\"})`);\n\n  // Orari sospetti: fuori dal calcolo dello span (inaffidabili)\n  if (d.sospetto) continue;\n\n  // Ordine di inserimento = ordine cronologico: se l'inizio \"torna indietro\"\n  // rispetto al servizio precedente, siamo passati al giorno dopo.\n  if (prevRawStart !== null && rawStart < prevRawStart) offset += 1440;\n  prevRawStart = rawStart;\n\n  const adjStart = rawStart + offset;\n  const adjEnd = adjStart + d.min;\n  if (minAdjStart === null || adjStart < minAdjStart) minAdjStart = adjStart;\n  if (maxAdjEnd === null || adjEnd > maxAdjEnd) maxAdjEnd = adjEnd;\n}\n\nconst RiepilogoServizi = parti.join(\" | \");\nconst NumeroServizi = nuovi.length;\n\n// Durata totale: dalla prima all'ultima ora, con giorni corretti.\n// Non può mai essere inferiore alla somma dei singoli servizi.\nlet totMin = (minAdjStart !== null && maxAdjEnd !== null) ? (maxAdjEnd - minAdjStart) : 0;\nif (totMin < sommaMin) totMin = sommaMin;\nif (sommaMin > 1440) sommaMin = 1440; // tetto 24h\nif (totMin > 1440) totMin = 1440;   // tetto 24h\nconst DurataTotale    = hoursFromMinutesIT(totMin);\nconst DurataEffettiva = hoursFromMinutesIT(sommaMin);\n\n// Km\nconst KmTotali = round2(\n  nuovi.reduce((a, r) => {\n    const kmTot = toNumber(F.KmTot(r));\n    if (kmTot !== null) return a + Math.abs(kmTot);\n    const kmi = toNumber(F.KmInizio(r));\n    const kmf = toNumber(F.KmFine(r));\n    if (kmi !== null && kmf !== null) return a + Math.abs(kmf - kmi);\n    return a;\n  }, 0)\n);\n\n// Mezzo: dai nuovi servizi\nconst MezzoNuovo = [...new Set(nuovi.map(F.Mezzo).filter(Boolean))].join(\" / \");\n\n// ------------------ MERGE CON RIGA ESISTENTE ------------------\nlet finalRiepilogo     = RiepilogoServizi;\nlet finalNumeroServizi = NumeroServizi;\nlet finalMezzo         = MezzoNuovo;\nlet finalDurataTotale  = DurataTotale;\nlet finalDurataEffettiva = DurataEffettiva;\nlet finalKmTotali      = KmTotali;\n\nif (existingRow?.[\"Riepilogo servizi\"] && String(existingRow[\"Riepilogo servizi\"]).trim()) {\n  const oldRiepilogo = String(existingRow[\"Riepilogo servizi\"]).trim();\n  finalRiepilogo = oldRiepilogo + \" | \" + RiepilogoServizi;\n\n  const oldNumero = parseInt(existingRow[\"n. servizi\"] || \"0\", 10);\n  finalNumeroServizi = (isNaN(oldNumero) ? 0 : oldNumero) + NumeroServizi;\n\n  // Unisci veicoli senza duplicati\n  const oldMezzo = String(existingRow[\"Mezzo\"] || \"\").trim();\n  const mezziSet = new Set([\n    ...oldMezzo.split(\"/\").map(x => x.trim()).filter(Boolean),\n    ...MezzoNuovo.split(\"/\").map(x => x.trim()).filter(Boolean)\n  ]);\n  finalMezzo = [...mezziSet].join(\" / \");\n\n  // Somma durate\n  finalDurataTotale = (parseHoursIT(existingRow[\"Durata totale\"]) + parseHoursIT(DurataTotale))\n    .toFixed(2).replace(\".\", \",\");\n  finalDurataEffettiva = (parseHoursIT(existingRow[\"Durata effettiva\"]) + parseHoursIT(DurataEffettiva))\n    .toFixed(2).replace(\".\", \",\");\n\n  // Somma km\n  const oldKm = toNumber(existingRow[\"Km totali\"] ?? existingRow[\"KmTotali\"] ?? 0) || 0;\n  finalKmTotali = round2(oldKm + KmTotali);\n}\n\n// ------------------ OUTPUT ------------------\nreturn [{\n  json: {\n    ok: true,\n    errore: \"\",\n    IdChiusura,\n    Data,\n    Mezzo: finalMezzo,\n    Autista,\n    NumeroServizi: finalNumeroServizi,\n    RiepilogoServizi: finalRiepilogo,\n    DurataTotale: finalDurataTotale,\n    DurataEffettiva: finalDurataEffettiva,\n    KmTotali: finalKmTotali,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        2496
+      ],
+      "id": "0a9452ca-f522-469a-a483-7749edb3a24e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        368,
+        2496
+      ],
+      "id": "87d5959d-dbbb-44db-b3e7-fd5fbdcf4e9e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI",
+          "mode": "list",
+          "cachedResultName": "Check list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1477457448,
+          "mode": "list",
+          "cachedResultName": "Fogli di viaggio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit#gid=1477457448"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "Registrato": "Si"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "n. foglio",
+              "displayName": "n. foglio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Veicolo",
+              "displayName": "Veicolo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Autista",
+              "displayName": "Autista",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Inizio",
+              "displayName": "Inizio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Km inizio",
+              "displayName": "Km inizio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Transfer > Da",
+              "displayName": "Transfer > Da",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Transfer < Per",
+              "displayName": "Transfer < Per",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fine",
+              "displayName": "Fine",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Km fine",
+              "displayName": "Km fine",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Km Tot",
+              "displayName": "Km Tot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pax",
+              "displayName": "Pax",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tariffa",
+              "displayName": "Tariffa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Modalità",
+              "displayName": "Modalità",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Durata",
+              "displayName": "Durata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Registrato",
+              "displayName": "Registrato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        2688
+      ],
+      "id": "4da92c0b-4558-4799-a91e-d04219a6968c",
+      "name": "Update row in sheet",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "40399da9-40e0-4039-b6d0-8460fa4f020d",
+              "leftValue": "={{ $('Telegram Trigger1').item.json.callback_query.data }}",
+              "rightValue": "Fine servizio",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        2592
+      ],
+      "id": "0ab15fa1-2acf-4fcc-a778-65d79695bb1e",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PARSE AI OUTPUT (text + buttons) for Rendicontazione v3 (no structured parser)\nconst item = $input.first()?.json ?? {};\n\nfunction sanitize(s) {\n  if (typeof s !== 'string') return '';\n  let t = s;\n  t = t.replace(/\\*\\*([^*]+)\\*\\*/g, '$1');\n  t = t.replace(/\\*([^*]+)\\*/g, '$1');\n  t = t.replace(/__([^_]+)__/g, '$1');\n  t = t.replace(/_([^_]+)_/g, '$1');\n  t = t.replace(/`([^`]+)`/g, '$1');\n  t = t.replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1');\n  return t.trim();\n}\nfunction stripFences(s) {\n  if (typeof s !== 'string') return s;\n  return s.trim().replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\n}\nfunction tryJson(s) {\n  if (typeof s !== 'string') return null;\n  const t = stripFences(s).trim();\n  if (!t) return null;\n  try { return JSON.parse(t); } catch (e) {\n    // try to extract first JSON block\n    const m = t.match(/\\{[\\s\\S]*\\}/);\n    if (m) { try { return JSON.parse(m[0]); } catch (e2) { return null; } }\n    return null;\n  }\n}\n\n// Pick raw output (AI Agent without parser typically returns { output: \"...\" } string)\nlet raw = item?.output ?? item;\nlet payload = null;\nif (typeof raw === 'string') payload = tryJson(raw);\nelse if (raw && typeof raw === 'object') payload = raw;\n\nlet text = '';\nlet buttons = [];\nif (payload && typeof payload === 'object') {\n  text = typeof payload.text === 'string' ? payload.text : '';\n  if (Array.isArray(payload.buttons)) buttons = payload.buttons;\n}\nif (!text && typeof raw === 'string') text = raw;\ntext = sanitize(String(text || ''));\nif (!text) text = ' ';\nif (text.length > 4096) text = text.slice(0, 4090) + '...';\n\nlet kb = [];\nif (Array.isArray(buttons) && buttons.length) {\n  const first = buttons[0];\n  if (Array.isArray(first)) {\n    kb = buttons.map(row => (row || []).filter(b => b && b.text).map(b => ({ text: String(b.text), callback_data: String(b.callback_data || b.text) })));\n    kb = kb.filter(r => r.length);\n  } else if (first && typeof first === 'object' && first.text) {\n    kb = [(buttons || []).filter(b => b && b.text).map(b => ({ text: String(b.text), callback_data: String(b.callback_data || b.text) }))];\n  }\n}\nconst reply_markup = kb.length ? { inline_keyboard: kb } : null;\nreturn [{ json: { agent_output_clean: text, reply_markup } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3424,
+        1600
+      ],
+      "id": "fe88b20e-c860-4aff-9839-283000f9d15e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "contextWindowLength": 2
+      },
+      "id": "50d382d8-ccfa-427d-91e5-2068e7bc87af",
+      "name": "Window Buffer Memory5",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3072,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2672,
+        1824
+      ],
+      "id": "e5091671-7b61-420c-8e78-197829ef1da7",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "NTOaK3gqKBsZgTV4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Chiamare quando l'input contiene riferimenti a:\n- Rifornimenti di carburante (gasolio, benzina, AdBlue)\n- Cisterne\n- Litri, euro spesi per carburante\n- Distributori, stazioni di servizio\n- Parole chiave: \"gasolio\", \"rifornimento\", \"carburante\", \"litri\", \"pieno\", \"cisterna\"",
+        "text": "={{ $fromAI('output', '', 'string') }}",
+        "options": {
+          "systemMessage": "=# TOOL SPESE VARIE v1.2 — CON GESTIONE FOTO\n\nGestisci spese varie per flotta veicoli.\nOutput strutturato con chiavi definite, NON in formato JSON.\n\nDATA OGGI: {{ $now.toFormat('dd/MM/yyyy') }}\n\n## INPUT:\n{\n  \"mezzo\": \"string\",\n  \"input_completo\": \"string (JSON vision o testo)\",\n  \"foto_link\": \"string (URL Google Drive, può essere vuoto)\"\n}\n\n## OUTPUT STRUTTURATO:\ntext: [messaggio all'utente]\nneeds_confirmation: [true/false]\nrow: {\n  Mezzo: [string]\n  Tipologia: \"Spesa Varia\"\n  Litri: \"\"\n  €: [Y,YY]\n  Descrizione: [string]\n  Foto1: [foto_link o \"\"]\n  Foto2: \"\"\n}\n\n## CHIAVI OBBLIGATORIE ROW:\n1. Mezzo: prendi da input.mezzo oppure \"\" se assente\n2. Tipologia: sempre \"Spesa Varia\"\n3. Litri: sempre \"\" (vuoto)\n4. €: importo formato \"Y,YY\" (sempre 2 decimali)\n5. Descrizione: \"[Tipo Spesa] - [Dettaglio]\"\n6. Foto1: foto_link ricevuto, oppure \"\" se dichiarazione testuale senza foto\n7. Foto2: SEMPRE \"\"\n\n---\n\n## CLASSIFICAZIONE TIPO SPESA\n\n| Keywords | Tipo |\n|----------|------|\n| parcheggio, sosta, park, strisce blu | Parcheggio |\n| tessera, ricarica, abbonamento | Tessera/Abbonamento |\n| aeroporto, apt | Parcheggio Aeroporto |\n| gommista, gomme, pneumatici | Manutenzione - Gommista |\n| meccanico, officina, tagliando | Manutenzione - Meccanico |\n| carrozzeria | Manutenzione - Carrozzeria |\n| detersivo, sapone, scope, panni | Materiale Pulizia |\n| altro | Spesa Generica |\n\n---\n\n## VALIDAZIONI FOTO SCONTRINO\n\n### ❌ Data non oggi (solo per foto):\ntext: ⚠️ La data dello scontrino non corrisponde a oggi ({{ $now.toFormat('dd/MM/yyyy') }}).\nneeds_confirmation: false\n[row: omesso]\n\n### ❌ Importo mancante:\ntext: 💶 Qual è l'importo della spesa?\nneeds_confirmation: false\nwaiting_for: importo\n\n### ❌ Descrizione troppo generica:\ntext: 📝 Puoi specificare per cosa hai speso?\nneeds_confirmation: false\nwaiting_for: descrizione\n\n---\n\n## RIEPILOGO OK\n\n📋 SPESA VARIA\n📅 [DD/MM/YYYY] | 🚛 [Mezzo]\n🧾 Tipo: [Tipo Spesa]\n💶 Importo: [Y,YY]€\n📍 [Esercente] - [Località] ← se presenti\n[📸 Foto allegata] ← solo se foto_link presente\n\nScrivi 'conferma' per registrare.\n\n---\n\n## ROW (quando OK)\n\nMezzo: \"[mezzo]\"\nTipologia: \"Spesa Varia\"\nLitri: \"\"\n€: \"[Y,YY]\"\nDescrizione: \"[Tipo Spesa] - [Dettaglio]\"\nFoto1: \"[foto_link o '']\"\nFoto2: \"\"\n\n---\n\n## DECISIONE FINALE\n\n### ✅ Se tutto OK:\ntext: [riepilogo]\nneeds_confirmation: true\nrow: {completo con Foto1}\n\n### ❌ Se errore/dati mancanti:\ntext: [richiesta dati]\nneeds_confirmation: false\n[row: omesso]\n\n---\n\nFINE TOOL SPESE VARIE v1.2"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2928,
+        1616
+      ],
+      "id": "907f4ba4-3016-4313-ad5f-2f4ad0b3a541",
+      "name": "Tool_speseVarie"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}",
+        "text": "=⚠️ Si è verificato un errore. Riprova.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3424,
+        2192
+      ],
+      "id": "242cbb5e-a723-49ea-b31e-42550f002c2f",
+      "name": "Send a text message2",
+      "webhookId": "8af0e5f0-3714-413c-89a4-e122891cdb8f",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "disabled": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.body.chat_id }}",
+        "messageId": "={{ $json.body.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        3600
+      ],
+      "id": "17250281-1dfe-491d-b0fd-f3fa0093eac5",
+      "name": "Delete a chat message2",
+      "webhookId": "9dfbddc2-5215-42e9-88b2-038f1a0affe1",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Webhook').item.json.body.chat_id }}",
+        "text": "=⏰ Hai terminato i servizi?",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Confermo",
+                    "additionalFields": {
+                      "callback_data": "=Fine servizio"
+                    }
+                  },
+                  {
+                    "text": "❌ Non ancora",
+                    "additionalFields": {
+                      "callback_data": "ignora"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        3600
+      ],
+      "id": "8b457833-09c3-47f5-956e-3b0236c77227",
+      "name": "Telegram - Bottone Visionato (set credentials)2",
+      "webhookId": "7cd885a8-c241-4cb2-ba51-ae83537254de",
+      "onError": "continueRegularOutput",
+      "notes": "01/09/2026: se il bot e' bloccato dall'autista Telegram risponde 403 e l'esecuzione andava in errore ogni 5 minuti, all'infinito (~900 al giorno). Ora si prosegue e il nodo successivo marca la riga come non raggiungibile, cosi' il ciclo esterno smette di riproporla. Il fallimento non sparisce: resta scritto nel foglio come stato.",
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q",
+          "mode": "list",
+          "cachedResultName": "Allert",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 441970287,
+          "mode": "list",
+          "cachedResultName": "Fine servizio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit#gid=441970287"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Stato": "={{ ($json && $json.result && $json.result.message_id) ? $('Webhook').item.json.body.stato : '⛔ Non risponde' }}",
+            "TR-Id": "=",
+            "Chat-Id": "={{ $('Webhook').item.json.body.chat_id }}",
+            "Message-Id": "={{ ($json && $json.result && $json.result.message_id) ? $json.result.message_id : '' }}"
+          },
+          "matchingColumns": [
+            "Chat-Id"
+          ],
+          "schema": [
+            {
+              "id": "Stato",
+              "displayName": "Stato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TR-Id",
+              "displayName": "TR-Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Chat-Id",
+              "displayName": "Chat-Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message-Id",
+              "displayName": "Message-Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -304,
+        3600
+      ],
+      "id": "a2f0c3c3-b4a2-41d4-a2cb-b5961fb0995f",
+      "name": "Append or update row in sheet1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "notes": "01/09/2026: se l'invio Telegram non e' riuscito la riga passa a '⛔ Non risponde' invece di restare Pending. Non e' Pending, quindi lo script esterno smette di riproporla e i ~900 fallimenti al giorno si fermano. Si riapre da sola al prossimo foglio di viaggio di quell'autista.",
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q",
+          "mode": "list",
+          "cachedResultName": "Allert",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 441970287,
+          "mode": "list",
+          "cachedResultName": "Fine servizio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit#gid=441970287"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Chat-Id",
+              "lookupValue": "={{ $('Normalizer (kind/text/file_id)').item.json.ChatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        2784
+      ],
+      "id": "ce298e74-5026-476f-a1d9-0177eb140567",
+      "name": "Get row(s) in sheet1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q",
+          "mode": "list",
+          "cachedResultName": "Allert",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 441970287,
+          "mode": "list",
+          "cachedResultName": "Fine servizio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit#gid=441970287"
+        },
+        "startIndex": "={{ $('Get row(s) in sheet1').item.json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        2784
+      ],
+      "id": "4fd71720-9c63-45d5-97b0-e389eeee2d01",
+      "name": "Delete rows or columns from sheet",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3328cf63-084d-4571-b2b9-7741739eddf0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1200,
+        3600
+      ],
+      "id": "41502f37-daea-482c-8362-7815ca1611be",
+      "name": "Webhook",
+      "webhookId": "3328cf63-084d-4571-b2b9-7741739eddf0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "40399da9-40e0-4039-b6d0-8460fa4f020d",
+              "leftValue": "={{ $('Telegram Trigger1').item.json.callback_query.data }}",
+              "rightValue": "Fine servizio",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "9e7cf40a-3974-4711-b44b-baa791154ab4",
+              "leftValue": "={{ $('Telegram Trigger1').item.json.callback_query.data }}",
+              "rightValue": "ignora",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        2784
+      ],
+      "id": "4ccc9c23-167c-4588-9981-8e0843ad4b39",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "content": "Parte del bottone di fine servizio",
+        "height": 464,
+        "width": 1044
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        3296
+      ],
+      "id": "f8135588-e716-4ad2-9842-0f4aad2e4793",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.result.file_id }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Uzf_ky7LAdc8DJMrHd-_6PZXvo6miUd_",
+          "mode": "list",
+          "cachedResultName": "Rendicontazione",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Uzf_ky7LAdc8DJMrHd-_6PZXvo6miUd_"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -80,
+        1504
+      ],
+      "id": "13925d46-ae60-4894-a765-7add8a2ac764",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TrudOZ6RxNzKUSeI",
+          "name": "Transfer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.webViewLink }}",
+          "mode": "url"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "writer",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        144,
+        1504
+      ],
+      "id": "e9bc0edd-35ec-44b0-ace8-fa233062a704",
+      "name": "Share file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "TrudOZ6RxNzKUSeI",
+          "name": "Transfer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "VezPojBP247T6fAl",
+          "mode": "list",
+          "cachedResultName": "Bottoni rendicontazione",
+          "cachedResultUrl": "/projects/QBb49wu2rmLX0wgk/datatables/VezPojBP247T6fAl"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Chatid",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "messageid": "={{ $json.result.message_id }}",
+            "Chatid": "={{ $json.result.chat.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Chatid",
+              "displayName": "Chatid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "messageid",
+              "displayName": "messageid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3872,
+        2000
+      ],
+      "id": "d358c042-ec3e-4829-8265-4afcf042ff78",
+      "name": "Upsert row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.Chatid }}",
+        "messageId": "={{ $json.messageid }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        2976
+      ],
+      "id": "6aa502fe-cca8-477b-91dc-13b9fbf16d4f",
+      "name": "Delete a chat message1",
+      "webhookId": "5ac25198-b3ee-4462-84cc-5550408b2c53",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q",
+          "mode": "list",
+          "cachedResultName": "Allert",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 441970287,
+          "mode": "list",
+          "cachedResultName": "Fine servizio",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ORv26Kq-HV1otxF0da7NZKmIhOfZzgj8Swa_zIMe44Q/edit#gid=441970287"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Chat-Id",
+              "lookupValue": "={{ $json.chat_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -528,
+        2976
+      ],
+      "id": "f6362ed9-9906-4132-bff4-6dd19fdff14c",
+      "name": "Get row(s) in sheet2",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw",
+          "mode": "list",
+          "cachedResultName": "Programma Autisti 2.0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1844093658,
+          "mode": "list",
+          "cachedResultName": "Telegram",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw/edit#gid=1844093658"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -976,
+        2592
+      ],
+      "id": "f6de7c31-e7d6-4aab-8fb3-8689e8fd681a",
+      "name": "Get Rubrica Autisti",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI",
+          "mode": "list",
+          "cachedResultName": "Check list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1170514979,
+          "mode": "list",
+          "cachedResultName": "Riepilogo servizi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit#gid=1170514979"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Data",
+              "lookupValue": "={{ $now.toFormat('dd/MM/yyyy') }}"
+            },
+            {
+              "lookupColumn": "Autista",
+              "lookupValue": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        2592
+      ],
+      "id": "a349c9c1-088d-4b68-81cc-73c32cd240c3",
+      "name": "Get row(s) in sheet3",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI",
+          "mode": "list",
+          "cachedResultName": "Check list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1170514979,
+          "mode": "list",
+          "cachedResultName": "Riepilogo servizi",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z77zMyUch9s9Hx5yH7NoomHDYkZqTo_yPhpGAW34MrI/edit#gid=1170514979"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Data": "={{ $json.Data }}",
+            "Mezzo": "={{ $json.Mezzo }}",
+            "Autista": "={{ $json.Autista }}",
+            "n. servizi": "={{ $json.NumeroServizi }}",
+            "Riepilogo servizi": "={{ $json.RiepilogoServizi }}",
+            "Durata totale": "={{ $json.DurataTotale }}",
+            "Durata effettiva": "={{ $json.DurataEffettiva }}",
+            "Id": "={{ $json.IdChiusura }}",
+            "Spese": "={{ $json.Spese }}"
+          },
+          "matchingColumns": [
+            "Id"
+          ],
+          "schema": [
+            {
+              "id": "Paste",
+              "displayName": "Paste",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mezzo",
+              "displayName": "Mezzo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Autista",
+              "displayName": "Autista",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "n. servizi",
+              "displayName": "n. servizi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Riepilogo servizi",
+              "displayName": "Riepilogo servizi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Durata totale",
+              "displayName": "Durata totale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Durata effettiva",
+              "displayName": "Durata effettiva",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Incasso",
+              "displayName": "Incasso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Annotazioni",
+              "displayName": "Annotazioni",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ore comunicate",
+              "displayName": "Ore comunicate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Totale",
+              "displayName": "Totale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Spese",
+              "displayName": "Spese",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        2496
+      ],
+      "id": "8d349711-35c4-4137-bf02-0045927b3b7d",
+      "name": "Append or update row in sheet",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "maxTries": 4,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Leggi la lista completa dei veicoli della flotta dal foglio 'Veicoli' del Programma Autisti 2.0. Restituisce per ogni mezzo: Modello, Targa (e altre colonne). USALO SEMPRE quando devi popolare l'array mezzi[] dell'OUTPUT JSON o quando il driver chiede quali mezzi sono disponibili.",
+        "documentId": {
+          "__rl": true,
+          "value": "1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw",
+          "mode": "list",
+          "cachedResultName": "Programma Autisti 2.0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 329641120,
+          "mode": "list",
+          "cachedResultName": "Veicoli",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nqmt8_4Oy8paHlPU8LTBLEvl-quW0DYgTtmB73nBxPw/edit#gid=329641120"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        3216,
+        1616
+      ],
+      "id": "73e1f331-899e-49fb-b355-e6f42bbcd05c",
+      "name": "Leggi Veicoli",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TOKEN>/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Normalizer (kind/text/file_id)').item.json.ChatId, text: $('AI Agent2').item.json.output.text, reply_markup: { inline_keyboard: ($('AI Agent2').item.json.output.mezzi || []).filter(m => m && String(m).trim()).map(m => [{ text: String(m), callback_data: String(m) }]) } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3648,
+        1904
+      ],
+      "id": "9d345cc5-08b3-49ba-9f1d-1cb48f051441",
+      "name": "Send Telegram Mezzi (dynamic)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot<TOKEN>/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ chat_id: $('Normalizer (kind/text/file_id)').item.json.ChatId, text: $json.agent_output_clean }, $json.reply_markup ? { reply_markup: $json.reply_markup } : {})) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3648,
+        1600
+      ],
+      "id": "16ee8f43-d4f3-47b6-b1a6-15a4cbf9cafd",
+      "name": "Send Telegram Rendicontazione (dynamic)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cd28f061-1b23-4b6e-98a5-22fdb2f5a4b1",
+              "leftValue": "={{ String($json.body.chat_id ?? '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -976,
+        3600
+      ],
+      "id": "07949e00-fd67-4dd5-8527-9a0a573eac80",
+      "name": "Chat-Id valido?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Telegram consegna il vocale SENZA estensione (file_1468, application/octet-stream):\n// Whisper deduce il formato dal nome file e lo rifiuta. Qui rinominiamo il binario col formato giusto.\nconst OK = ['flac','m4a','mp3','mp4','mpeg','mpga','oga','ogg','wav','webm'];\nconst MIME = { ogg:'audio/ogg', oga:'audio/ogg', mp3:'audio/mpeg', mpga:'audio/mpeg', mpeg:'audio/mpeg',\n               m4a:'audio/m4a', mp4:'audio/mp4', wav:'audio/wav', webm:'audio/webm', flac:'audio/flac' };\nconst items = $input.all();\nfor (const item of items) {\n  const bin = item.binary && item.binary.data;\n  if (!bin) continue;\n  const filePath = String(item.json?.result?.file_path || '');\n  let ext = (filePath.split('.').pop() || '').toLowerCase();\n  if (!OK.includes(ext)) {\n    // fallback: mime del messaggio Telegram (audio/ogg per i vocali), altrimenti ogg\n    const mime = String($('Normalizer (kind/text/file_id)').item.json.mime || '').toLowerCase();\n    if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3';\n    else if (mime.includes('mp4') || mime.includes('m4a')) ext = 'm4a';\n    else if (mime.includes('wav')) ext = 'wav';\n    else if (mime.includes('webm')) ext = 'webm';\n    else ext = 'ogg';\n  }\n  bin.fileName = 'audio.' + ext;\n  bin.fileExtension = ext;\n  bin.mimeType = MIME[ext] || 'audio/ogg';\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1792
+      ],
+      "id": "eb96bce8-d3db-4048-8ac4-08d9e32761fe",
+      "name": "Fix formato audio"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Normalizer (kind/text/file_id)').item.json.chat_id }}",
+        "text": "🎙️ Non sono riuscito ad ascoltare il vocale. Puoi riprovare o scrivermi il messaggio?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        1888
+      ],
+      "id": "e96e4fd3-c6a6-4499-8202-346a740edcf1",
+      "name": "Vocale non leggibile",
+      "webhookId": "2184d023-461f-4bae-a9d8-0f104199cfc8",
+      "credentials": {
+        "telegramApi": {
+          "id": "8XavsCi1ZXYlemkn",
+          "name": "Rendicontazione"
+        }
+      }
+    },
+    {
+      "id": "fa4bf333-0c5d-4da6-b5b4-8c1e8475c6e3",
+      "name": "Anti Doppio Tap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        2592
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Anti Doppio Tap 'Fine servizio' (22/07/2026)\n// Il doppio tap sul bottone creava DUE righe recap identiche (race di 1s).\n// Debounce 60s per chat via staticData: il secondo tap entro 60s viene ignorato.\nconst cb = $('Telegram Trigger1').first().json.callback_query || {};\nconst chatId = String((cb.message && cb.message.chat && cb.message.chat.id) || (cb.from && cb.from.id) || '');\nconst sd = $getWorkflowStaticData('global');\nsd.fineTap = sd.fineTap || {};\nconst now = Date.now();\nconst last = Number(sd.fineTap[chatId] || 0);\nif (chatId && (now - last) < 60000) {\n  return [];\n}\nif (chatId) sd.fineTap[chatId] = now;\nconst unGiornoFa = now - 86400000;\nfor (const k of Object.keys(sd.fineTap)) {\n  if (Number(sd.fineTap[k]) < unGiornoFa) delete sd.fineTap[k];\n}\nreturn items;"
+      }
+    },
+    {
+      "id": "20d1c80c-5eb4-4d88-8a17-a9b61aac301e",
+      "name": "Get Spese Oggi",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        2496
+      ],
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nrdVXL4REiuXvzGw7nOwnDAtk9t4-cKYDOlccCZ-Kds/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Autista",
+              "lookupValue": "={{ $('Normalizer (kind/text/file_id)').item.json.Autista }}"
+            }
+          ]
+        },
+        "options": {
+          "returnAllMatches": "returnAllMatches",
+          "outputFormatting": {
+            "values": {
+              "general": "FORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "N9CXGL5m4YIdjyR3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "c4b4d7e0-b8ed-41e0-ba37-4507f3c33c07",
+      "name": "Aggiungi Spese",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        2496
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Aggiunge la colonna Spese al riepilogo giornata (22/07/2026)\n// Input: righe spese del foglio Recap (nodo Get Spese Oggi, filtrate per Autista, tutte le date).\n// Tiene solo le spese con Data == Data del riepilogo e le compatta in una stringa.\nconst base = $('Code in JavaScript').first() ? $('Code in JavaScript').first().json : null;\nif (!base || !base.IdChiusura) { return []; }\nconst s = v => String(v == null ? '' : v).trim();\nconst toN = v => { const n = Number(s(v).replace(',', '.').replace(/[^0-9.\\-]/g, '')); return Number.isFinite(n) ? n : 0; };\nconst fmt = n => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');\nlet Spese = '';\ntry {\n  const speseAll = $input.all().map(i => i.json).filter(r => r && (s(r.Tipologia) || s(r['€']) || s(r.Litri)));\n  const speseGiorno = speseAll.filter(r => s(r.Data) === s(base.Data));\n  if (speseGiorno.length) {\n    const gruppi = {};\n    let tot = 0, litri = 0;\n    for (const r of speseGiorno) {\n      const tip = s(r.Tipologia) || 'Altro';\n      const imp = toN(r['€']);\n      tot += imp;\n      const l = toN(r.Litri);\n      if (l) litri += l;\n      let key;\n      if (/rifornim|carburant|gasolio|cisterna/i.test(tip)) key = '⛽ Rifornimento';\n      else if (/pasto/i.test(tip)) key = '🍽 Pasti';\n      else if (/lavaggio/i.test(tip)) key = '🧼 Lavaggi';\n      else key = '💶 ' + tip;\n      gruppi[key] = (gruppi[key] || 0) + imp;\n    }\n    const parti = Object.entries(gruppi).map(function (kv) {\n      const k = kv[0], v = kv[1];\n      return (k.indexOf('⛽') === 0 && litri) ? (k + ' ' + fmt(litri) + ' L €' + fmt(v)) : (k + ' €' + fmt(v));\n    });\n    Spese = parti.join(' | ') + ' — Tot €' + fmt(tot);\n  }\n} catch (e) {\n  Spese = '';\n}\nreturn [{ json: Object.assign({}, base, { Spese: Spese }) }];"
+      }
+    }
+  ],
+  "nodeGroups": [],
+  "activeVersion": {
+    "sameAsDraft": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

@@ -38,5 +38,5 @@ servizio con ▶️ Inizio / ⏹️ Fine. Regole generali in `CLAUDE.md`.
   - ore effettive = somma Inizio→Fine dei fogli di viaggio; Moox solo per il confronto.
 
 ## Ancora aperto
-- Bot nuovo (@BotFather + credenziale n8n) e gruppo di prova: li crea Agostino.
+- Bot nuovo (@BotFather + credenziale n8n): lo crea Agostino. Prova = chat privata di Agostino col bot (niente gruppo di prova).
 - Promemoria (default se non detto): Inizio +10', Fine = durata stimata +30', max 2 solleciti poi avviso ad Agostino.
